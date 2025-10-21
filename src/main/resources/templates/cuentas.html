@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Plan de Cuentas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <h1>Plan de Cuentas</h1>
+
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div sec:authorize="hasRole('ADMIN')" class="mb-3">
+        <a th:href="@{/admin/cuentas/nuevo}" class="btn btn-primary">Agregar Cuenta</a>
+    </div>
+    <div class="mb-3">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">Volver</button>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Tipo de Cuenta</th>
+            <th>Estado</th>
+            <th sec:authorize="hasRole('ADMIN')">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="cuenta : ${cuentas}">
+            <td th:text="${cuenta.codigo}"></td>
+            <td th:text="${cuenta.nombre}"></td>
+            <td th:text="${cuenta.tipoCuenta}"></td>
+            <td>
+                <span th:if="${cuenta.activo}" class="badge bg-success">Activa</span>
+                <span th:unless="${cuenta.activo}" class="badge bg-danger">Inactiva</span>
+            </td>
+            <td sec:authorize="hasRole('ADMIN')">
+                <div class="form-check form-switch d-inline-block me-2">
+                    <input class="form-check-input" type="checkbox" role="switch" th:id="${'activoSwitch' + cuenta.id}"
+                           th:checked="${cuenta.activo}"
+                           onchange="document.getElementById('toggleForm' + this.id).submit()">
+                    <label class="form-check-label" th:for="${'activoSwitch' + cuenta.id}">Activar/Desactivar</label>
+                </div>
+                <form th:id="${'toggleFormactivoSwitch' + cuenta.id}" th:action="@{/admin/cuentas/toggleActivo/{id}(id=${cuenta.id})}" method="post" style="display: none;"></form>
+
+                <a th:href="@{/admin/cuentas/editar/{id}(id=${cuenta.id})}" class="btn btn-sm btn-warning">Editar</a>
+                <a th:href="@{/admin/cuentas/eliminar/{id}(id=${cuenta.id})}" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Registrar Asiento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <h1>Registrar Asiento Contable</h1>
+
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <p th:text="${error}"></p>
+    </div>
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <p th:text="${success}"></p>
+    </div>
+
+    <form th:action="@{/asientos}" th:object="${asiento}" method="post">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="fecha" class="form-label">Fecha</label>
+                <input type="date" class="form-control" id="fecha" th:field="*{fecha}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <input type="text" class="form-control" id="descripcion" th:field="*{descripcion}" required>
+            </div>
+        </div>
+
+        <hr>
+
+        <h3>Movimientos</h3>
+        <table class="table" id="movimientos-table">
+            <thead>
+            <tr>
+                <th>Cuenta</th>
+                <th>Debe</th>
+                <th>Haber</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Initial row -->
+            <tr>
+                <td>
+                    <select class="form-select" name="movimientos[0].cuenta.id" required>
+                        <option value="">Seleccione una cuenta</option>
+                        <option th:each="cuenta : ${cuentas}" th:value="${cuenta.id}" th:text="${cuenta.nombre}"></option>
+                    </select>
+                </td>
+                <td><input type="number" step="0.01" class="form-control" name="movimientos[0].debe" oninput="handleDebeHaberInput(event)"></td>
+                <td><input type="number" step="0.01" class="form-control" name="movimientos[0].haber" oninput="handleDebeHaberInput(event)"></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Eliminar</button></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <button type="button" class="btn btn-primary" onclick="addRow()">Agregar Movimiento</button>
+        <hr>
+
+        <button type="submit" class="btn btn-success">Guardar Asiento</button>
+        <button type="button" class="btn btn-secondary" onclick="history.back()">Volver</button>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    let rowIndex = 1;
+
+    const activeCuentasJson = JSON.parse([[${cuentasJson}]]); // Store accounts data from Thymeleaf in a JS variable
+
+    function handleDebeHaberInput(event) {
+        console.log('handleDebeHaberInput called');
+        const changedInput = event.target;
+        const row = changedInput.closest('tr');
+        console.log('Row:', row);
+
+        const debeInput = row.querySelector('input[name$=".debe"]');
+        const haberInput = row.querySelector('input[name$=".haber"]');
+        console.log('Debe Input:', debeInput, 'Haber Input:', haberInput);
+
+        if (changedInput === debeInput) {
+            if (debeInput.value !== '') {
+                haberInput.value = '0'; // Set to 0 instead of empty
+            } else {
+                haberInput.value = ''; // If debe is cleared, clear haber too
+            }
+        } else if (changedInput === haberInput) {
+            if (haberInput.value !== '') {
+                debeInput.value = '0'; // Set to 0 instead of empty
+            } else {
+                debeInput.value = ''; // If haber is cleared, clear debe too
+            }
+        }
+    }
+
+    function addRow() {
+        console.log("addRow function called."); // Diagnostic
+        console.log("activeCuentasJson content:", activeCuentasJson); // Diagnostic
+
+        const tableBody = document.getElementById('movimientos-table').getElementsByTagName('tbody')[0];
+        const newRow = tableBody.insertRow();
+
+        let optionsHtml = '<option value="">Seleccione una cuenta</option>'; // Add default option
+        activeCuentasJson.forEach(function(cuenta) {
+            optionsHtml += `<option value="${cuenta.id}">${cuenta.nombre}</option>`;
+        });
+
+        newRow.innerHTML = `
+            <td>
+                <select class="form-select" name="movimientos[${rowIndex}].cuenta.id" required>
+                    ${optionsHtml}
+                </select>
+            </td>
+            <td><input type="number" step="0.01" class="form-control" name="movimientos[${rowIndex}].debe" oninput="handleDebeHaberInput(event)"></td>
+            <td><input type="number" step="0.01" class="form-control" name="movimientos[${rowIndex}].haber" oninput="handleDebeHaberInput(event)"></td>
+            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Eliminar</button></td>
+        `;
+
+        rowIndex++;
+    }
+
+    function removeRow(button) {
+        const row = button.parentNode.parentNode;
+        if (document.getElementById('movimientos-table').getElementsByTagName('tbody')[0].rows.length > 1) {
+            row.parentNode.removeChild(row);
+        }
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

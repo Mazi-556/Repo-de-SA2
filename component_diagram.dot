@@ -1,0 +1,46 @@
+digraph G {
+    rankdir=TB;
+    nodesep=0.8;
+    ranksep=0.8;
+    splines=curved;
+
+    node [shape=box, style="filled", fillcolor="#f8f9fa", fontname="Roboto, sans-serif", fontsize=12, penwidth=1.5, color="#dee2e6"];
+    edge [fontname="Roboto, sans-serif", fontsize=10, fontcolor="#6c757d", color="#6c757d", penwidth=1.5, arrowhead=normal];
+
+    subgraph cluster_0 {
+        label="Navegador Web";
+        style="filled";
+        fillcolor="#ebf5fb";
+        fontcolor="#3498DB";
+        Frontend [label="Frontend (Thymeleaf)", fillcolor="#e0f2f7", color="#3498DB"];
+    }
+
+    subgraph cluster_1 {
+        label="Servidor de Aplicaciones";
+        style="filled";
+        fillcolor="#e8f8f5";
+        fontcolor="#1ABC9C";
+        subgraph cluster_2 {
+            label="Spring Boot App";
+            style="filled";
+            fillcolor="#f0fdfa";
+            fontcolor="#1ABC9C";
+            Controller [label="Controller", fillcolor="#e6f9f5", color="#1ABC9C"];
+            Service [label="Service", fillcolor="#e6f9f5", color="#1ABC9C"];
+            Repository [label="Repository", fillcolor="#e6f9f5", color="#1ABC9C"];
+        }
+    }
+
+    subgraph cluster_3 {
+        label="Base de Datos";
+        style="filled";
+        fillcolor="#f4ecf7";
+        fontcolor="#8E44AD";
+        PostgreSQL [label="PostgreSQL", fillcolor="#f9eefc", color="#8E44AD"];
+    }
+
+    Frontend -> Controller [label="HTTP Requests"];
+    Controller -> Service [label="Llama a"];
+    Service -> Repository [label="Usa"];
+    Repository -> PostgreSQL [label="Accede a"];
+}

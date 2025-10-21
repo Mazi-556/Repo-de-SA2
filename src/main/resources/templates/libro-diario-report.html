@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reporte - Libro Diario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        .asiento-block {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .asiento-header {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+        .description-cell {
+            text-align: center;
+            vertical-align: middle;
+            max-width: 250px; /* Control max width */
+            word-wrap: break-word; /* Wrap long text */
+            white-space: normal;
+        }
+        .debe-amount {
+            text-align: left;
+        }
+        .haber-amount {
+            text-align: right;
+        }
+    </style>
+    <style th:if="${isPdf}">
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        .table-bordered th, .table-bordered td {
+            border: 1px solid black !important;
+        }
+        .text-end {
+            text-align: right !important;
+        }
+        .text-start {
+            text-align: left !important;
+        }
+        .description-cell {
+            text-align: center !important;
+            max-width: 250px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+    </style>
+</head>
+<body>
+<div th:unless="${isPdf}" th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <h1>Reporte de Libro Diario</h1>
+    <p>Mostrando asientos desde <strong th:text="${#temporals.format(startDate, 'dd-MM-yyyy')}"></strong> hasta <strong th:text="${#temporals.format(endDate, 'dd-MM-yyyy')}"></strong>.</p>
+
+
+
+
+
+    <div th:unless="${isPdf}">
+        <button type="button" class="btn btn-secondary mb-3" onclick="history.back()">Volver</button>
+        <a th:href="@{/reportes/libro-diario/pdf(startDate=${startDate}, endDate=${endDate})}" class="btn btn-info mb-3 ms-2">Imprimir a PDF</a>
+    </div>
+
+    <div th:if="${asientos.isEmpty()}">
+        <p>No se encontraron asientos en el período seleccionado.</p>
+    </div>
+
+    <div th:each="asiento : ${asientos}" class="asiento-block">
+            <div class="asiento-header">
+                <strong>Fecha:</strong> <span th:text="${#temporals.format(asiento.fecha, 'dd-MM-yyyy')}"></span> |
+                <strong>Asiento #<span th:text="${asiento.id}"></span></strong> |
+                <strong>Creado por:</strong> <span th:text="${asiento.usuarioCreador != null ? asiento.usuarioCreador.username : 'N/A'}"></span>
+            </div>
+            <table class="table table-sm table-bordered">
+                <thead>
+                <tr>
+                    <th>Descripción</th>
+                    <th>Cuenta</th>
+                    <th class="text-start">Debe</th>
+                    <th class="text-end">Haber</th>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="movIndex, movStat : ${asiento.movimientos}">
+                    <tr th:with="mov=${asiento.movimientos[movStat.index]}">
+                        <td th:if="${movStat.index == 0}" th:rowspan="${asiento.movimientos.size()}" th:text="${asiento.descripcion}" class="description-cell"></td>
+                        <td th:text="${mov.cuenta.nombre}"
+                            th:classappend="${mov.debe != null and mov.debe.doubleValue() > 0} ? 'text-start' : 'text-end'">
+                        </td>
+                        <td class="debe-amount" th:text="${mov.debe != null ? #numbers.formatDecimal(mov.debe, 1, 2) : ''}"></td>
+                        <td class="haber-amount" th:text="${mov.haber != null ? #numbers.formatDecimal(mov.haber, 1, 2) : ''}"></td>
+                    </tr>
+                </th:block>
+                </tbody>
+            </table>
+        </div>
+
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

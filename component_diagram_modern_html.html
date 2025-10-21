@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Componentes Moderno</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            overflow: auto; /* Allow scrolling if diagram is too wide */
+        }
+
+        .diagram-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #343a40;
+            margin-bottom: 1.5rem;
+        }
+
+        .diagram-container {
+            display: grid;
+            grid-template-columns: auto 150px auto 150px auto; /* Increased arrow column width */
+            grid-template-rows: auto; /* Only one row for now */
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .component-group-label {
+            grid-column: 3 / span 1; /* Span across the server components */
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .component-box {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            min-width: 180px;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative; /* For arrow positioning */
+        }
+
+        .component-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .component-box h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Specific component styling */
+        .frontend-box { color: #3498DB; border-color: #3498DB; }
+        .backend-box { color: #1ABC9C; border-color: #1ABC9C; }
+        .database-box { color: #8E44AD; border-color: #8E44AD; }
+
+        .server-app-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #fdfdfd;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px dashed #ccc;
+            min-width: 220px;
+        }
+
+        /* Arrow Styling */
+        .arrow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+        }
+
+        .arrow-line {
+            width: 100%; /* Will now be 150px due to grid column */
+            height: 2px;
+            background-color: #aaa;
+            position: relative; /* For positioning the label inside */
+        }
+
+        .arrow-line::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px; /* Adjust to center arrowhead */
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 8px solid #aaa;
+        }
+
+        .arrow-label {
+            position: absolute;
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust for element's own size */
+            background: #f4f7f9; /* Background to hide line underneath */
+            padding: 0 8px; /* More padding for better visual separation */
+            font-size: 0.8rem;
+            color: #777;
+            white-space: nowrap;
+            z-index: 1; /* Ensure label is above the line */
+        }
+
+        /* Grid positioning for components */
+        .browser-tier { grid-column: 1; grid-row: 1; }
+        .arrow-1 { grid-column: 2; grid-row: 1; }
+        .server-tier { grid-column: 3; grid-row: 1; }
+        .arrow-2 { grid-column: 4; grid-row: 1; }
+        .database-tier { grid-column: 5; grid-row: 1; }
+
+    </style>
+</head>
+<body>
+
+    <div class="diagram-wrapper">
+        <h1>Diagrama de Componentes</h1>
+
+        <div class="diagram-container">
+
+            <!-- Browser Tier -->
+            <div class="browser-tier">
+                <div class="component-box frontend-box">
+                    <h3>Navegador Web</h3>
+                    Frontend (Thymeleaf)
+                </div>
+            </div>
+
+            <!-- Arrow 1 -->
+            <div class="arrow-1 arrow-container">
+                <div class="arrow-line">
+                    <div class="arrow-label">Peticiones HTTP</div>
+                </div>
+            </div>
+
+            <!-- Server Tier -->
+            <div class="server-tier">
+                <div class="component-box backend-box">
+                    <h3>Servidor de Aplicaciones</h3>
+                    <div class="server-app-group">
+                        <div class="component-box backend-box">Controller</div>
+                        <div class="component-box backend-box">Service</div>
+                        <div class="component-box backend-box">Repository</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arrow 2 -->
+            <div class="arrow-2 arrow-container">
+                <div class="arrow-line">
+                    <div class="arrow-label">Accede a Datos</div>
+                </div>
+            </div>
+
+            <!-- Database Tier -->
+            <div class="database-tier">
+                <div class="component-box database-box">
+                    <h3>Base de Datos</h3>
+                    PostgreSQL
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

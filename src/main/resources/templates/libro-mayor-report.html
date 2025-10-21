@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reporte - Libro Mayor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .balance-row td {
+            font-weight: bold;
+        }
+    </style>
+    <style th:if="${isPdf}">
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        .table-bordered th, .table-bordered td {
+            border: 1px solid black !important;
+        }
+        .text-end {
+            text-align: right !important;
+        }
+        .text-start {
+            text-align: left !important;
+        }
+        .balance-row td {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div th:unless="${isPdf}" th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <h1>Reporte de Libro Mayor</h1>
+
+    <!-- Display error message if it exists -->
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <p th:text="${error}"></p>
+    </div>
+
+    <form th:unless="${isPdf}" th:action="@{/reportes/libro-mayor}" method="post" class="mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="fechaInicio" class="form-label">Fecha Inicio:</label>
+                <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" th:value="${fechaInicio}" required>
+            </div>
+            <div class="col-md-3">
+                <label for="fechaFin" class="form-label">Fecha Fin:</label>
+                <input type="date" class="form-control" id="fechaFin" name="fechaFin" th:value="${fechaFin}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="cuentaId" class="form-label">Cuenta:</label>
+                <select class="form-select" id="cuentaId" name="cuentaId">
+                    <option value="">Todas las Cuentas</option>
+                    <option th:each="cuenta : ${cuentas}" th:value="${cuenta.id}" th:text="${cuenta.nombre}" th:selected="${cuenta.id == selectedCuentaId}"></option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Generar Reporte</button>
+            </div>
+        </div>
+    </form>
+
+    <div th:unless="${isPdf}">
+        <a th:href="@{/reportes/libro-mayor/pdf(fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, cuentaId=${selectedCuentaId})}" class="btn btn-info mb-3">Imprimir a PDF</a>
+    </div>
+
+    <div th:if="${reportePorCuenta != null and !reportePorCuenta.isEmpty()}">
+        <div th:each="entry : ${reportePorCuenta}" class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0" th:text="${entry.key}">Nombre de la Cuenta</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-striped table-bordered mb-0" style="table-layout: fixed; width: 100%;">
+                    <thead>
+                    <tr>
+                        <th style="width: 15%;">Fecha</th>
+                        <th style="width: 35%;">Detalle</th>
+                        <th class="text-end" style="width: 15%;">Debe</th>
+                        <th class="text-end" style="width: 15%;">Haber</th>
+                        <th class="text-end" style="width: 20%;">Saldo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Display Initial Balance for the account -->
+                    <tr class="balance-row">
+                        <td colspan="4">Saldo Inicial al <span th:text="${#temporals.format(fechaInicio, 'dd-MM-yyyy')}"></span></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(entry.value.saldoInicial, 1, 2)}"></td>
+                    </tr>
+                    <!-- Display movements -->
+                    <tr th:each="movimiento : ${entry.value.movimientos}">
+                        <td th:text="${#temporals.format(movimiento.fecha, 'dd-MM-yyyy')}"></td>
+                        <td th:text="${movimiento.detalle}" style="word-wrap: break-word;"></td>
+                        <td class="text-end" th:text="${movimiento.debe != null ? #numbers.formatDecimal(movimiento.debe, 1, 2) : ''}"></td>
+                        <td class="text-end" th:text="${movimiento.haber != null ? #numbers.formatDecimal(movimiento.haber, 1, 2) : ''}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(movimiento.saldo, 1, 2)}"></td>
+                    </tr>
+                    <!-- Display Final Balance for the account -->
+                    <tr class="balance-row">
+                        <td colspan="4">Saldo Final al <span th:text="${#temporals.format(fechaFin, 'dd-MM-yyyy')}"></span></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(entry.value.saldoFinal, 1, 2)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div th:if="${reportePorCuenta == null or reportePorCuenta.isEmpty()}" class="alert alert-warning">
+        No se encontraron movimientos para las cuentas seleccionadas en el período.
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
