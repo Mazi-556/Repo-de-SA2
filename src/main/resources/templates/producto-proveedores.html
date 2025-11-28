@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Asignar Proveedor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+<div class="container mt-4">
+    <h2>Asignar o Eliminar Proveedor al Producto</h2>
+    
+    <div class="card p-4" th:if="${producto}">
+        <p><strong>Código del Producto:</strong> <span th:text="${producto.codigo}"></span></p>
+        
+        <h4 class="mt-3">Proveedores asignados:</h4>
+        <ul class="list-group mb-4">
+            <li th:if="${producto.productoProveedores.empty}" class="list-group-item">No hay proveedores asignados.</li>
+            <li th:each="pp : ${producto.productoProveedores}" class="list-group-item d-flex justify-content-between align-items-center">
+                <span th:text="${pp.proveedor.nombre}"></span>
+                <form th:action="@{/productos/desasignar-proveedor}" method="post">
+                    <input type="hidden" name="productoProveedorId" th:value="${pp.id}" />
+                    <button type="submit" class="btn btn-danger btn-sm">ELIMINAR</button>
+                </form>
+            </li>
+        </ul>
+
+        <h4>Asignar Nuevo Proveedor</h4>
+        <form th:action="@{/productos/asignar-proveedor}" method="post">
+            <input type="hidden" name="productoId" th:value="${producto.id}" />
+            <div class="input-group">
+                <select class="form-select" name="proveedorId">
+                    <option value="">Selecciona un proveedor...</option>
+                    <option th:each="prov : ${allProveedores}" th:value="${prov.id}" th:text="${prov.nombre}"></option>
+                </select>
+                <button class="btn btn-primary" type="submit">ASIGNAR PROVEEDOR</button>
+            </div>
+        </form>
+
+        <div class="mt-4">
+             <a th:href="@{/productos}" class="btn btn-secondary">Volver</a>
+        </div>
+    </div>
+     <div th:unless="${producto}" class="alert alert-warning">
+        Producto no encontrado.
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

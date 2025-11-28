@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Detalles del Pedido de Cotización</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+<div class="container mt-4">
+    <h2 class="mb-4">Detalles del Pedido de Cotización #<span th:text="${pedido.id}"></span></h2>
+
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Información General
+        </div>
+        <div class="card-body">
+            <p><strong>ID del Pedido:</strong> <span th:text="${pedido.id}"></span></p>
+            <p><strong>Fecha de Emisión:</strong> <span th:text="${pedido.fecha}"></span></p>
+            <p><strong>Proveedor:</strong> <span th:text="${pedido.proveedor.nombre}"></span></p>
+            <p><strong>Estado:</strong> <span th:text="${pedido.estado}"></span></p>
+            <!-- Si se vinculó a una SolicitudCompra original -->
+            <p th:if="${pedido.solicitudCompra != null}"><strong>Solicitud de Compra Original:</strong> <span th:text="${pedido.solicitudCompra.id}"></span></p>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Ítems del Pedido</h3>
+    <p>DEBUG: <span th:text="${pedido.items.size()}"></span> ítems cargados.</p>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Cantidad Solicitada</th>
+                <th>Precio Unitario Cotizado</th>
+                <th>Total Ítem Cotizado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${pedido.items}">
+                <td th:text="${item.producto.codigo}"></td>
+                <td th:text="${item.producto.nombre}"></td>
+                <td th:text="${item.producto.marca}"></td>
+                <td th:text="${item.producto.modelo}"></td>
+                <td th:text="${item.cantidad}"></td>
+                <td th:text="${item.precioUnitarioCotizado}"></td>
+                <td th:text="${item.totalItemCotizado}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/pedidos-cotizacion}" class="btn btn-secondary mt-3">Volver al Listado de Pedidos de Cotización</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

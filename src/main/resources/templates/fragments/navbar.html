@@ -25,6 +25,22 @@
                         <li><a class="dropdown-item" th:href="@{/reportes/libro-mayor}">Libro Mayor</a></li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAbastecimiento" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Abastecimiento
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownAbastecimiento">
+                        <li><a class="dropdown-item" th:href="@{/proveedores}">Proveedores</a></li>
+                        <li><a class="dropdown-item" th:href="@{/productos}">Productos</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/solicitudes-compra}">Solicitud De Compra</a></li>
+                        <li><a class="dropdown-item" th:href="@{/presupuestos/pedidos}">Presupuesto</a></li>
+                        <li><a class="dropdown-item" th:href="@{/ordenes-compra}">Generar Orden De Compra</a></li>
+                        <li><a class="dropdown-item" th:href="@{/ordenes-compra/listado}">Listado de Órdenes de Compra</a></li>
+                        <li><a class="dropdown-item" th:href="@{/remitos}">Remitos</a></li>
+                        <li><a class="dropdown-item" th:href="@{/facturas}">Facturas</a></li>
+                    </ul>
+                </li>
                 <li sec:authorize="hasRole('ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/admin/usuarios}">Gestión de Usuarios</a>
                 </li>

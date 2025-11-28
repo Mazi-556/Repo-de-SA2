@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Detalles de Presupuesto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+<div class="container mt-4">
+    <h2>Detalles de Presupuesto</h2>
+    <p>Los productos seleccionados han sido agrupados por los proveedores que pueden suministrarlos. Selecciona los ítems que deseas incluir en el pedido de cotización para cada proveedor.</p>
+
+    <!-- Contenido dinámico para agrupar por proveedor -->
+    <div th:each="entry : ${presupuestosAgrupados}" class="card mb-4">
+        <div class="card-header">
+            <h4 th:text="'Proveedor: ' + ${entry.key.nombre}"></h4>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/presupuestos/generar-pedido-cotizacion}" method="post">
+                <input type="hidden" name="proveedorId" th:value="${entry.key.id}" />
+                <ul class="list-group">
+                    <li th:each="item : ${entry.value}" class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <input type="checkbox" name="selectedItemIds" th:value="${item.id}" checked>
+                            <span th:text="${item.producto.nombre} + ' (' + ${item.producto.codigo} + ')'"></span>
+                        </div>
+                        <div>
+                            Cantidad: <input type="number" th:name="'cantidad_item_' + ${item.id}" th:value="${item.cantidad}" min="1" class="form-control form-control-sm d-inline w-auto">
+                        </div>
+                    </li>
+                </ul>
+                <button type="submit" class="btn btn-primary mt-3">GENERAR PEDIDO DE COTIZACIÓN para <span th:text="${entry.key.nombre}"></span></button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a th:href="@{/presupuestos/pedidos}" class="btn btn-secondary">Volver al Listado de Pedidos</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

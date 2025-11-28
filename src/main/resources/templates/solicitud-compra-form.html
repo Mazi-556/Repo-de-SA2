@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Solicitud de Compra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+<div class="container mt-4">
+    <h2>Solicitud de Compra</h2>
+    <form th:action="@{/solicitudes-compra/guardar}" th:object="${solicitud}" method="post" class="card p-4">
+        <div class="mb-3">
+            <label for="observaciones" class="form-label">Observaciones</label>
+            <textarea class="form-control" id="observaciones" th:field="*{observaciones}" rows="3"></textarea>
+        </div>
+
+        <h4>Productos</h4>
+        <div class="row align-items-end mb-3">
+            <div class="col-md-6">
+                <label for="productoSeleccionado" class="form-label">Producto</label>
+                <select id="productoSeleccionado" class="form-select">
+                    <option value="">Seleccionar producto...</option>
+                    <option th:each="prod : ${productos}" th:value="${prod.id}" th:text="${prod.nombre}"></option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="cantidadProducto" class="form-label">Cantidad</label>
+                <input type="number" class="form-control" id="cantidadProducto" value="1" min="1">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-success w-100" id="agregarProductoBtn">+ AGREGAR</button>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <table class="table table-striped" id="solicitudItemsTable">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Filas de productos se agregarán aquí dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">CREAR SOLICITUD</button>
+            <a th:href="@{/solicitudes-compra}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+document.addEventListener('DOMContentLoaded', function() {
+    const productosData = /*[[${productos}]]*/ []; // Get products data from Thymeleaf model
+    const productosMap = new Map(productosData.map(p => [p.id.toString(), p]));
+
+    const productoSeleccionado = document.getElementById('productoSeleccionado');
+    const cantidadProducto = document.getElementById('cantidadProducto');
+    const agregarProductoBtn = document.getElementById('agregarProductoBtn');
+    const solicitudItemsTableBody = document.querySelector('#solicitudItemsTable tbody');
+
+    let itemIndex = 0; // To keep track of unique names for hidden inputs
+
+    agregarProductoBtn.addEventListener('click', function() {
+        const selectedProductId = productoSeleccionado.value;
+        const cantidad = parseInt(cantidadProducto.value);
+
+        if (!selectedProductId) {
+            alert('Por favor, selecciona un producto.');
+            return;
+        }
+        if (isNaN(cantidad) || cantidad <= 0) {
+            alert('Por favor, ingresa una cantidad válida.');
+            return;
+        }
+
+        const producto = productosMap.get(selectedProductId);
+        if (!producto) {
+            alert('Producto no encontrado.');
+            return;
+        }
+
+        // Check if product already exists in the table
+        const existingRow = solicitudItemsTableBody.querySelector(`tr[data-product-id="${producto.id}"]`);
+        if (existingRow) {
+            const existingCantidadInput = existingRow.querySelector(`input[name$='\\.cantidad']`);
+            const currentCantidad = parseInt(existingCantidadInput.value);
+            const newCantidad = currentCantidad + cantidad;
+            existingCantidadInput.value = newCantidad;
+            existingRow.querySelector('.cantidad-display').textContent = newCantidad; // Update display
+        } else {
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-product-id', producto.id);
+            newRow.innerHTML = `
+                <td>
+                    ${producto.nombre}
+                    <input type="hidden" name="items[${itemIndex}].id" value=""> <!-- Add hidden ID field -->
+                    <input type="hidden" name="items[${itemIndex}].producto.id" value="${producto.id}">
+                </td>
+                <td>
+                    ${producto.descripcion || ''}
+                    <input type="hidden" name="items[${itemIndex}].descripcion" value="${producto.descripcion || ''}">
+                    <input type="hidden" name="items[${itemIndex}].precioUnitario" value="${producto.precioCosto || ''}"> <!-- Add precioUnitario field -->
+                </td>
+                <td>
+                    <span class="cantidad-display">${cantidad}</span>
+                    <input type="hidden" name="items[${itemIndex}].cantidad" value="${cantidad}">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm eliminar-producto">🗑️</button>
+                </td>
+            `;
+            solicitudItemsTableBody.appendChild(newRow);
+            itemIndex++; // Increment index for the next item
+
+            // Add event listener for the new delete button
+            newRow.querySelector('.eliminar-producto').addEventListener('click', function() {
+                newRow.remove();
+            });
+        }
+
+        // Clear selection
+        productoSeleccionado.value = '';
+        cantidadProducto.value = '1';
+    });
+});
+/*]]>*/
+</script>

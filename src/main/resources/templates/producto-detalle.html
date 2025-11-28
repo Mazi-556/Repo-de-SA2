@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Detalles del Producto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+<div class="container mt-4">
+    <h2>Detalles del Producto</h2>
+    <div class="card p-4" th:if="${producto}">
+        <div class="mb-3">
+            <strong>Código:</strong>
+            <p th:text="${producto.codigo}"></p>
+        </div>
+        <div class="mb-3">
+            <strong>Nombre:</strong>
+            <p th:text="${producto.nombre}"></p>
+        </div>
+        <div class="mb-3">
+            <strong>Descripción:</strong>
+            <p th:text="${producto.descripcion}"></p>
+        </div>
+
+        <h4 class="mt-4">Proveedores Asignados</h4>
+        <ul class="list-group mb-4">
+            <li th:if="${producto.productoProveedores.empty}" class="list-group-item">No hay proveedores asignados.</li>
+            <li th:each="pp : ${producto.productoProveedores}" class="list-group-item" th:text="${pp.proveedor.nombre}"></li>
+        </ul>
+
+        <h4 class="mt-4">Historial de Compras</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- TODO: Cargar historial de compras -->
+                <tr>
+                    <td colspan="4">No hay historial de compras.</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="mt-3">
+            <a th:href="@{/productos}" class="btn btn-secondary">Volver</a>
+        </div>
+    </div>
+    <div th:unless="${producto}" class="alert alert-warning">
+        Producto no encontrado.
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
