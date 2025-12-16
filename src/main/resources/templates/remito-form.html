@@ -10,9 +10,11 @@
     <h2>Alta de Remitos</h2>
     <form th:action="@{/remitos/confirmar}" method="post" class="card p-4">
         
+        <input type="hidden" name="ocId" th:value="${ordenCompra.id}" />
+
         <div class="mb-4">
-            <p><strong>Orden de Compra:</strong> <span>OC-1</span></p>
-            <p><strong>Proveedor:</strong> <span>MotoProveedores Sociedad Anónima</span></p>
+            <p><strong>Orden de Compra:</strong> <span th:text="${'OC-' + ordenCompra.id}">OC-1</span></p>
+            <p><strong>Proveedor:</strong> <span th:text="${ordenCompra.proveedor.nombre}">MotoProveedores Sociedad Anónima</span></p>
         </div>
 
         <div class="mb-4">
@@ -24,34 +26,58 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="selectAll"/></th>
-                    <th>Código Pedido</th>
+                    <th>Seleccionar</th>
+                    <th>Código Producto</th>
                     <th>Nombre</th>
                     <th>Marca</th>
-                    <th>Cantidad Pedida</th>
+                    <th>Cantidad Pendiente</th>
                     <th>Cantidad Recibida</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- TODO: Cargar items de la OC seleccionada -->
-                <tr>
-                    <td><input type="checkbox" name="itemIds" value="1"></td>
-                    <td>PROD-001</td>
-                    <td>Tornillo Phillips</td>
-                    <td>Marca A</td>
-                    <td>100</td>
-                    <td><input type="number" class="form-control" value="100"></td>
+                <tr th:each="item, iterStat : ${pendingItems}">
+                    <td><input type="checkbox" name="itemIds" th:value="${item.id}"></td>
+                    <td th:text="${item.producto.codigo}">PROD-001</td>
+                    <td th:text="${item.producto.nombre}">Tornillo Phillips</td>
+                    <td th:text="${item.producto.marca}">Marca A</td>
+                    <td th:text="${item.cantidadPendiente}">100</td>
+                    <td><input type="number" class="form-control" name="cantidades" value="0" min="0" th:max="${item.cantidadPendiente}"></td>
                 </tr>
             </tbody>
         </table>
 
         <div class="mt-4">
-            <button type="submit" class="btn btn-primary" disabled>CONFIRMAR REMITO</button>
+            <button type="submit" id="confirmarRemitoBtn" class="btn btn-primary" disabled>CONFIRMAR REMITO</button>
             <a th:href="@{/remitos}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- TODO: JS para habilitar el botón de confirmar al seleccionar al menos un item -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const confirmButton = document.getElementById('confirmarRemitoBtn');
+        const fechaRemitoInput = document.getElementById('fechaRemito');
+        const itemCheckboxes = document.querySelectorAll('input[name="itemIds"]');
+
+        function validateForm() {
+            const isDateSelected = fechaRemitoInput.value !== '';
+            let isAnyCheckboxChecked = false;
+            itemCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    isAnyCheckboxChecked = true;
+                }
+            });
+            confirmButton.disabled = !(isDateSelected && isAnyCheckboxChecked);
+        }
+
+        fechaRemitoInput.addEventListener('input', validateForm);
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', validateForm);
+        });
+
+        // Initial validation check
+        validateForm();
+    });
+</script>
 </body>
 </html>

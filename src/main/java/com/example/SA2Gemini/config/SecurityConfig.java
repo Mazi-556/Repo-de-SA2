@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/proveedores/**", "/productos/**", "/solicitudes-compra/**", "/presupuestos/**", "/ordenes-compra/**", "/remitos/**", "/facturas/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/login", "/asientos/nuevo", "/presupuestos/confirmar").permitAll() // Temporarily permit all for testing
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/login", "/asientos/nuevo", "/presupuestos/confirmar", "/favicon.ico").permitAll() // Temporarily permit all for testing
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

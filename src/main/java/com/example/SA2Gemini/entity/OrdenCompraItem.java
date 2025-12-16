@@ -21,10 +21,22 @@ public class OrdenCompraItem {
     private BigDecimal precioUnitario;
     private BigDecimal total; // Cantidad * Precio Unitario
 
+    @Transient
+    private int cantidadPendiente;
+
     // Constructor por defecto
     public OrdenCompraItem() {}
 
     // Getters y Setters
+    
+    public int getCantidadPendiente() {
+        return cantidadPendiente;
+    }
+
+    public void setCantidadPendiente(int cantidadPendiente) {
+        this.cantidadPendiente = cantidadPendiente;
+    }
+
     public Long getId() {
         return id;
     }

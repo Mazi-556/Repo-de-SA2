@@ -18,7 +18,7 @@ public class Remito {
     private OrdenCompra ordenCompra;
 
     @OneToMany(mappedBy = "remito", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RemitoItem> items;
+    private List<RemitoItem> items = new java.util.ArrayList<>();
 
     // Getters and Setters
     public Long getId() {

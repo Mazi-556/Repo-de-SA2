@@ -31,17 +31,9 @@ public class FacturaService {
 
     @Transactional
     public Factura crearFacturaYAsiento(Factura factura, BigDecimal subtotal, BigDecimal iva) throws Exception {
-        // 1. Actualizar Stock
-        Remito remito = remitoRepository.findByOrdenCompra(factura.getOrdenCompra())
-                .orElseThrow(() -> new IllegalStateException("No se encontró remito para la orden de compra " + factura.getOrdenCompra().getId()));
+        // Stock is updated on Remito creation, so we no longer do it here.
 
-        for (RemitoItem item : remito.getItems()) {
-            Producto producto = item.getProducto();
-            producto.setStockActual(producto.getStockActual() + item.getCantidad());
-            productoRepository.save(producto);
-        }
-
-        // 2. Preparar el Asiento Contable
+        // 1. Preparar el Asiento Contable
         Asiento asiento = new Asiento();
         asiento.setFecha(LocalDate.now());
         asiento.setDescripcion("Asiento por Factura de Compra N°: " + factura.getNumeroFactura());
@@ -79,21 +71,23 @@ public class FacturaService {
 
         asiento.setMovimientos(movimientos);
 
-        // 3. Llamar al AsientoService existente
-        // El método saveAsiento es void y transaccional, maneja las validaciones.
+        // 2. Llamar al AsientoService existente
         asientoService.saveAsiento(asiento);
         
-        // El ID del asiento se genera después de guardarlo. Lo asignamos a la factura.
         factura.setAsiento(asiento);
 
-        // 4. Finalizar Estados
+        // 3. Finalizar Estados
         OrdenCompra oc = factura.getOrdenCompra();
-        oc.setEstado(EstadoOrdenCompra.RECIBIDA_COMPLETA); // Cambiado de CERRADA a RECIBIDA_COMPLETA
+        // The OC status is now updated in RemitoService. We might only finalize it here.
+        // For now, we assume the invoice means the process is complete.
+        oc.setEstado(EstadoOrdenCompra.RECIBIDA_COMPLETA);
         ordenCompraRepository.save(oc);
 
         SolicitudCompra sc = oc.getSolicitudCompra();
-        sc.setEstado(EstadoSolicitud.FINALIZADA);
-        solicitudCompraRepository.save(sc);
+        if (sc != null) {
+            sc.setEstado(EstadoSolicitud.FINALIZADA);
+            solicitudCompraRepository.save(sc);
+        }
         
         return facturaRepository.save(factura);
     }

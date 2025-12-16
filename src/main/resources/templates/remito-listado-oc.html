@@ -23,15 +23,17 @@
             </tr>
         </thead>
         <tbody>
-            <!-- TODO: Cargar OCs con estado COMPROMETIDA -->
-            <tr>
-                <td>OC-1</td>
-                <td>MotoProveedores Sociedad Anónima</td>
-                <td>17/11/2025</td>
-                <td>60.50</td>
+            <tr th:each="orden : ${ordenes}">
+                <td th:text="${'OC-' + orden.id}">OC-1</td>
+                <td th:text="${orden.proveedor.nombre}">MotoProveedores Sociedad Anónima</td>
+                <td th:text="${#temporals.format(orden.fecha, 'dd/MM/yyyy')}">17/11/2025</td>
+                <td th:text="${'$' + #numbers.formatDecimal(orden.total, 1, 'POINT', 2, 'COMMA')}">60.50</td>
                 <td>
-                    <a href="/remitos/nuevo/1" class="btn btn-primary">SELECCIONAR</a>
+                    <a th:href="@{/remitos/nuevo/{id}(id=${orden.id})}" class="btn btn-primary">SELECCIONAR</a>
                 </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(ordenes)}">
+                <td colspan="5" class="text-center">No hay órdenes de compra elegibles para generar remito.</td>
             </tr>
         </tbody>
     </table>

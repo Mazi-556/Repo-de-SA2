@@ -8,12 +8,18 @@ import com.example.SA2Gemini.repository.RolRepository;
 import com.example.SA2Gemini.repository.RubroRepository;
 import com.example.SA2Gemini.repository.TipoProveedorRepository;
 import com.example.SA2Gemini.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class DataInitializer implements CommandLineRunner {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
     private final RolRepository rolRepository;
     private final UsuarioRepository usuarioRepository;
@@ -32,40 +38,58 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Crear roles si no existen
-        Rol adminRol = rolRepository.findByName("ADMIN").orElseGet(() -> rolRepository.save(new Rol("ADMIN")));
-        Rol userRol = rolRepository.findByName("USER").orElseGet(() -> rolRepository.save(new Rol("USER")));
+        logger.info("DataInitializer is running...");
 
-        // Crear usuario administrador si no existe
-        if (usuarioRepository.findByUsername("admin").isEmpty()) {
-            Usuario admin = new Usuario();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin"));
-            admin.setRol(adminRol);
-            usuarioRepository.save(admin);
+        // Crear roles si no existen
+        Rol adminRol;
+        Optional<Rol> adminRolOpt = rolRepository.findByName("ADMIN");
+        if (adminRolOpt.isEmpty()) {
+            logger.info("Creating ADMIN role...");
+            adminRol = rolRepository.save(new Rol("ADMIN"));
+        } else {
+            logger.info("ADMIN role already exists.");
+            adminRol = adminRolOpt.get();
+        }
+
+        Rol userRol;
+        Optional<Rol> userRolOpt = rolRepository.findByName("USER");
+        if (userRolOpt.isEmpty()) {
+            logger.info("Creating USER role...");
+            userRol = rolRepository.save(new Rol("USER"));
+        } else {
+            logger.info("USER role already exists.");
+            userRol = userRolOpt.get();
         }
 
         // Crear usuario normal si no existe
-        if (usuarioRepository.findByUsername("user").isEmpty()) {
+        if (usuarioRepository.count() == 0) {
+            logger.info("No users found in the database. Creating default user...");
             Usuario user = new Usuario();
             user.setUsername("user");
             user.setPassword(passwordEncoder.encode("user"));
             user.setRol(userRol);
             usuarioRepository.save(user);
+            logger.info("Default user 'user' created.");
+        } else {
+            logger.info("Users already exist in the database. Default user not created.");
         }
 
         // Crear tipos de proveedor si no existen
         if (tipoProveedorRepository.count() == 0) {
+            logger.info("Creating default provider types...");
             tipoProveedorRepository.save(new TipoProveedor(null, "Fabricante"));
             tipoProveedorRepository.save(new TipoProveedor(null, "Distribuidor"));
             tipoProveedorRepository.save(new TipoProveedor(null, "Minorista"));
+            logger.info("Default provider types created.");
         }
 
         // Crear rubros si no existen
         if (rubroRepository.count() == 0) {
+            logger.info("Creating default rubros...");
             rubroRepository.save(new Rubro(null, "Electrónica"));
             rubroRepository.save(new Rubro(null, "Alimentos"));
             rubroRepository.save(new Rubro(null, "Servicios"));
+            logger.info("Default rubros created.");
         }
     }
 }
