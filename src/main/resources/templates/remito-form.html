@@ -41,7 +41,7 @@
                     <td th:text="${item.producto.nombre}">Tornillo Phillips</td>
                     <td th:text="${item.producto.marca}">Marca A</td>
                     <td th:text="${item.cantidadPendiente}">100</td>
-                    <td><input type="number" class="form-control" name="cantidades" value="0" min="0" th:max="${item.cantidadPendiente}"></td>
+                    <td><input type="number" class="form-control" th:name="'cantidades[' + ${item.id} + ']'" value="0" min="0" th:max="${item.cantidadPendiente}"></td>
                 </tr>
             </tbody>
         </table>

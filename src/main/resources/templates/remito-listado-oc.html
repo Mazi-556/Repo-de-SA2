@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Órdenes de Compra para Remito</title>
+    <title>Remitos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
 <div class="container mt-4">
-    <h2>Órdenes de Compra</h2>
-    <p>Seleccione una Orden de Compra en estado 'Comprometida' para generar un Remito.</p>
-    
-    <!-- TODO: Filtros -->
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 th:text="${archivados ? 'Remitos Recibidos' : 'Generar Remito'}"></h2>
+            <p th:text="${archivados ? 'Listado de órdenes de compra con remitos en estado ''Recibida Completa''.' : 'Seleccione una Orden de Compra para generar un Remito.'}"></p>
+        </div>
+        <div>
+            <a th:href="${archivados ? '/remitos' : '/remitos?archivados=true'}" class="btn btn-secondary" th:text="${archivados ? 'Ver Activos' : 'Ver Recibidos'}"></a>
+        </div>
+    </div>
 
     <table class="table table-striped">
         <thead>
@@ -19,6 +24,7 @@
                 <th>Proveedor</th>
                 <th>Fecha</th>
                 <th>Total</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -28,12 +34,15 @@
                 <td th:text="${orden.proveedor.nombre}">MotoProveedores Sociedad Anónima</td>
                 <td th:text="${#temporals.format(orden.fecha, 'dd/MM/yyyy')}">17/11/2025</td>
                 <td th:text="${'$' + #numbers.formatDecimal(orden.total, 1, 'POINT', 2, 'COMMA')}">60.50</td>
+                <td><span class="badge" th:classappend="${orden.estado.name() == 'EMITIDA' ? 'bg-warning text-dark' : (orden.estado.name() == 'RECIBIDA_PARCIAL' ? 'bg-info text-dark' : (orden.estado.name() == 'RECIBIDA_COMPLETA' ? 'bg-success' : 'bg-secondary'))}" th:text="${orden.estado}"></span></td>
                 <td>
-                    <a th:href="@{/remitos/nuevo/{id}(id=${orden.id})}" class="btn btn-primary">SELECCIONAR</a>
+                    <a th:if="${!archivados}" th:href="@{/remitos/nuevo/{id}(id=${orden.id})}" class="btn btn-primary">SELECCIONAR</a>
+                    <a th:if="${archivados}" th:href="@{/ordenes-compra/listado/{id}(id=${orden.id})}" class="btn btn-info btn-sm">Ver Detalles OC</a>
+                    <a th:if="${archivados}" th:href="@{/remitos/orden/{id}(id=${orden.id})}" class="btn btn-secondary btn-sm">Ver Remitos</a>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(ordenes)}">
-                <td colspan="5" class="text-center">No hay órdenes de compra elegibles para generar remito.</td>
+                <td colspan="6" class="text-center" th:text="${archivados ? 'No hay remitos recibidos.' : 'No hay órdenes de compra elegibles para generar remito.'}"></td>
             </tr>
         </tbody>
     </table>

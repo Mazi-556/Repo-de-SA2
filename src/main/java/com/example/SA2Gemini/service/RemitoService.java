@@ -33,6 +33,10 @@ public class RemitoService {
     public List<Remito> getRemitosByOrdenCompraId(Long ordenCompraId) {
         return remitoRepository.findByOrdenCompraId(ordenCompraId);
     }
+
+    public java.util.Optional<Remito> getRemitoById(Long id) {
+        return remitoRepository.findById(id);
+    }
 	
 	@Transactional
     public List<OrdenCompraItem> getPendingItems(OrdenCompra ordenCompra) {
@@ -53,62 +57,71 @@ public class RemitoService {
         }).filter(ocItem -> ocItem.getCantidadPendiente() > 0).collect(Collectors.toList());
     }
 
-    @Transactional
-    public Remito createRemito(Long ocId, LocalDate fechaRemito, List<Long> itemIds, List<Integer> cantidades) {
-        OrdenCompra ordenCompra = ordenCompraRepository.findById(ocId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid orden de compra Id:" + ocId));
-
-        Remito remito = new Remito();
-        remito.setOrdenCompra(ordenCompra);
-        remito.setFecha(fechaRemito);
-
-        Remito savedRemito = remitoRepository.save(remito);
-        
-        Map<Long, OrdenCompraItem> ocItemsMap = ordenCompra.getItems().stream()
-                .collect(Collectors.toMap(OrdenCompraItem::getId, Function.identity()));
-
-        for (int i = 0; i < itemIds.size(); i++) {
-            Long itemId = itemIds.get(i);
-            Integer cantidadRecibida = cantidades.get(i);
-
-            if (cantidadRecibida != null && cantidadRecibida > 0) {
-                OrdenCompraItem ocItem = ocItemsMap.get(itemId);
-                if (ocItem == null) {
-                    throw new IllegalArgumentException("Invalid item Id:" + itemId);
+        @Transactional
+        public Remito createRemito(Long ocId, LocalDate fechaRemito, Map<Long, Integer> itemQuantities) {
+            OrdenCompra ordenCompra = ordenCompraRepository.findById(ocId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid orden de compra Id:" + ocId));
+    
+            Remito remito = new Remito();
+            remito.setOrdenCompra(ordenCompra);
+            remito.setFecha(fechaRemito);
+    
+            // Fetch all remitos for the given OC once
+            List<Remito> allRemitosForOC = remitoRepository.findAllByOrdenCompra(ordenCompra);
+    
+            Map<Long, OrdenCompraItem> ocItemsMap = ordenCompra.getItems().stream()
+                    .collect(Collectors.toMap(OrdenCompraItem::getId, Function.identity()));
+    
+            for (Map.Entry<Long, Integer> entry : itemQuantities.entrySet()) {
+                Long itemId = entry.getKey();
+                Integer cantidadRecibida = entry.getValue();
+    
+                if (cantidadRecibida != null && cantidadRecibida > 0) {
+                    OrdenCompraItem ocItem = ocItemsMap.get(itemId);
+                    if (ocItem == null) {
+                        throw new IllegalArgumentException("Invalid item Id:" + itemId);
+                    }
+    
+                    RemitoItem remitoItem = new RemitoItem();
+                    remitoItem.setRemito(remito);
+                    remitoItem.setProducto(ocItem.getProducto());
+                    remitoItem.setCantidad(cantidadRecibida);
+                    remito.getItems().add(remitoItem); // Maintain bidirectional relationship
+    
+                    Producto producto = ocItem.getProducto();
+                    producto.setStockActual(producto.getStockActual() + cantidadRecibida);
+                    productoRepository.save(producto);
                 }
-
-                // Crear el item del remito
-                RemitoItem remitoItem = new RemitoItem();
-                remitoItem.setRemito(savedRemito);
-                remitoItem.setProducto(ocItem.getProducto());
-                remitoItem.setCantidad(cantidadRecibida);
-                
-                // Actualizar stock del producto
-                Producto producto = ocItem.getProducto();
-                producto.setStockActual(producto.getStockActual() + cantidadRecibida);
-                productoRepository.save(producto);
             }
-        }
-        
-        // Lógica para actualizar estado de la OC
-        long itemsCompletos = ordenCompra.getItems().stream().filter(ocItem -> {
-            int cantidadPedida = ocItem.getCantidad();
-            int cantidadYaRecibida = remitoRepository.findAllByOrdenCompra(ordenCompra).stream()
-                .flatMap(r -> r.getItems().stream())
-                .filter(ri -> ri.getProducto().equals(ocItem.getProducto()))
-                .mapToInt(RemitoItem::getCantidad)
-                .sum();
-            return cantidadYaRecibida >= cantidadPedida;
-        }).count();
-
-        if (itemsCompletos == ordenCompra.getItems().size()) {
-            ordenCompra.setEstado(EstadoOrdenCompra.RECIBIDA_COMPLETA);
-        } else if (itemsCompletos > 0) {
-            ordenCompra.setEstado(EstadoOrdenCompra.RECIBIDA_PARCIAL);
-        }
-
-        ordenCompraRepository.save(ordenCompra);
-
-        return savedRemito;
-    }
-}
+    
+            Remito savedRemito = remitoRepository.save(remito);
+            allRemitosForOC.add(savedRemito); // Add current remito to the list for calculation
+    
+            // Update OC Status
+            boolean allItemsCompleted = ordenCompra.getItems().stream().allMatch(ocItem -> {
+                int cantidadPedida = ocItem.getCantidad();
+                int cantidadYaRecibida = allRemitosForOC.stream()
+                        .flatMap(r -> r.getItems().stream())
+                        .filter(ri -> ri.getProducto().equals(ocItem.getProducto()))
+                        .mapToInt(RemitoItem::getCantidad)
+                        .sum();
+                return cantidadYaRecibida >= cantidadPedida;
+            });
+    
+                    if (allItemsCompleted) {
+                        ordenCompra.setEstado(EstadoOrdenCompra.RECIBIDA_COMPLETA);
+                    } else {                long itemsReceivedCount = ordenCompra.getItems().stream().filter(ocItem ->
+                    allRemitosForOC.stream()
+                        .flatMap(r -> r.getItems().stream())
+                        .anyMatch(ri -> ri.getProducto().equals(ocItem.getProducto()))
+                ).count();
+    
+                if(itemsReceivedCount > 0) {
+                    ordenCompra.setEstado(EstadoOrdenCompra.RECIBIDA_PARCIAL);
+                }
+            }
+    
+            ordenCompraRepository.save(ordenCompra);
+    
+            return savedRemito;
+        }}
