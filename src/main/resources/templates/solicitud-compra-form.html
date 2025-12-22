@@ -20,7 +20,11 @@
                 <label for="productoSeleccionado" class="form-label">Producto</label>
                 <select id="productoSeleccionado" class="form-select">
                     <option value="">Seleccionar producto...</option>
-                    <option th:each="prod : ${productos}" th:value="${prod.id}" th:text="${prod.nombre}"></option>
+                    <option th:each="prod : ${productos}" 
+                            th:value="${prod.id}" 
+                            th:text="${prod.nombre}"
+                            th:data-descripcion="${prod.descripcion}"
+                            th:data-precio="${prod.precioCosto}"></option>
                 </select>
             </div>
             <div class="col-md-4">
@@ -58,75 +62,51 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
 document.addEventListener('DOMContentLoaded', function() {
-    const productosData = /*[[${productos}]]*/ []; // Get products data from Thymeleaf model
-    const productosMap = new Map(productosData.map(p => [p.id.toString(), p]));
-
     const productoSeleccionado = document.getElementById('productoSeleccionado');
     const cantidadProducto = document.getElementById('cantidadProducto');
     const agregarProductoBtn = document.getElementById('agregarProductoBtn');
     const solicitudItemsTableBody = document.querySelector('#solicitudItemsTable tbody');
 
-    let itemIndex = 0; // To keep track of unique names for hidden inputs
+    let itemIndex = 0;
 
     agregarProductoBtn.addEventListener('click', function() {
-        const selectedProductId = productoSeleccionado.value;
-        const cantidad = parseInt(cantidadProducto.value);
+        const option = productoSeleccionado.options[productoSeleccionado.selectedIndex];
+        const selectedProductId = option.value;
+        const productName = option.text;
+        const productDesc = option.getAttribute('data-descripcion') || '';
+        const productPrecio = option.getAttribute('data-precio') || '0';
 
         if (!selectedProductId) {
             alert('Por favor, selecciona un producto.');
             return;
         }
+
+        const cantidad = parseInt(cantidadProducto.value);
         if (isNaN(cantidad) || cantidad <= 0) {
             alert('Por favor, ingresa una cantidad válida.');
             return;
         }
 
-        const producto = productosMap.get(selectedProductId);
-        if (!producto) {
-            alert('Producto no encontrado.');
-            return;
-        }
-
-        // Check if product already exists in the table
-        const existingRow = solicitudItemsTableBody.querySelector(`tr[data-product-id="${producto.id}"]`);
+        const existingRow = solicitudItemsTableBody.querySelector(`tr[data-product-id="${selectedProductId}"]`);
+        
         if (existingRow) {
-            const existingCantidadInput = existingRow.querySelector(`input[name$='\\.cantidad']`);
-            const currentCantidad = parseInt(existingCantidadInput.value);
-            const newCantidad = currentCantidad + cantidad;
-            existingCantidadInput.value = newCantidad;
-            existingRow.querySelector('.cantidad-display').textContent = newCantidad; // Update display
+            const inputCant = existingRow.querySelector(`input[name$='\\.cantidad']`);
+            const nuevaCant = parseInt(inputCant.value) + cantidad;
+            inputCant.value = nuevaCant;
+            existingRow.querySelector('.cantidad-display').textContent = nuevaCant;
         } else {
             const newRow = document.createElement('tr');
-            newRow.setAttribute('data-product-id', producto.id);
+            newRow.setAttribute('data-product-id', selectedProductId);
             newRow.innerHTML = `
-                <td>
-                    ${producto.nombre}
-                    <input type="hidden" name="items[${itemIndex}].id" value=""> <!-- Add hidden ID field -->
-                    <input type="hidden" name="items[${itemIndex}].producto.id" value="${producto.id}">
-                </td>
-                <td>
-                    ${producto.descripcion || ''}
-                    <input type="hidden" name="items[${itemIndex}].descripcion" value="${producto.descripcion || ''}">
-                    <input type="hidden" name="items[${itemIndex}].precioUnitario" value="${producto.precioCosto || ''}"> <!-- Add precioUnitario field -->
-                </td>
-                <td>
-                    <span class="cantidad-display">${cantidad}</span>
-                    <input type="hidden" name="items[${itemIndex}].cantidad" value="${cantidad}">
-                </td>
-                <td>
-                    <button type="button" class="btn btn-danger btn-sm eliminar-producto">🗑️</button>
-                </td>
+                <td>${productName}<input type="hidden" name="items[${itemIndex}].producto.id" value="${selectedProductId}"></td>
+                <td>${productDesc}<input type="hidden" name="items[${itemIndex}].descripcion" value="${productDesc}"><input type="hidden" name="items[${itemIndex}].precioUnitario" value="${productPrecio}"></td>
+                <td><span class="cantidad-display">${cantidad}</span><input type="hidden" name="items[${itemIndex}].cantidad" value="${cantidad}"></td>
+                <td><button type="button" class="btn btn-danger btn-sm eliminar-producto">🗑️</button></td>
             `;
             solicitudItemsTableBody.appendChild(newRow);
-            itemIndex++; // Increment index for the next item
-
-            // Add event listener for the new delete button
-            newRow.querySelector('.eliminar-producto').addEventListener('click', function() {
-                newRow.remove();
-            });
+            itemIndex++;
+            newRow.querySelector('.eliminar-producto').addEventListener('click', () => newRow.remove());
         }
-
-        // Clear selection
         productoSeleccionado.value = '';
         cantidadProducto.value = '1';
     });
