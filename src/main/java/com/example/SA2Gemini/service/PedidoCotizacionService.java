@@ -6,7 +6,6 @@ import com.example.SA2Gemini.entity.Proveedor; // Importar Proveedor
 import com.example.SA2Gemini.entity.SolicitudCompraItem; // Importar SolicitudCompraItem
 import com.example.SA2Gemini.entity.EstadoPedidoCotizacion; // Importar EstadoPedidoCotizacion
 import com.example.SA2Gemini.repository.PedidoCotizacionRepository;
-import com.example.SA2Gemini.repository.PedidoCotizacionItemRepository;
 import com.example.SA2Gemini.repository.ProveedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,8 +25,6 @@ public class PedidoCotizacionService {
 
     @Autowired
     private PedidoCotizacionRepository pedidoCotizacionRepository;
-    @Autowired
-    private PedidoCotizacionItemRepository pedidoCotizacionItemRepository;
     @Autowired
     private ProveedorRepository proveedorRepository;
     @Autowired

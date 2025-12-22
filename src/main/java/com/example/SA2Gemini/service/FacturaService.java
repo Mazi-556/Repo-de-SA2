@@ -17,10 +17,6 @@ public class FacturaService {
     @Autowired
     private FacturaRepository facturaRepository;
     @Autowired
-    private RemitoRepository remitoRepository;
-    @Autowired
-    private ProductoRepository productoRepository;
-    @Autowired
     private OrdenCompraRepository ordenCompraRepository;
     @Autowired
     private SolicitudCompraRepository solicitudCompraRepository;

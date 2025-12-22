@@ -2,13 +2,10 @@ package com.example.SA2Gemini.service;
 
 import com.example.SA2Gemini.entity.OrdenCompra;
 import com.example.SA2Gemini.entity.OrdenCompraItem;
-import com.example.SA2Gemini.entity.Producto;
 import com.example.SA2Gemini.entity.Proveedor;
 import com.example.SA2Gemini.entity.SolicitudCompra;
 import com.example.SA2Gemini.entity.SolicitudCompraItem;
 import com.example.SA2Gemini.repository.OrdenCompraRepository;
-import com.example.SA2Gemini.repository.OrdenCompraItemRepository;
-import com.example.SA2Gemini.repository.ProductoRepository;
 import com.example.SA2Gemini.repository.ProveedorRepository;
 import com.example.SA2Gemini.repository.SolicitudCompraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +35,7 @@ public class OrdenCompraService {
     @Autowired
     private OrdenCompraRepository ordenCompraRepository;
     @Autowired
-    private OrdenCompraItemRepository ordenCompraItemRepository;
-    @Autowired
     private SolicitudCompraRepository solicitudCompraRepository;
-    @Autowired
-    private ProductoRepository productoRepository;
     @Autowired
     private ProveedorRepository proveedorRepository;
     @Autowired

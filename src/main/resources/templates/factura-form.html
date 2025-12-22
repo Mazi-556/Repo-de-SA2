@@ -7,102 +7,135 @@
 <body>
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
 <div class="container mt-4">
-    <h2>Alta de Factura</h2>
-    <form th:action="@{/facturas/crear-asiento}" method="post" class="card p-4">
+    <h2 class="mb-4">Alta de Factura</h2>
+    
+    <form th:action="@{/facturas/crear-asiento}" method="post" class="card p-4 shadow-sm">
         
-        <div class="mb-3">
-            <label for="numeroFactura" class="form-label">Número de Factura</label>
-            <input type="text" id="numeroFactura" name="numeroFactura" class="form-control" required>
+        <input type="hidden" name="ocId" th:value="${ordenCompra.id}" />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="numeroFactura" class="form-label font-weight-bold">Número de Factura</label>
+                <input type="text" id="numeroFactura" name="numeroFactura" class="form-control" placeholder="Ej: A-0001-00001234" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Subtotal ($)</label>
+                <input type="number" step="0.01" name="subtotal" id="inputSubtotal" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">IVA (21%)</label>
+                <input type="number" step="0.01" name="iva" id="inputIva" class="form-control" required>
+            </div>
         </div>
 
-        <h4>Productos de la Factura</h4>
-        <table class="table">
-            <thead>
+        <h4>Productos de la Orden de Compra</h4>
+        <table class="table table-hover border">
+            <thead class="table-light">
                 <tr>
-                    <th><input type="checkbox" id="selectAllItems"/></th>
+                    <th><input type="checkbox" id="selectAllItems" checked/></th>
                     <th>Código</th>
                     <th>Nombre</th>
                     <th>Cantidad</th>
-                    <th>Precio Unitario</th>
+                    <th>Precio Unit.</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- TODO: Cargar items de la OC/Remito -->
-                <tr>
-                    <td><input type="checkbox" name="itemIds" value="1"></td>
-                    <td>PROD-001</td>
-                    <td>Tornillo Phillips</td>
-                    <td>100</td>
-                    <td><input type="number" step="0.01" class="form-control" value="0.50"></td>
+                <tr th:each="item : ${ordenCompra.items}">
+                    <td><input type="checkbox" name="itemIds" th:value="${item.id}" checked></td>
+                    <td th:text="${item.producto.codigo}"></td>
+                    <td th:text="${item.producto.nombre}"></td>
+                    <td th:text="${item.cantidad}"></td>
+                    <td th:text="${'$ ' + item.precioUnitario}"></td>
                 </tr>
             </tbody>
         </table>
-        <button type="button" id="confirmarFacturaBtn" class="btn btn-info mb-4" disabled>CONFIRMAR FACTURA</button>
+        
+        <button type="button" id="confirmarFacturaBtn" class="btn btn-info mb-4 w-100">CONFIRMAR DATOS DE FACTURA</button>
 
-        <fieldset id="asientoContableSection" disabled>
-            <h4>Registrar Asiento Contable</h4>
+        <fieldset id="asientoContableSection" disabled class="border p-3 rounded bg-light">
+            <legend class="w-auto px-2">Registrar Asiento Contable</legend>
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="form-label">Fecha</label>
-                    <input type="text" class="form-control" th:value="${#temporals.format(#dates.createNow(), 'dd/MM/yyyy')}" readonly>
+                    <input type="text" class="form-control" th:value="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}" readonly>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Hora</label>
-                    <input type="text" class="form-control" th:value="${#temporals.format(#dates.createNow(), 'HH:mm')}" readonly>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Descripción</label>
-                    <input type="text" class="form-control" value="Factura de Compra N° X" readonly>
+                <div class="col-md-8">
+                    <label class="form-label">Descripción del Asiento</label>
+                    <input type="text" class="form-control" value="Registro de Factura de Compra" readonly>
                 </div>
             </div>
 
             <div id="movimientos-container">
-                <!-- Fila de movimiento (se puede repetir con JS) -->
-                <div class="row align-items-end mb-2">
+                <div class="row align-items-end mb-2 movimiento-row">
                     <div class="col-md-5">
-                        <label class="form-label">Cuenta</label>
+                        <label class="form-label">Cuenta Contable</label>
                         <select class="form-select">
-                            <!-- TODO: Cargar Cuentas Contables -->
-                            <option>1.3.1 - Mercaderías</option>
-                            <option>1.5.2 - IVA Crédito Fiscal</option>
-                            <option>2.1.1 - Proveedores</option>
+                            <option th:each="cuenta : ${cuentas}" 
+                                    th:value="${cuenta.id}" 
+                                    th:text="${cuenta.codigo + ' - ' + cuenta.nombre}">
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Debe</label>
-                        <input type="number" step="0.01" class="form-control">
+                        <input type="number" step="0.01" class="form-control" value="0">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Haber</label>
-                        <input type="number" step="0.01" class="form-control">
+                        <input type="number" step="0.01" class="form-control" value="0">
                     </div>
                     <div class="col-md-1">
-                        <button type="button" class="btn btn-danger">🗑️</button>
+                        <button type="button" class="btn btn-outline-danger btn-remove">🗑️</button>
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn btn-success mt-2">+ AGREGAR FILA</button>
+            <button type="button" id="btnAgregarFila" class="btn btn-success btn-sm mt-2">+ AGREGAR FILA</button>
         </fieldset>
 
-        <div class="mt-4">
-            <button type="submit" id="crearAsientoBtn" class="btn btn-primary" disabled>CREAR ASIENTO</button>
+        <div class="mt-4 d-flex justify-content-between">
             <a th:href="@{/facturas}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" id="crearAsientoBtn" class="btn btn-primary btn-lg" disabled>FINALIZAR Y CREAR ASIENTO</button>
         </div>
     </form>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Lógica para habilitar/deshabilitar secciones
-    document.getElementById('selectAllItems').addEventListener('change', function() {
-        const isChecked = this.checked;
-        document.querySelectorAll('input[name="itemIds"]').forEach(chk => chk.checked = isChecked);
-        document.getElementById('confirmarFacturaBtn').disabled = !isChecked;
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('movimientos-container');
+        const btnAgregar = document.getElementById('btnAgregarFila');
+        const inputSubtotal = document.getElementById('inputSubtotal');
+        const inputIva = document.getElementById('inputIva');
 
-    document.getElementById('confirmarFacturaBtn').addEventListener('click', function() {
-        document.getElementById('asientoContableSection').disabled = false;
-        document.getElementById('crearAsientoBtn').disabled = false;
-        this.disabled = true;
+        // Cálculo automático de IVA (para ahorrar tiempo en la demo)
+        inputSubtotal.addEventListener('input', function() {
+            inputIva.value = (this.value * 0.21).toFixed(2);
+        });
+
+        // Habilitar sección de asiento
+        document.getElementById('confirmarFacturaBtn').addEventListener('click', function() {
+            document.getElementById('asientoContableSection').disabled = false;
+            document.getElementById('crearAsientoBtn').disabled = false;
+            this.classList.replace('btn-info', 'btn-outline-secondary');
+            this.innerText = "✓ DATOS CONFIRMADOS";
+        });
+
+        // Lógica de agregar fila (Clonación)
+        btnAgregar.addEventListener('click', function() {
+            const rows = document.querySelectorAll('.movimiento-row');
+            const newRow = rows[0].cloneNode(true);
+            newRow.querySelectorAll('input').forEach(i => i.value = 0);
+            container.appendChild(newRow);
+            
+            newRow.querySelector('.btn-remove').addEventListener('click', function() {
+                if (document.querySelectorAll('.movimiento-row').length > 1) newRow.remove();
+            });
+        });
+
+        // Borrar fila inicial
+        document.querySelector('.btn-remove').addEventListener('click', function() {
+            if (document.querySelectorAll('.movimiento-row').length > 1) this.closest('.movimiento-row').remove();
+        });
     });
 </script>
 </body>

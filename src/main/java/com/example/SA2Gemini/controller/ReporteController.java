@@ -1,7 +1,6 @@
 package com.example.SA2Gemini.controller;
 
 import com.example.SA2Gemini.dto.LibroMayorCuentaReport;
-import com.example.SA2Gemini.dto.LibroMayorReportData;
 import com.example.SA2Gemini.entity.Asiento;
 import com.example.SA2Gemini.entity.Movimiento;
 import com.example.SA2Gemini.service.AsientoService;

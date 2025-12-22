@@ -1,7 +1,6 @@
 package com.example.SA2Gemini.service;
 
 import com.example.SA2Gemini.entity.*;
-import com.example.SA2Gemini.repository.OrdenCompraItemRepository;
 import com.example.SA2Gemini.repository.OrdenCompraRepository;
 import com.example.SA2Gemini.repository.ProductoRepository;
 import com.example.SA2Gemini.repository.RemitoRepository;
@@ -23,9 +22,6 @@ public class RemitoService {
 
     @Autowired
     private OrdenCompraRepository ordenCompraRepository;
-    
-    @Autowired
-    private OrdenCompraItemRepository ordenCompraItemRepository;
 
     @Autowired
     private ProductoRepository productoRepository;
