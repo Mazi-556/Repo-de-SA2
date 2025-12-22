@@ -27,7 +27,8 @@ public class FacturaController {
     
     @Autowired
     private CuentaService cuentaService; // Para cargar el plan de cuentas en el combo
-
+    
+    @Autowired
     private FacturaService facturaService;
 
     @GetMapping
