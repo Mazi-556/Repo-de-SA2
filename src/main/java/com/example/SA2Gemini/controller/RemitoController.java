@@ -58,24 +58,37 @@ public class RemitoController {
 
     @PostMapping("/confirmar")
     public String confirmarRemito(@RequestParam("ocId") Long ocId,
-                                  @RequestParam("fechaRemito") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaRemito,
-                                  @RequestParam MultiValueMap<String, String> allParams) {
+                                @RequestParam("fechaRemito") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaRemito,
+                                @RequestParam MultiValueMap<String, String> allParams) {
 
         Map<Long, Integer> itemQuantities = new HashMap<>();
+        
+        // Recorremos los parámetros para capturar las cantidades ingresadas
         for (String key : allParams.keySet()) {
             if (key.startsWith("cantidades[")) {
                 String idStr = key.substring(key.indexOf("[") + 1, key.indexOf("]"));
                 Long itemId = Long.parseLong(idStr);
-                if (allParams.containsKey("itemIds") && allParams.get("itemIds").contains(idStr)) {
-                    Integer quantity = Integer.parseInt(allParams.getFirst(key));
-                    if (quantity > 0) {
-                        itemQuantities.put(itemId, quantity);
+                
+                try {
+                    // Obtenemos la cantidad y, si es mayor a 0, la agregamos al mapa
+                    String value = allParams.getFirst(key);
+                    if (value != null && !value.isEmpty()) {
+                        int quantity = Integer.parseInt(value);
+                        if (quantity > 0) {
+                            itemQuantities.put(itemId, quantity);
+                        }
                     }
+                } catch (NumberFormatException e) {
+                    // Si no es un número válido, simplemente lo ignoramos
                 }
             }
         }
 
+        // ESTO ES LO QUE DEBES MANTENER:
+        // Enviamos los datos al servicio para crear el remito y actualizar stock
         remitoService.createRemito(ocId, fechaRemito, itemQuantities);
+        
+        // Volvemos a la lista de remitos
         return "redirect:/remitos";
     }
 

@@ -14,9 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired; // Importar Autow
 import com.example.SA2Gemini.service.SolicitudCompraService; // Importar SolicitudCompraService
 import com.example.SA2Gemini.entity.SolicitudCompraItem; // Importar SolicitudCompraItem
 import com.example.SA2Gemini.entity.Proveedor; // Importar Proveedor
+import com.example.SA2Gemini.entity.SolicitudCompra;
+import com.example.SA2Gemini.entity.EstadoSolicitud;
 import com.example.SA2Gemini.entity.ProductoProveedor; // Importar ProductoProveedor
 import com.example.SA2Gemini.service.OrdenCompraService; // Importar OrdenCompraService
 import com.example.SA2Gemini.service.PedidoCotizacionService; // Importar PedidoCotizacionService
+import com.example.SA2Gemini.entity.SolicitudCompra; // Necesario para la clase Solicitud
+import com.example.SA2Gemini.entity.EstadoSolicitud; // Necesario para el Enum de estados
+import com.example.SA2Gemini.repository.SolicitudCompraRepository; // El que mencionaste
 
 import org.springframework.http.HttpHeaders; // Importar HttpHeaders
 import org.springframework.http.MediaType; // Importar MediaType
@@ -42,6 +47,9 @@ public class PresupuestoController {
     @Autowired
     private PedidoCotizacionService pedidoCotizacionService; // Inyectar PedidoCotizacionService
 
+    @Autowired
+    private SolicitudCompraRepository solicitudCompraRepository;
+
     @GetMapping("/pedidos")
     public String listarPedidosParaPresupuesto(Model model) {
         List<SolicitudCompraItem> solicitudItems = solicitudCompraService.getSolicitudCompraItemsByEstadoInicio();
@@ -51,14 +59,18 @@ public class PresupuestoController {
 
     @PostMapping({"/generar", "/generar/"}) // Mapeo para manejar la generación de presupuestos
     public String generarPresupuestos(@RequestParam(required = false) List<Long> itemIds, Model model) { // Volvemos a incluir @RequestParam
-        // System.out.println("--- Método generarPresupuestos (SIMPLIFICADO) invocado ---"); // Eliminamos el log de depuración
-        // Lógica completa restaurada
+
         List<SolicitudCompraItem> selectedItems = solicitudCompraService.getSolicitudCompraItemsByIds(itemIds);
 
-        // Mapa para agrupar ítems por proveedor
         Map<Proveedor, List<SolicitudCompraItem>> presupuestosAgrupados = new HashMap<>();
 
         for (SolicitudCompraItem item : selectedItems) {
+        SolicitudCompra sc = item.getSolicitudCompra();
+            if (sc != null && sc.getEstado() == EstadoSolicitud.INICIO) {
+                sc.setEstado(EstadoSolicitud.PRESUPUESTADA);
+                solicitudCompraRepository.save(sc); 
+            }
+
             if (item.getProducto() != null && item.getProducto().getProductoProveedores() != null) {
                 for (ProductoProveedor pp : item.getProducto().getProductoProveedores()) {
                     Proveedor proveedor = pp.getProveedor();
@@ -70,7 +82,7 @@ public class PresupuestoController {
         }
         
         model.addAttribute("presupuestosAgrupados", presupuestosAgrupados);
-        model.addAttribute("selectedItemIds", itemIds); // Añadir los IDs de ítems seleccionados al modelo
+        model.addAttribute("selectedItemIds", itemIds); 
         return "presupuesto-detalle-generado";
     }
 

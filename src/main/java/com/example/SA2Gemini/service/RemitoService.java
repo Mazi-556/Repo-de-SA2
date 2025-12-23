@@ -55,6 +55,8 @@ public class RemitoService {
 
         @Transactional
         public Remito createRemito(Long ocId, LocalDate fechaRemito, Map<Long, Integer> itemQuantities) {
+
+            
             OrdenCompra ordenCompra = ordenCompraRepository.findById(ocId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid orden de compra Id:" + ocId));
     

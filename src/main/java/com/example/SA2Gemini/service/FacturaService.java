@@ -27,9 +27,7 @@ public class FacturaService {
 
     @Transactional
     public Factura crearFacturaYAsiento(Factura factura, BigDecimal subtotal, BigDecimal iva) throws Exception {
-        // Stock is updated on Remito creation, so we no longer do it here.
 
-        // 1. Preparar el Asiento Contable
         Asiento asiento = new Asiento();
         asiento.setFecha(LocalDate.now());
         asiento.setDescripcion("Asiento por Factura de Compra N°: " + factura.getNumeroFactura());
@@ -72,19 +70,22 @@ public class FacturaService {
         
         factura.setAsiento(asiento);
 
-        // 3. Finalizar Estados
         OrdenCompra oc = factura.getOrdenCompra();
-        // The OC status is now updated in RemitoService. We might only finalize it here.
-        // For now, we assume the invoice means the process is complete.
         oc.setEstado(EstadoOrdenCompra.RECIBIDA_COMPLETA);
         ordenCompraRepository.save(oc);
 
-        SolicitudCompra sc = oc.getSolicitudCompra();
-        if (sc != null) {
-            sc.setEstado(EstadoSolicitud.FINALIZADA);
-            solicitudCompraRepository.save(sc);
-        }
-        
+        oc.getItems().forEach(ocItem -> {
+            List<SolicitudCompra> solicitudesAsociadas = solicitudCompraRepository.findByEstado(EstadoSolicitud.PRESUPUESTADA);
+            for (SolicitudCompra sc : solicitudesAsociadas) {
+                // Lógica simple: si la solicitud tiene el producto que estamos facturando, la cerramos
+                boolean tieneProducto = sc.getItems().stream()
+                        .anyMatch(item -> item.getProducto().getId().equals(ocItem.getProducto().getId()));
+                if (tieneProducto) {
+                    sc.setEstado(EstadoSolicitud.FINALIZADA);
+                    solicitudCompraRepository.save(sc);
+                }
+            }
+        });
         return facturaRepository.save(factura);
     }
 }
