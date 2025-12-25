@@ -158,12 +158,25 @@
         const crearAsientoBtn = document.getElementById('crearAsientoBtn');
         const inputIvaPorcentaje = document.getElementById('inputIvaPorcentaje');
 
-        // Data from Thymeleaf
-        const ordenCompraItems = /*[[${ordenCompra.items}]]*/ [];
+        // Data from Thymeleaf: Inyectamos solo los datos necesarios como strings numéricos
+        const rawItems = /*[[${ordenCompra.items}]]*/ [];
+        const ordenCompraItems = rawItems.map(item => ({
+            cantidad: item.cantidad,
+            // Usamos #numbers.formatDecimal para asegurar que precioUnitario sea una cadena numérica simple (ej: "100.00")
+            precioUnitario: /*[[${#numbers.formatDecimal(item.precioUnitario, 0, 2, 'POINT')}]]*/ '0.00'
+        }));
+        
         const todasLasCuentas = /*[[${cuentas}]]*/ []; // Get the list of accounts
 
-        console.log("ordenCompraItems:", ordenCompraItems);
-        console.log("todasLasCuentas:", todasLasCuentas);
+        // Inyectamos los totales calculados en el controlador para inicializar la vista
+        const initialSubtotal = /*[[${#numbers.formatDecimal(subtotal, 0, 2, 'POINT')}]]*/ '0.00';
+        const initialIvaTotal = /*[[${#numbers.formatDecimal(ivaTotal, 0, 2, 'POINT')}]]*/ '0.00';
+        const initialIvaRate = /*[[${#numbers.formatDecimal(ivaRate, 0, 2, 'POINT')}]]*/ '0.21';
+
+        console.log("ordenCompraItems (parsed):", ordenCompraItems);
+        console.log("Initial Subtotal:", initialSubtotal);
+        console.log("Initial IVA Total:", initialIvaTotal);
+
 
         // Find the ID for 'Mercaderías' account
         const mercaderiasCuenta = todasLasCuentas.find(cuenta => cuenta.nombre === 'Mercaderías');
@@ -175,14 +188,23 @@
             console.log("Executing updateItemIvaAndTotals...");
             let calculatedSubtotal = 0;
             let calculatedTotalIvaFactura = 0;
+            
+            // Usamos el valor del input para permitir cambios dinámicos
             const selectedIvaPercentage = parseFloat(inputIvaPorcentaje.value) || 21;
             const ivaRate = selectedIvaPercentage / 100;
             console.log("Selected IVA Percentage:", selectedIvaPercentage);
             console.log("IVA Rate:", ivaRate);
 
             ordenCompraItems.forEach((item, index) => {
+                // Ahora parseamos la cadena numérica inyectada
                 const precioUnitario = parseFloat(item.precioUnitario);
                 const cantidad = parseInt(item.cantidad);
+                
+                if (isNaN(precioUnitario) || isNaN(cantidad)) {
+                    console.error(`Datos inválidos para el ítem ${index}: Precio Unitario=${item.precioUnitario}, Cantidad=${item.cantidad}`);
+                    return; 
+                }
+
                 const itemSubtotalAmount = precioUnitario * cantidad;
                 calculatedSubtotal += itemSubtotalAmount;
 
@@ -190,13 +212,9 @@
                 const itemIvaUnitarioAmount = precioUnitario * ivaRate;
                 
                 // Find the corresponding table cell and update its text content
-                // Note: We rely on the index matching the row order in the table
                 const currentRowIVA_TD = document.querySelector(`#ordenCompraItemsTable tbody tr:nth-child(${index + 1}) .item-iva-unitario`);
                 if (currentRowIVA_TD) {
                     currentRowIVA_TD.textContent = '$ ' + itemIvaUnitarioAmount.toFixed(2);
-                    console.log(`Updated item ${index} IVA Unitario to: ${itemIvaUnitarioAmount.toFixed(2)}`);
-                } else {
-                    console.warn(`Could not find .item-iva-unitario for item ${index}`);
                 }
 
                 // Calculate total IVA for the invoice based on item subtotal * IVA rate
@@ -206,7 +224,7 @@
 
             // Update hidden subtotal input (for asiento) and display
             inputSubtotal.value = calculatedSubtotal.toFixed(2);
-            displaySubtotalFactura.textContent = '$ ' + calculatedSubtotal.toFixed(2); // UPDATED
+            displaySubtotalFactura.textContent = '$ ' + calculatedSubtotal.toFixed(2); 
             console.log("Calculated Subtotal:", calculatedSubtotal.toFixed(2));
 
             // Update Total IVA display and hidden input
@@ -232,9 +250,16 @@
         }
 
         // --- Initial Setup ---
-        // Ensure inputSubtotal exists before calling the function that uses it
+        // Inicializamos los valores con los cálculos del controlador (que ya están en formato string numérico)
         if (inputSubtotal && displaySubtotalFactura && displayTotalIvaFactura && inputTotalIvaFactura) {
-            updateItemIvaAndTotals(); // Calculate totals and update IVA cells on page load
+            // Inicializamos la visualización de totales con los valores del controlador
+            inputSubtotal.value = initialSubtotal;
+            displaySubtotalFactura.textContent = '$ ' + initialSubtotal;
+            inputTotalIvaFactura.value = initialIvaTotal;
+            displayTotalIvaFactura.textContent = '$ ' + initialIvaTotal;
+            
+            // Ejecutamos la función para calcular y mostrar el IVA Unitario
+            updateItemIvaAndTotals(); 
         } else {
             console.error("Error: One or more required total elements (Subtotal/IVA) are missing in the DOM.");
         }
@@ -263,7 +288,7 @@
                     console.log("Mercaderías account set and disabled for first row.");
                 }
                 if (debeInput) {
-                    // Use the hidden input value calculated by updateItemIvaAndTotals
+                    // Usamos el valor del subtotal (sin IVA)
                     debeInput.value = inputSubtotal.value; 
                     console.log("Debe for Mercaderías set to:", inputSubtotal.value);
                 }
