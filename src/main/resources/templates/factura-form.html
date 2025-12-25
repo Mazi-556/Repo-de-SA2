@@ -158,20 +158,16 @@
         const crearAsientoBtn = document.getElementById('crearAsientoBtn');
         const inputIvaPorcentaje = document.getElementById('inputIvaPorcentaje');
 
-        // Data from Thymeleaf: Inyectamos solo los datos necesarios como strings numéricos
-        const rawItems = /*[[${ordenCompra.items}]]*/ [];
-        const ordenCompraItems = rawItems.map(item => ({
-            cantidad: item.cantidad,
-            // Usamos #numbers.formatDecimal para asegurar que precioUnitario sea una cadena numérica simple (ej: "100.00")
-            precioUnitario: /*[[${#numbers.formatDecimal(item.precioUnitario, 0, 2, 'POINT')}]]*/ '0.00'
-        }));
+        // Data from Thymeleaf: Inyectamos los datos de ítems pre-formateados desde el controlador
+        const ordenCompraItems = /*[[${itemsData}]]*/ []; 
         
         const todasLasCuentas = /*[[${cuentas}]]*/ []; // Get the list of accounts
 
         // Inyectamos los totales calculados en el controlador para inicializar la vista
-        const initialSubtotal = /*[[${#numbers.formatDecimal(subtotal, 0, 2, 'POINT')}]]*/ '0.00';
-        const initialIvaTotal = /*[[${#numbers.formatDecimal(ivaTotal, 0, 2, 'POINT')}]]*/ '0.00';
-        const initialIvaRate = /*[[${#numbers.formatDecimal(ivaRate, 0, 2, 'POINT')}]]*/ '0.21';
+        // Usamos toPlainString() en el controlador, por lo que aquí solo inyectamos el valor.
+        const initialSubtotal = /*[[${subtotal.toPlainString()}]]*/ '0.00';
+        const initialIvaTotal = /*[[${ivaTotal.toPlainString()}]]*/ '0.00';
+        const initialIvaRate = /*[[${ivaRate.toPlainString()}]]*/ '0.21';
 
         console.log("ordenCompraItems (parsed):", ordenCompraItems);
         console.log("Initial Subtotal:", initialSubtotal);
@@ -196,7 +192,7 @@
             console.log("IVA Rate:", ivaRate);
 
             ordenCompraItems.forEach((item, index) => {
-                // Ahora parseamos la cadena numérica inyectada
+                // item.precioUnitario ahora es una cadena numérica simple gracias al controlador
                 const precioUnitario = parseFloat(item.precioUnitario);
                 const cantidad = parseInt(item.cantidad);
                 
@@ -215,6 +211,9 @@
                 const currentRowIVA_TD = document.querySelector(`#ordenCompraItemsTable tbody tr:nth-child(${index + 1}) .item-iva-unitario`);
                 if (currentRowIVA_TD) {
                     currentRowIVA_TD.textContent = '$ ' + itemIvaUnitarioAmount.toFixed(2);
+                    console.log(`Updated item ${index} IVA Unitario to: ${itemIvaUnitarioAmount.toFixed(2)}`);
+                } else {
+                    console.warn(`Could not find .item-iva-unitario for item ${index}`);
                 }
 
                 // Calculate total IVA for the invoice based on item subtotal * IVA rate

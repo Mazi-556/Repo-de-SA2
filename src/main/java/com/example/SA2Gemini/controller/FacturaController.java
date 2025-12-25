@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Controller
@@ -57,6 +59,17 @@ public class FacturaController {
         BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
         BigDecimal totalFactura = subtotal.add(ivaTotal);
 
+        // Preparar datos de ítems para JavaScript, asegurando que los precios sean strings numéricos
+        List<Map<String, Object>> itemsData = oc.getItems().stream()
+                .map(item -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("cantidad", item.getCantidad());
+                    // Usamos toPlainString() para asegurar que BigDecimal se serialice como una cadena numérica simple
+                    data.put("precioUnitario", item.getPrecioUnitario().toPlainString());
+                    return data;
+                })
+                .collect(Collectors.toList());
+
         model.addAttribute("ordenCompra", oc);
         model.addAttribute("cuentas", cuentaService.getAllCuentas());
         
@@ -67,6 +80,9 @@ public class FacturaController {
         
         // Añadir la tasa de IVA para cálculos unitarios en la vista si es necesario
         model.addAttribute("ivaRate", IVA_RATE);
+        
+        // Añadir los datos de ítems pre-formateados para JS
+        model.addAttribute("itemsData", itemsData);
         
         return "factura-form";
     }
@@ -101,12 +117,23 @@ public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
             BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
             BigDecimal totalFactura = subtotal.add(ivaTotal);
 
+            // Recalcular itemsData para el caso de error
+            List<Map<String, Object>> itemsData = oc.getItems().stream()
+                .map(item -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("cantidad", item.getCantidad());
+                    data.put("precioUnitario", item.getPrecioUnitario().toPlainString());
+                    return data;
+                })
+                .collect(Collectors.toList());
+
             model.addAttribute("ordenCompra", oc);
             model.addAttribute("cuentas", cuentaService.getAllCuentas());
             model.addAttribute("subtotal", subtotal);
             model.addAttribute("ivaTotal", ivaTotal);
             model.addAttribute("totalFactura", totalFactura);
             model.addAttribute("ivaRate", IVA_RATE);
+            model.addAttribute("itemsData", itemsData); // Añadir itemsData
         }
         return "factura-form";
     }
