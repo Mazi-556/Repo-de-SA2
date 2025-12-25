@@ -26,7 +26,18 @@ public class FacturaService {
     private CuentaRepository cuentaRepository; // Repositorio de Cuentas
 
     @Transactional
-    public Factura crearFacturaYAsiento(Factura factura, BigDecimal subtotal, BigDecimal iva) throws Exception {
+    public Factura crearFacturaYAsiento(Factura factura) throws Exception {
+
+        OrdenCompra oc = factura.getOrdenCompra();
+
+        // Calcular subtotal e IVA de la orden de compra
+        BigDecimal subtotal = oc.getItems().stream()
+                .map(item -> item.getPrecioUnitario().multiply(BigDecimal.valueOf(item.getCantidad())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal iva = subtotal.multiply(new BigDecimal("0.21")); // 21% de IVA
+        BigDecimal total = subtotal.add(iva);
+
+        factura.setTotal(total);
 
         Asiento asiento = new Asiento();
         asiento.setFecha(LocalDate.now());
@@ -60,7 +71,7 @@ public class FacturaService {
         Movimiento movHaberProveedores = new Movimiento();
         movHaberProveedores.setCuenta(cuentaProveedores);
         movHaberProveedores.setDebe(BigDecimal.ZERO);
-        movHaberProveedores.setHaber(subtotal.add(iva));
+        movHaberProveedores.setHaber(total);
         movimientos.add(movHaberProveedores);
 
         asiento.setMovimientos(movimientos);
@@ -70,7 +81,6 @@ public class FacturaService {
         
         factura.setAsiento(asiento);
 
-        OrdenCompra oc = factura.getOrdenCompra();
         oc.setEstado(EstadoOrdenCompra.RECIBIDA_COMPLETA);
         ordenCompraRepository.save(oc);
 
