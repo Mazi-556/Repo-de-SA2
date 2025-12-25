@@ -4,6 +4,7 @@ package com.example.SA2Gemini.controller;
 import com.example.SA2Gemini.entity.EstadoOrdenCompra;
 import com.example.SA2Gemini.entity.Factura;
 import com.example.SA2Gemini.entity.OrdenCompra;
+import com.example.SA2Gemini.entity.EstadoSolicitud; // Importación añadida
 import com.example.SA2Gemini.service.OrdenCompraService;
 import com.example.SA2Gemini.service.CuentaService; // Asumiendo que existe
 import com.example.SA2Gemini.service.FacturaService;
