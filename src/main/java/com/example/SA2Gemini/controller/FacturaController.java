@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -53,7 +54,7 @@ public class FacturaController {
         
         // Calcular Subtotal, IVA y Total para mostrar en el formulario
         BigDecimal subtotal = oc.getItems().stream()
-                .map(item -> item.getPrecioUnitario().multiply(BigDecimal.valueOf(item.getCantidad())))
+                .map(item -> Optional.ofNullable(item.getPrecioUnitario()).orElse(BigDecimal.ZERO).multiply(BigDecimal.valueOf(item.getCantidad())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
         BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
@@ -65,7 +66,7 @@ public class FacturaController {
                     Map<String, Object> data = new HashMap<>();
                     data.put("cantidad", item.getCantidad());
                     // Usamos toPlainString() para asegurar que BigDecimal se serialice como una cadena numérica simple
-                    data.put("precioUnitario", item.getPrecioUnitario().toPlainString());
+                    data.put("precioUnitario", Optional.ofNullable(item.getPrecioUnitario()).orElse(BigDecimal.ZERO).toPlainString());
                     return data;
                 })
                 .collect(Collectors.toList());
@@ -111,7 +112,7 @@ public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
         if (oc != null) {
             // Recalcular y añadir al modelo en caso de error
             BigDecimal subtotal = oc.getItems().stream()
-                    .map(item -> item.getPrecioUnitario().multiply(BigDecimal.valueOf(item.getCantidad())))
+                    .map(item -> Optional.ofNullable(item.getPrecioUnitario()).orElse(BigDecimal.ZERO).multiply(BigDecimal.valueOf(item.getCantidad())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             
             BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
@@ -122,7 +123,7 @@ public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
                 .map(item -> {
                     Map<String, Object> data = new HashMap<>();
                     data.put("cantidad", item.getCantidad());
-                    data.put("precioUnitario", item.getPrecioUnitario().toPlainString());
+                    data.put("precioUnitario", Optional.ofNullable(item.getPrecioUnitario()).orElse(BigDecimal.ZERO).toPlainString());
                     return data;
                 })
                 .collect(Collectors.toList());
@@ -137,5 +138,4 @@ public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
         }
         return "factura-form";
     }
-}
 }
