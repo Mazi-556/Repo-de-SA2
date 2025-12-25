@@ -31,6 +31,8 @@ public class FacturaController {
     @Autowired
     private FacturaService facturaService;
 
+    private static final BigDecimal IVA_RATE = new BigDecimal("0.21");
+
     @GetMapping
     public String listarOrdenesDeCompraParaFactura(Model model) {
         // Filtramos para mostrar solo lo que ya se recibió (en proceso o recibida)
@@ -47,8 +49,25 @@ public class FacturaController {
         OrdenCompra oc = ordenCompraService.getOrdenCompraById(ocId)
                 .orElseThrow(() -> new IllegalArgumentException("OC no encontrada: " + ocId));
         
+        // Calcular Subtotal, IVA y Total para mostrar en el formulario
+        BigDecimal subtotal = oc.getItems().stream()
+                .map(item -> item.getPrecioUnitario().multiply(BigDecimal.valueOf(item.getCantidad())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
+        BigDecimal totalFactura = subtotal.add(ivaTotal);
+
         model.addAttribute("ordenCompra", oc);
         model.addAttribute("cuentas", cuentaService.getAllCuentas());
+        
+        // Añadir los totales calculados al modelo
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("ivaTotal", ivaTotal);
+        model.addAttribute("totalFactura", totalFactura);
+        
+        // Añadir la tasa de IVA para cálculos unitarios en la vista si es necesario
+        model.addAttribute("ivaRate", IVA_RATE);
+        
         return "factura-form";
     }
 
@@ -71,6 +90,24 @@ public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
         return "redirect:/facturas?success";
     } catch (Exception e) {
         model.addAttribute("error", "Error al procesar la factura: " + e.getMessage());
+        // Si hay un error, necesitamos recargar los datos necesarios para la vista factura-form
+        OrdenCompra oc = ordenCompraService.getOrdenCompraById(ocId).orElse(null);
+        if (oc != null) {
+            // Recalcular y añadir al modelo en caso de error
+            BigDecimal subtotal = oc.getItems().stream()
+                    .map(item -> item.getPrecioUnitario().multiply(BigDecimal.valueOf(item.getCantidad())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
+            BigDecimal totalFactura = subtotal.add(ivaTotal);
+
+            model.addAttribute("ordenCompra", oc);
+            model.addAttribute("cuentas", cuentaService.getAllCuentas());
+            model.addAttribute("subtotal", subtotal);
+            model.addAttribute("ivaTotal", ivaTotal);
+            model.addAttribute("totalFactura", totalFactura);
+            model.addAttribute("ivaRate", IVA_RATE);
+        }
         return "factura-form";
     }
 }

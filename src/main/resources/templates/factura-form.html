@@ -75,8 +75,14 @@
             </tbody>
         </table>
         
-        <!-- Display Total IVA Factura -->
+        <!-- Display Totals Section (Subtotal and Total IVA Factura) -->
         <div class="row mb-3 justify-content-end total-iva-section">
+            <div class="col-md-3 text-end">
+                <label class="form-label">Subtotal Factura:</label>
+                <p id="displaySubtotalFactura" class="form-control-plaintext fw-bold"></p>
+                <!-- Hidden input for Subtotal, required by JS for the Asiento setup -->
+                <input type="hidden" name="subtotalFactura" id="inputSubtotal">
+            </div>
             <div class="col-md-3 text-end">
                 <label class="form-label">IVA Total Factura:</label>
                 <p id="displayTotalIvaFactura" class="form-control-plaintext fw-bold"></p>
@@ -144,6 +150,7 @@
         const asientoMovimientosContainer = document.getElementById('movimientos-container');
         const btnAgregarFila = document.getElementById('btnAgregarFila');
         const inputSubtotal = document.getElementById('inputSubtotal'); // Hidden input for subtotal
+        const displaySubtotalFactura = document.getElementById('displaySubtotalFactura'); // NEW: Subtotal display
         const displayTotalIvaFactura = document.getElementById('displayTotalIvaFactura');
         const inputTotalIvaFactura = document.getElementById('inputTotalIvaFactura'); // Hidden input for total IVA
         const confirmarFacturaBtn = document.getElementById('confirmarFacturaBtn');
@@ -183,6 +190,7 @@
                 const itemIvaUnitarioAmount = precioUnitario * ivaRate;
                 
                 // Find the corresponding table cell and update its text content
+                // Note: We rely on the index matching the row order in the table
                 const currentRowIVA_TD = document.querySelector(`#ordenCompraItemsTable tbody tr:nth-child(${index + 1}) .item-iva-unitario`);
                 if (currentRowIVA_TD) {
                     currentRowIVA_TD.textContent = '$ ' + itemIvaUnitarioAmount.toFixed(2);
@@ -196,8 +204,9 @@
                 calculatedTotalIvaFactura += itemTotalIvaAmount;
             });
 
-            // Update hidden subtotal input (for asiento)
+            // Update hidden subtotal input (for asiento) and display
             inputSubtotal.value = calculatedSubtotal.toFixed(2);
+            displaySubtotalFactura.textContent = '$ ' + calculatedSubtotal.toFixed(2); // UPDATED
             console.log("Calculated Subtotal:", calculatedSubtotal.toFixed(2));
 
             // Update Total IVA display and hidden input
@@ -223,7 +232,13 @@
         }
 
         // --- Initial Setup ---
-        updateItemIvaAndTotals(); // Calculate totals and update IVA cells on page load
+        // Ensure inputSubtotal exists before calling the function that uses it
+        if (inputSubtotal && displaySubtotalFactura && displayTotalIvaFactura && inputTotalIvaFactura) {
+            updateItemIvaAndTotals(); // Calculate totals and update IVA cells on page load
+        } else {
+            console.error("Error: One or more required total elements (Subtotal/IVA) are missing in the DOM.");
+        }
+
 
         // Event listener for IVA percentage change
         inputIvaPorcentaje.addEventListener('input', updateItemIvaAndTotals);
@@ -248,7 +263,8 @@
                     console.log("Mercaderías account set and disabled for first row.");
                 }
                 if (debeInput) {
-                    debeInput.value = inputSubtotal.value; // Use the hidden input value
+                    // Use the hidden input value calculated by updateItemIvaAndTotals
+                    debeInput.value = inputSubtotal.value; 
                     console.log("Debe for Mercaderías set to:", inputSubtotal.value);
                 }
             }
