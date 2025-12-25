@@ -55,8 +55,6 @@ public class FacturaController {
     @PostMapping("/crear-asiento")
 public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
                                    @RequestParam("numeroFactura") String numeroFactura,
-                                   @RequestParam("subtotal") BigDecimal subtotal,
-                                   @RequestParam("iva") BigDecimal iva,
                                    Model model) {
     try {
         OrdenCompra oc = ordenCompraService.getOrdenCompraById(ocId)
@@ -66,10 +64,9 @@ public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
         factura.setNumeroFactura(numeroFactura);
         factura.setOrdenCompra(oc);
         factura.setFecha(LocalDate.now());
-        factura.setTotal(subtotal.add(iva));
 
-        // El servicio que ya tienen hace toda la magia contable
-        facturaService.crearFacturaYAsiento(factura, subtotal, iva);
+        // El servicio se encargará de calcular subtotal, iva y total
+        facturaService.crearFacturaYAsiento(factura);
 
         return "redirect:/facturas?success";
     } catch (Exception e) {
