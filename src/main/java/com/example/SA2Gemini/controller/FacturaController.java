@@ -90,9 +90,10 @@ public class FacturaController {
     }
 
     @PostMapping("/crear-asiento")
-public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
-                                   @RequestParam("numeroFactura") String numeroFactura,
-                                   Model model) {
+    public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
+                                       @RequestParam("numeroFactura") String numeroFactura,
+                                       @RequestParam("ivaPorcentaje") java.math.BigDecimal ivaPorcentaje,
+                                       Model model) {
                                     
         try {
             OrdenCompra oc = ordenCompraService.getOrdenCompraById(ocId)
@@ -103,8 +104,8 @@ public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
             factura.setOrdenCompra(oc);
             factura.setFecha(LocalDate.now());
 
-            // El servicio se encargará de calcular subtotal, iva y total
-            facturaService.crearFacturaYAsiento(factura);
+        // Ahora le enviamos también el porcentaje que el usuario eligió
+        facturaService.crearFacturaYAsiento(factura, ivaPorcentaje);
 
             return "redirect:/facturas?success";
         } catch (Exception e) {

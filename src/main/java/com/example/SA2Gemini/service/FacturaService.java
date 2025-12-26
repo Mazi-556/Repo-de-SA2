@@ -26,7 +26,7 @@ public class FacturaService {
     private CuentaRepository cuentaRepository; // Repositorio de Cuentas
 
     @Transactional
-    public Factura crearFacturaYAsiento(Factura factura) throws Exception {
+    public Factura crearFacturaYAsiento(Factura factura, BigDecimal ivaPorcentaje) throws Exception {
 
         OrdenCompra oc = factura.getOrdenCompra();
 
@@ -34,7 +34,10 @@ public class FacturaService {
         BigDecimal subtotal = oc.getItems().stream()
                 .map(item -> item.getPrecioUnitario().multiply(BigDecimal.valueOf(item.getCantidad())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal iva = subtotal.multiply(new BigDecimal("0.21")); // 21% de IVA
+                
+        // Convertimos el porcentaje (ej: 21) en un decimal (ej: 0.21) para multiplicar
+        BigDecimal tasaIva = ivaPorcentaje.divide(new BigDecimal("100"));
+        BigDecimal iva = subtotal.multiply(tasaIva);
         BigDecimal total = subtotal.add(iva);
 
         factura.setTotal(total);
