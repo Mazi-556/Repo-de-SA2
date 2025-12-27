@@ -1,11 +1,14 @@
 package com.example.SA2Gemini.service;
 
+import com.example.SA2Gemini.entity.EstadoSolicitud;
 import com.example.SA2Gemini.entity.OrdenCompra;
 import com.example.SA2Gemini.entity.OrdenCompraItem;
+import com.example.SA2Gemini.entity.PedidoCotizacionItem;
 import com.example.SA2Gemini.entity.Proveedor;
 import com.example.SA2Gemini.entity.SolicitudCompra;
 import com.example.SA2Gemini.entity.SolicitudCompraItem;
 import com.example.SA2Gemini.repository.OrdenCompraRepository;
+import com.example.SA2Gemini.repository.PedidoCotizacionItemRepository;
 import com.example.SA2Gemini.repository.ProveedorRepository;
 import com.example.SA2Gemini.repository.SolicitudCompraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +42,9 @@ public class OrdenCompraService {
     @Autowired
     private ProveedorRepository proveedorRepository;
     @Autowired
-    private SolicitudCompraService solicitudCompraService; // Inyectar SolicitudCompraService
+    private SolicitudCompraService solicitudCompraService;
+    @Autowired
+    private PedidoCotizacionItemRepository pedidoCotizacionItemRepository;
 
     @Transactional
     public OrdenCompra generarOrdenCompra(
@@ -68,51 +73,38 @@ public class OrdenCompraService {
         ordenCompra.setPlazoPago(plazoPago);
         ordenCompra.setConEnvio(conEnvio);
 
-        System.out.println("DEBUG Service: solicitudCompraItemIds recibidos en service: " + solicitudCompraItemIds);
-        List<SolicitudCompraItem> scItems = solicitudCompraService.getSolicitudCompraItemsByIds(solicitudCompraItemIds);
-        System.out.println("DEBUG Service: scItems cargados por ID: " + (scItems != null ? scItems.size() : "null") + " items.");
-        if (scItems != null) { scItems.forEach(item -> System.out.println("DEBUG Service: SC Item cargado ID: " + item.getId() + ", Producto ID: " + item.getProducto().getId())); }
+        // 1. Buscamos los ítems de COTIZACIÓN (que es lo que viene del formulario)
+        List<PedidoCotizacionItem> pcItems = pedidoCotizacionItemRepository.findAllById(solicitudCompraItemIds);
 
         BigDecimal subtotal = BigDecimal.ZERO;
-        for (SolicitudCompraItem scItem : scItems) {
-            // Re-verificar si este item corresponde al proveedor seleccionado
-            boolean isProvierForProduct = scItem.getProducto().getProductoProveedores().stream()
-                                            .anyMatch(pp -> pp.getProveedor().getId().equals(proveedorId));
-            if (!isProvierForProduct) {
-                continue;
-            }
-
+        for (PedidoCotizacionItem pcItem : pcItems) {
             OrdenCompraItem ocItem = new OrdenCompraItem();
-            ocItem.setProducto(scItem.getProducto());
+            ocItem.setProducto(pcItem.getProducto());
             
-            // Obtener la cantidad final del mapa
-            Integer cantidadFinal = cantidadesFinalesOC.get(scItem.getId());
-            if (cantidadFinal == null) {
-                throw new RuntimeException("Cantidad final no especificada para el ítem " + scItem.getId());
+            // Obtenemos cantidad y precio del mapa (allParams) usando el ID del ítem de cotización
+            Integer cantidadFinal = cantidadesFinalesOC.get(pcItem.getId());
+            BigDecimal precioUnitarioFinal = preciosUnitariosFinalesOC.get(pcItem.getId());
+
+            ocItem.setCantidad(cantidadFinal != null ? cantidadFinal : pcItem.getCantidad());
+            ocItem.setPrecioUnitario(precioUnitarioFinal != null ? precioUnitarioFinal : pcItem.getPrecioUnitarioCotizado());
+            ocItem.setTotal(ocItem.getPrecioUnitario().multiply(new BigDecimal(ocItem.getCantidad())));
+
+            ordenCompra.addOrderItem(ocItem);
+            subtotal = subtotal.add(ocItem.getTotal());
+
+            // 2. Intentamos recuperar la Solicitud de Compra para actualizar el estado
+            if (solicitudCompra == null && pcItem.getPedidoCotizacion().getSolicitudCompra() != null) {
+                solicitudCompra = pcItem.getPedidoCotizacion().getSolicitudCompra();
             }
-            ocItem.setCantidad(cantidadFinal);
-            
-            // Obtener el precio unitario final del mapa
-            BigDecimal precioUnitarioFinal = preciosUnitariosFinalesOC.get(scItem.getId());
-            if (precioUnitarioFinal == null) {
-                throw new RuntimeException("Precio unitario final no especificado para el ítem " + scItem.getId());
-            }
-            ocItem.setPrecioUnitario(precioUnitarioFinal); 
-
-            if (ocItem.getProducto() == null) {
-                throw new RuntimeException("Producto para SolicitudCompraItem ID " + scItem.getId() + " no encontrado.");
-            }
-
-            BigDecimal itemTotal = ocItem.getPrecioUnitario().multiply(new BigDecimal(ocItem.getCantidad()));
-            ocItem.setTotal(itemTotal);
-            // ocItem.setOrdenCompra(ordenCompra); // Ya lo hace addOrderItem
-            ordenCompra.addOrderItem(ocItem); // Usar el método helper
-
-            System.out.println("DEBUG OC Item ANTES SAVE: Producto ID=" + ocItem.getProducto().getId() + ", Cantidad=" + ocItem.getCantidad() + ", Precio=" + ocItem.getPrecioUnitario() + ", Total Item=" + ocItem.getTotal());
-
-            subtotal = subtotal.add(itemTotal);
-            // El IVA se calcula al final de la OC, si se necesita por ítem, aquí sería el lugar
         }
+
+        // ... (seguir con el cálculo de IVA y el guardado)
+
+        if (solicitudCompra != null) {
+            solicitudCompra.setEstado(EstadoSolicitud.COMPROMETIDA);
+            solicitudCompraRepository.save(solicitudCompra);
+        }
+
 
         ordenCompra.setSubtotal(subtotal);
         ordenCompra.setIva(new BigDecimal("0.21").multiply(subtotal)); // Asumo IVA 21%
@@ -125,6 +117,8 @@ public class OrdenCompraService {
         
         ordenCompraRepository.flush(); // Forzar el commit a la DB
 
+  
+
         // Recuperar la orden recién guardada para verificar
         OrdenCompra savedOrden = ordenCompraRepository.findById(ordenCompra.getId()).orElse(null);
         if (savedOrden != null) {
@@ -132,6 +126,10 @@ public class OrdenCompraService {
             System.out.println("DEBUG after flush & retrieve: Saved Orden ID=" + savedOrden.getId() + ", Total=" + savedOrden.getTotal() + ", Items Size=" + savedOrden.getItems().size());
         }
 
+        if (solicitudCompra != null) {
+            solicitudCompra.setEstado(EstadoSolicitud.COMPROMETIDA); 
+            solicitudCompraRepository.save(solicitudCompra);
+        }
 
         return ordenCompra;
     }

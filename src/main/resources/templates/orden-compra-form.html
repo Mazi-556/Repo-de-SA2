@@ -16,7 +16,7 @@
         <span th:text="${errorMessage}"></span>
     </div>
 
-    <form th:action="@{/ordenes-compra/seleccionar}" method="get">
+    <form th:action="@{/ordenes-compra}" method="get"></form>
         <div class="mb-3">
             <label for="pedidoCotizacionSelect" class="form-label">Seleccionar Pedido de Cotización:</label>
             <select class="form-select" id="pedidoCotizacionSelect" name="id" onchange="this.form.submit()">

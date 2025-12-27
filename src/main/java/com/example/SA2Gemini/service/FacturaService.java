@@ -88,7 +88,12 @@ public class FacturaService {
         ordenCompraRepository.save(oc);
 
         oc.getItems().forEach(ocItem -> {
-            List<SolicitudCompra> solicitudesAsociadas = solicitudCompraRepository.findByEstado(EstadoSolicitud.PRESUPUESTADA);
+
+        // Buscamos solicitudes tanto presupuestadas como las que ya tienen orden (comprometidas)
+        List<SolicitudCompra> solicitudesAsociadas = solicitudCompraRepository.findAll().stream()
+            .filter(s -> s.getEstado() == EstadoSolicitud.PRESUPUESTADA || s.getEstado() == EstadoSolicitud.COMPROMETIDA)
+            .toList();
+                       
             for (SolicitudCompra sc : solicitudesAsociadas) {
                 // Lógica simple: si la solicitud tiene el producto que estamos facturando, la cerramos
                 boolean tieneProducto = sc.getItems().stream()

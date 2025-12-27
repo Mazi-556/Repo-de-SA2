@@ -91,5 +91,18 @@ public class DataInitializer implements CommandLineRunner {
             rubroRepository.save(new Rubro(null, "Servicios"));
             logger.info("Default rubros created.");
         }
+
+
+        // Crear usuario administrador si no existe
+        Optional<Usuario> adminUserOpt = usuarioRepository.findByUsername("admin");
+        if (adminUserOpt.isEmpty()) {
+            logger.info("Creating admin user...");
+            Usuario admin = new Usuario();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin")); // Cambia la contraseña aquí
+            admin.setRol(adminRol); // Se le asigna el rol ADMIN creado arriba
+            usuarioRepository.save(admin);
+            logger.info("Admin user 'admin' created.");
+        }
     }
 }

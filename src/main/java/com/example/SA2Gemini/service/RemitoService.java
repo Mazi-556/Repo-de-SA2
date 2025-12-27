@@ -26,6 +26,17 @@ public class RemitoService {
     @Autowired
     private ProductoRepository productoRepository;
 
+    // Dentro de la clase OrdenCompraItem.java
+    private int cantidadRecibida = 0; // Inicializar en 0 para que no sea nulo
+
+        public int getCantidadRecibida() {
+        return cantidadRecibida;
+    }
+
+    public void setCantidadRecibida(int cantidadRecibida) {
+        this.cantidadRecibida = cantidadRecibida;
+    }
+
     public List<Remito> getRemitosByOrdenCompraId(Long ordenCompraId) {
         return remitoRepository.findByOrdenCompraId(ordenCompraId);
     }
