@@ -4,6 +4,8 @@ import com.example.SA2Gemini.entity.Rol;
 import com.example.SA2Gemini.entity.Rubro;
 import com.example.SA2Gemini.entity.TipoProveedor;
 import com.example.SA2Gemini.entity.Usuario;
+import com.example.SA2Gemini.entity.Cuenta;
+import com.example.SA2Gemini.repository.CuentaRepository;
 import com.example.SA2Gemini.repository.RolRepository;
 import com.example.SA2Gemini.repository.RubroRepository;
 import com.example.SA2Gemini.repository.TipoProveedorRepository;
@@ -26,14 +28,16 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final TipoProveedorRepository tipoProveedorRepository;
     private final RubroRepository rubroRepository;
+    private final CuentaRepository cuentaRepository;
 
     public DataInitializer(RolRepository rolRepository, UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
-                           TipoProveedorRepository tipoProveedorRepository, RubroRepository rubroRepository) {
+                           TipoProveedorRepository tipoProveedorRepository, RubroRepository rubroRepository, CuentaRepository cuentaRepository) {
         this.rolRepository = rolRepository;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.tipoProveedorRepository = tipoProveedorRepository;
         this.rubroRepository = rubroRepository;
+        this.cuentaRepository = cuentaRepository;
     }
 
     @Override
@@ -104,5 +108,31 @@ public class DataInitializer implements CommandLineRunner {
             usuarioRepository.save(admin);
             logger.info("Admin user 'admin' created.");
         }
+
+
+        logger.info("Checking critical accounting accounts...");
+        
+        crearCuentaSiNoExiste("Mercaderías", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.2.1");
+        crearCuentaSiNoExiste("IVA Crédito Fiscal", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.2.2");
+        crearCuentaSiNoExiste("Proveedores", com.example.SA2Gemini.entity.TipoCuenta.PASIVO, "2.1.1");
+        // Puedes agregar más si son necesarias (ej: Caja, Ventas)
+        
+        logger.info("Critical accounting accounts check finished.");
+        
+    } 
+    
+    // Método auxiliar para no repetir código
+    private void crearCuentaSiNoExiste(String nombre, com.example.SA2Gemini.entity.TipoCuenta tipo, String codigo) {
+        if (cuentaRepository.findByNombre(nombre).isEmpty()) {
+            com.example.SA2Gemini.entity.Cuenta cuenta = new com.example.SA2Gemini.entity.Cuenta();
+            cuenta.setNombre(nombre);
+            cuenta.setTipoCuenta(tipo);
+            cuenta.setCodigo(codigo); // Código ficticio por defecto
+            cuenta.setActivo(true);
+            cuentaRepository.save(cuenta);
+            logger.info("Created account: " + nombre);
+        }
     }
 }
+
+

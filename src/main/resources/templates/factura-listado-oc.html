@@ -23,16 +23,18 @@
             </tr>
         </thead>
         <tbody>
-            <!-- TODO: Cargar OCs con estado INGRESADA -->
-            <tr>
-                <td>OC-1</td>
-                <td>MotoProveedores Sociedad Anónima</td>
-                <td>17/11/2025</td>
-                <td>60.50</td>
-                <td>
-                    <a href="/facturas/nuevo/1" class="btn btn-primary">SELECCIONAR</a>
-                </td>
-            </tr>
+            <tr th:each="orden : ${ordenes}">
+                            <td th:text="${orden.id}"></td>
+                            <td th:text="${orden.proveedor.nombre}"></td>
+                            <td th:text="${orden.fecha}"></td>
+                            <td th:text="${orden.total}"></td>
+                            <td>
+                                <a th:href="@{/facturas/nuevo/{id}(id=${orden.id})}" class="btn btn-primary">SELECCIONAR</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${ordenes.empty}">
+                            <td colspan="5" class="text-center">No hay órdenes pendientes de facturación.</td>
+                        </tr>
         </tbody>
     </table>
 </div>
