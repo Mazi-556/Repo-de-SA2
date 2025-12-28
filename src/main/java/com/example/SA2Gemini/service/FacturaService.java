@@ -48,13 +48,13 @@ public class FacturaService {
 
         List<Movimiento> movimientos = new ArrayList<>();
         
-        // Asumimos que estas cuentas existen. En un caso real, se debería manejar si no se encuentran.
-        Cuenta cuentaMercaderias = cuentaRepository.findByNombre("Mercaderías")
-                .orElseThrow(() -> new Exception("La cuenta 'Mercaderías' no existe."));
-        Cuenta cuentaIvaCredito = cuentaRepository.findByNombre("IVA Crédito Fiscal")
-                .orElseThrow(() -> new Exception("La cuenta 'IVA Crédito Fiscal' no existe."));
-        Cuenta cuentaProveedores = cuentaRepository.findByNombre("Proveedores")
-                .orElseThrow(() -> new Exception("La cuenta 'Proveedores' no existe."));
+        // Buscar cuentas por código (más robusto que buscar por nombre)
+        Cuenta cuentaMercaderias = cuentaRepository.findByCodigo("1.2.1")
+                .orElseThrow(() -> new Exception("La cuenta 1.2.1 (Mercaderías) no existe."));
+        Cuenta cuentaIvaCredito = cuentaRepository.findByCodigo("1.2.2")
+                .orElseThrow(() -> new Exception("La cuenta 1.2.2 (IVA Crédito Fiscal) no existe."));
+        Cuenta cuentaProveedores = cuentaRepository.findByCodigo("2.1.1")
+                .orElseThrow(() -> new Exception("La cuenta 2.1.1 (Proveedores) no existe."));
 
         // Movimiento del Debe para Mercaderías
         Movimiento movDebeMercaderias = new Movimiento();

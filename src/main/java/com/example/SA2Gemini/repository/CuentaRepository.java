@@ -12,4 +12,5 @@ public interface CuentaRepository extends JpaRepository<Cuenta, Long> {
     boolean existsByCodigo(String codigo);
     boolean existsByCodigoAndIdNot(String codigo, Long id);
     Optional<Cuenta> findByNombre(String nombre); // Added this method
+    Optional<Cuenta> findByCodigo(String codigo); // Added for searching by codigo
 }
