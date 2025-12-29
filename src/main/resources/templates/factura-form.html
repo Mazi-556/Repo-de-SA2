@@ -28,7 +28,13 @@
 <body>
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
 <div class="container mt-4">
+
+
     <h2 class="mb-4">Alta de Factura</h2>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}">Mensaje de error</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     
     <form th:action="@{/facturas/crear-asiento}" method="post" class="card p-4 shadow-sm">
         
