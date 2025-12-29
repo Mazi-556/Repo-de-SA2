@@ -143,14 +143,27 @@
 
         <div class="mt-4 d-flex justify-content-between">
             <a th:href="@{/facturas}" class="btn btn-secondary">Cancelar</a>
-            <button type="submit" id="crearAsientoBtn" class="btn btn-primary btn-lg" disabled>FINALIZAR Y CREAR ASIENTO</button>
-        </div>
-        
-        <!-- Alert for balance validation -->
-        <div id="balanceAlert" class="alert alert-danger mt-3" style="display: none;" role="alert">
-            <strong>⚠️ Error de Balance:</strong> <span id="balanceAlertMessage"></span>
+            <button type="button" id="crearAsientoBtn" class="btn btn-primary btn-lg" disabled>FINALIZAR Y CREAR ASIENTO</button>
         </div>
     </form>
+</div>
+
+<!-- Modal de Error de Validación -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">⚠️ Error de Validación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="errorModalMessage" class="text-danger fw-bold"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -328,16 +341,25 @@
             }
         });
 
-        // Function to validate that DEBE = HABER
-        function validateBalance() {
-            const balanceAlert = document.getElementById('balanceAlert');
-            const balanceAlertMessage = document.getElementById('balanceAlertMessage');
+        // Function to validate the entire asiento
+        function validateAsiento() {
+            const movimientoRows = document.querySelectorAll('.movimiento-row');
+            
+            // Validation 1: Check that all rows have a cuenta selected
+            for (let row of movimientoRows) {
+                const cuentaSelect = row.querySelector('.cuenta-select');
+                if (!cuentaSelect.value || cuentaSelect.value === '') {
+                    return {
+                        valid: false,
+                        message: 'Debe seleccionar una cuenta contable en todas las filas del asiento.\n\nHay al menos una fila con "-- Seleccione Cuenta --" sin completar.'
+                    };
+                }
+            }
             
             let totalDebe = 0;
             let totalHaber = 0;
             
             // Calculate totals from all movement rows
-            const movimientoRows = document.querySelectorAll('.movimiento-row');
             movimientoRows.forEach(row => {
                 const debeValue = parseFloat(row.querySelector('.debe-input').value) || 0;
                 const haberValue = parseFloat(row.querySelector('.haber-input').value) || 0;
@@ -349,41 +371,46 @@
             console.log("Total DEBE:", totalDebe.toFixed(2));
             console.log("Total HABER:", totalHaber.toFixed(2));
             
-            // Check if balanced
-            if (Math.abs(totalDebe - totalHaber) > 0.01) { // Allow for small floating point differences
-                balanceAlertMessage.textContent = `El asiento NO está balanceado. DEBE: $${totalDebe.toFixed(2)} ≠ HABER: $${totalHaber.toFixed(2)}`;
-                balanceAlert.style.display = 'block';
-                return false;
-            }
-            
-            // Check if both are zero
+            // Validation 2: Check if both are zero
             if (totalDebe === 0 && totalHaber === 0) {
-                balanceAlertMessage.textContent = 'El asiento no puede tener montos totales en cero.';
-                balanceAlert.style.display = 'block';
-                return false;
+                return {
+                    valid: false,
+                    message: 'El asiento no puede tener montos totales en cero.\n\nDebe ingresar valores en DEBE y/o HABER.'
+                };
             }
             
-            // All good!
-            balanceAlert.style.display = 'none';
-            return true;
+            // Validation 3: Check if balanced (DEBE = HABER)
+            if (Math.abs(totalDebe - totalHaber) > 0.01) { // Allow for small floating point differences
+                return {
+                    valid: false,
+                    message: `El asiento NO está balanceado según la partida doble.\n\nDEBE: $${totalDebe.toFixed(2)}\nHABER: $${totalHaber.toFixed(2)}\n\nDiferencia: $${Math.abs(totalDebe - totalHaber).toFixed(2)}\n\nDebe corregir los montos para que DEBE = HABER.`
+                };
+            }
+            
+            // All validations passed!
+            return { valid: true };
         }
 
-        // Validate balance before form submission
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(event) {
-            if (!validateBalance()) {
-                event.preventDefault(); // Stop form submission
-                console.log("Form submission prevented: Balance validation failed.");
-                
-                // Scroll to the alert
-                document.getElementById('balanceAlert').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
+        // Show error modal
+        function showErrorModal(message) {
+            const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            document.getElementById('errorModalMessage').innerHTML = message.replace(/\n/g, '<br>');
+            errorModal.show();
+        }
 
-        // Add real-time validation when debe/haber inputs change
-        asientoMovimientosContainer.addEventListener('input', function(event) {
-            if (event.target.classList.contains('debe-input') || event.target.classList.contains('haber-input')) {
-                validateBalance();
+        // Click handler for the "FINALIZAR Y CREAR ASIENTO" button
+        document.getElementById('crearAsientoBtn').addEventListener('click', function(event) {
+            console.log("Validating asiento before submission...");
+            
+            const validation = validateAsiento();
+            
+            if (!validation.valid) {
+                console.log("Validation failed:", validation.message);
+                showErrorModal(validation.message);
+            } else {
+                console.log("Validation passed. Submitting form...");
+                // Submit the form manually
+                document.querySelector('form').submit();
             }
         });
     });
