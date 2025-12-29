@@ -145,6 +145,11 @@
             <a th:href="@{/facturas}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" id="crearAsientoBtn" class="btn btn-primary btn-lg" disabled>FINALIZAR Y CREAR ASIENTO</button>
         </div>
+        
+        <!-- Alert for balance validation -->
+        <div id="balanceAlert" class="alert alert-danger mt-3" style="display: none;" role="alert">
+            <strong>⚠️ Error de Balance:</strong> <span id="balanceAlertMessage"></span>
+        </div>
     </form>
 </div>
 
@@ -320,6 +325,65 @@
                     row.querySelector('.haber-input').value = '0';
                     console.log("Reset the last movement row.");
                 }
+            }
+        });
+
+        // Function to validate that DEBE = HABER
+        function validateBalance() {
+            const balanceAlert = document.getElementById('balanceAlert');
+            const balanceAlertMessage = document.getElementById('balanceAlertMessage');
+            
+            let totalDebe = 0;
+            let totalHaber = 0;
+            
+            // Calculate totals from all movement rows
+            const movimientoRows = document.querySelectorAll('.movimiento-row');
+            movimientoRows.forEach(row => {
+                const debeValue = parseFloat(row.querySelector('.debe-input').value) || 0;
+                const haberValue = parseFloat(row.querySelector('.haber-input').value) || 0;
+                
+                totalDebe += debeValue;
+                totalHaber += haberValue;
+            });
+            
+            console.log("Total DEBE:", totalDebe.toFixed(2));
+            console.log("Total HABER:", totalHaber.toFixed(2));
+            
+            // Check if balanced
+            if (Math.abs(totalDebe - totalHaber) > 0.01) { // Allow for small floating point differences
+                balanceAlertMessage.textContent = `El asiento NO está balanceado. DEBE: $${totalDebe.toFixed(2)} ≠ HABER: $${totalHaber.toFixed(2)}`;
+                balanceAlert.style.display = 'block';
+                return false;
+            }
+            
+            // Check if both are zero
+            if (totalDebe === 0 && totalHaber === 0) {
+                balanceAlertMessage.textContent = 'El asiento no puede tener montos totales en cero.';
+                balanceAlert.style.display = 'block';
+                return false;
+            }
+            
+            // All good!
+            balanceAlert.style.display = 'none';
+            return true;
+        }
+
+        // Validate balance before form submission
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            if (!validateBalance()) {
+                event.preventDefault(); // Stop form submission
+                console.log("Form submission prevented: Balance validation failed.");
+                
+                // Scroll to the alert
+                document.getElementById('balanceAlert').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        // Add real-time validation when debe/haber inputs change
+        asientoMovimientosContainer.addEventListener('input', function(event) {
+            if (event.target.classList.contains('debe-input') || event.target.classList.contains('haber-input')) {
+                validateBalance();
             }
         });
     });
