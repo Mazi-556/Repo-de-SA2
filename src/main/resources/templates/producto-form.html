@@ -81,8 +81,12 @@
         </div>
 
         <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="submit" class="btn btn-primary" 
+                th:text="${producto.id == null ? 'Guardar y Continuar a Proveedores' : 'Guardar Cambios'}">
+            </button>
+            
             <a th:href="@{/productos}" class="btn btn-secondary">Cancelar</a>
+            
             <a th:if="${producto.id}" th:href="@{/productos/asignar-proveedor/{id}(id=${producto.id})}" class="btn btn-info">Gestionar Proveedores</a>
         </div>
     </form>

@@ -57,21 +57,26 @@ public class PresupuestoController {
         return "presupuesto-listado-pedidos";
     }
 
-    @PostMapping({"/generar", "/generar/"}) // Mapeo para manejar la generación de presupuestos
-    public String generarPresupuestos(@RequestParam(required = false) List<Long> itemIds, Model model) { // Volvemos a incluir @RequestParam
+@PostMapping({"/generar", "/generar/"})
+    public String generarPresupuestos(@RequestParam(required = false) List<Long> itemIds, Model model) {
 
         List<SolicitudCompraItem> selectedItems = solicitudCompraService.getSolicitudCompraItemsByIds(itemIds);
-
         Map<Proveedor, List<SolicitudCompraItem>> presupuestosAgrupados = new HashMap<>();
 
         for (SolicitudCompraItem item : selectedItems) {
-        SolicitudCompra sc = item.getSolicitudCompra();
-            if (sc != null && sc.getEstado() == EstadoSolicitud.INICIO) {
-                sc.setEstado(EstadoSolicitud.PRESUPUESTADA);
-                solicitudCompraRepository.save(sc); 
-            }
+            // VERIFICACIÓN: Solo procedemos si el producto tiene proveedores asignados
+            if (item.getProducto() != null && 
+                item.getProducto().getProductoProveedores() != null && 
+                !item.getProducto().getProductoProveedores().isEmpty()) {
 
-            if (item.getProducto() != null && item.getProducto().getProductoProveedores() != null) {
+                // Solo si tiene proveedores, cambiamos el estado de la solicitud
+                SolicitudCompra sc = item.getSolicitudCompra();
+                if (sc != null && sc.getEstado() == EstadoSolicitud.INICIO) {
+                    sc.setEstado(EstadoSolicitud.PRESUPUESTADA);
+                    solicitudCompraRepository.save(sc); 
+                }
+
+                // Agrupamos por proveedor
                 for (ProductoProveedor pp : item.getProducto().getProductoProveedores()) {
                     Proveedor proveedor = pp.getProveedor();
                     presupuestosAgrupados
@@ -79,6 +84,7 @@ public class PresupuestoController {
                             .add(item);
                 }
             }
+            // Si no tiene proveedores, el estado se mantiene en INICIO y seguirá apareciendo en la lista
         }
         
         model.addAttribute("presupuestosAgrupados", presupuestosAgrupados);

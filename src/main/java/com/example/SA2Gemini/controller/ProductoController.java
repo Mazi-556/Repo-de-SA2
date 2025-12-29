@@ -4,15 +4,15 @@ import com.example.SA2Gemini.entity.Producto;
 import com.example.SA2Gemini.repository.AlmacenRepository;
 import com.example.SA2Gemini.repository.CategoriaProductoRepository;
 import com.example.SA2Gemini.repository.ProveedorRepository;
-import com.example.SA2Gemini.repository.ProductoProveedorRepository; // Importar ProductoProveedorRepository
+import com.example.SA2Gemini.repository.ProductoProveedorRepository;
 import com.example.SA2Gemini.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.example.SA2Gemini.entity.ProductoProveedor; // Importar ProductoProveedor
-import com.example.SA2Gemini.entity.Proveedor; // Importar Proveedor
-import java.util.Optional; // Importar Optional
+import com.example.SA2Gemini.entity.ProductoProveedor;
+import com.example.SA2Gemini.entity.Proveedor; 
+import java.util.Optional; 
 
 
 @Controller
@@ -32,7 +32,7 @@ public class ProductoController {
     private ProveedorRepository proveedorRepository;
 
     @Autowired
-    private ProductoProveedorRepository productoProveedorRepository; // Inyectar ProductoProveedorRepository
+    private ProductoProveedorRepository productoProveedorRepository;
 
     @GetMapping
     public String listarProductos(Model model) {
@@ -45,6 +45,7 @@ public class ProductoController {
         model.addAttribute("producto", new Producto());
         model.addAttribute("categorias", categoriaProductoRepository.findAll());
         model.addAttribute("almacenes", almacenRepository.findAll());
+        model.addAttribute("proveedores", proveedorRepository.findAll());
         return "producto-form";
     }
 
@@ -58,8 +59,19 @@ public class ProductoController {
 
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute Producto producto) {
-        productoService.save(producto);
-        return "redirect:/productos";
+        // Detectamos si es un producto nuevo antes de guardarlo
+        boolean esNuevo = (producto.getId() == null);
+        
+        // Guardamos el producto para que la base de datos le asigne un ID
+        Producto productoGuardado = productoService.save(producto);
+        
+        if (esNuevo) {
+            // Si es nuevo, redirigimos automáticamente a la pantalla de asignar proveedores
+            return "redirect:/productos/asignar-proveedor/" + productoGuardado.getId();
+        } else {
+            // Si solo estábamos editando, volvemos a la lista general
+            return "redirect:/productos";
+        }
     }
     
     @GetMapping("/detalle/{id}")
