@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Factura Creada Exitosamente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .success-container {
+            max-width: 900px;
+            margin: 30px auto;
+        }
+        .success-icon {
+            font-size: 70px;
+            color: #28a745;
+            animation: scaleIn 0.5s ease-in-out;
+        }
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .card-success {
+            border: 3px solid #28a745;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .asiento-table {
+            margin-top: 20px;
+        }
+        .asiento-table th {
+            background-color: #0d6efd;
+            color: white;
+            font-weight: 600;
+        }
+        .debe-column {
+            background-color: #e7f3ff;
+        }
+        .haber-column {
+            background-color: #fff3e7;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            border-top: 3px solid #0d6efd !important;
+        }
+        .btn-custom {
+            margin: 5px;
+            min-width: 180px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container success-container">
+    <div class="card card-success">
+        <div class="card-body p-4">
+            <!-- Header con icono y título -->
+            <div class="text-center mb-4">
+                <div class="success-icon mb-3">✅</div>
+                <h2 class="text-success mb-2">¡Factura y Asiento Creados Exitosamente!</h2>
+                <p class="text-muted">El asiento contable ha sido registrado según las reglas de partida doble</p>
+            </div>
+            
+            <!-- Información de la factura -->
+            <div class="info-box">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <strong>📄 Número de Factura</strong>
+                        <div class="text-primary fs-5 fw-bold" th:text="${facturaNumero}"></div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <strong>📝 Asiento ID</strong>
+                        <div class="text-primary fs-5 fw-bold" th:text="${asiento.id}"></div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <strong>📅 Fecha</strong>
+                        <div class="fs-6" th:text="${#temporals.format(asiento.fecha, 'dd/MM/yyyy')}"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Detalles del asiento contable -->
+            <div class="asiento-details">
+                <h4 class="text-center mb-3">📊 Detalle del Asiento Contable</h4>
+                
+                <!-- Descripción del asiento -->
+                <div class="alert alert-light text-center mb-3">
+                    <strong>Descripción:</strong> <span th:text="${asiento.descripcion}"></span>
+                </div>
+                
+                <!-- Tabla de movimientos -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover asiento-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Código</th>
+                                <th style="width: 40%;">Cuenta</th>
+                                <th class="text-end debe-column" style="width: 22.5%;">DEBE</th>
+                                <th class="text-end haber-column" style="width: 22.5%;">HABER</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="movimiento : ${asiento.movimientos}">
+                                <td th:text="${movimiento.cuenta.codigo}"></td>
+                                <td th:text="${movimiento.cuenta.nombre}"></td>
+                                <td class="text-end debe-column">
+                                    <span th:if="${movimiento.debe != null and movimiento.debe > 0}" 
+                                          th:text="${'$' + #numbers.formatDecimal(movimiento.debe, 1, 'POINT', 2, 'COMMA')}"></span>
+                                    <span th:unless="${movimiento.debe != null and movimiento.debe > 0}">-</span>
+                                </td>
+                                <td class="text-end haber-column">
+                                    <span th:if="${movimiento.haber != null and movimiento.haber > 0}" 
+                                          th:text="${'$' + #numbers.formatDecimal(movimiento.haber, 1, 'POINT', 2, 'COMMA')}"></span>
+                                    <span th:unless="${movimiento.haber != null and movimiento.haber > 0}">-</span>
+                                </td>
+                            </tr>
+                            <!-- Fila de totales -->
+                            <tr class="total-row">
+                                <td colspan="2" class="text-end"><strong>TOTALES:</strong></td>
+                                <td class="text-end debe-column">
+                                    <strong th:text="${'$' + #numbers.formatDecimal(#aggregates.sum(asiento.movimientos.![debe != null ? debe : 0]), 1, 'POINT', 2, 'COMMA')}"></strong>
+                                </td>
+                                <td class="text-end haber-column">
+                                    <strong th:text="${'$' + #numbers.formatDecimal(#aggregates.sum(asiento.movimientos.![haber != null ? haber : 0]), 1, 'POINT', 2, 'COMMA')}"></strong>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Validación de balance -->
+                <div class="alert alert-success text-center mt-3">
+                    <strong>✓ Asiento Balanceado:</strong> DEBE = HABER según la partida doble
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- Botones de acción -->
+            <div class="d-flex flex-wrap justify-content-center">
+                <a th:href="@{/facturas}" class="btn btn-primary btn-lg btn-custom">
+                    🔙 Volver a Facturas
+                </a>
+                
+                <a th:href="@{/}" class="btn btn-outline-secondary btn-lg btn-custom">
+                    🏠 Ir al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

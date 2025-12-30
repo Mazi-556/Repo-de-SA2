@@ -5,5 +5,6 @@ public enum EstadoOrdenCompra {
     EN_PROCESO,
     RECIBIDA_PARCIAL,
     RECIBIDA_COMPLETA,
+    FACTURADA,
     CANCELADA
 }

@@ -7,18 +7,40 @@
 <body>
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
 <div class="container mt-4">
-    <h2>Órdenes de Compra</h2>
-    <p>Seleccione una Orden de Compra en estado 'Ingresada' para generar una Factura.</p>
-    
-    <!-- TODO: Filtros -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Facturación - Órdenes de Compra</h2>
+            <p class="text-muted mb-0" th:if="${mostrar == 'pendientes'}">
+                Seleccione una orden recibida para generar su factura
+            </p>
+            <p class="text-muted mb-0" th:if="${mostrar == 'facturadas'}">
+                Listado de órdenes de compra ya facturadas
+            </p>
+        </div>
+        
+        <!-- Botones de toggle -->
+        <div class="btn-group" role="group">
+            <a th:href="@{/facturas(mostrar=pendientes)}" 
+               th:classappend="${mostrar == 'pendientes' ? 'active' : ''}"
+               class="btn btn-outline-primary">
+                📋 Pendientes de Facturar
+            </a>
+            <a th:href="@{/facturas(mostrar=facturadas)}" 
+               th:classappend="${mostrar == 'facturadas' ? 'active' : ''}"
+               class="btn btn-outline-success">
+                ✅ Facturadas
+            </a>
+        </div>
+    </div>
 
-    <table class="table table-striped">
+    <table class="table table-striped table-hover">
         <thead>
             <tr>
-                <th>Código de Orden</th>
+                <th>ID Orden</th>
                 <th>Proveedor</th>
                 <th>Fecha</th>
                 <th>Total</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -26,14 +48,34 @@
             <tr th:each="orden : ${ordenes}">
                             <td th:text="${orden.id}"></td>
                             <td th:text="${orden.proveedor.nombre}"></td>
-                            <td th:text="${orden.fecha}"></td>
-                            <td th:text="${orden.total}"></td>
+                            <td th:text="${#temporals.format(orden.fecha, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${'$' + #numbers.formatDecimal(orden.total, 1, 'POINT', 2, 'COMMA')}"></td>
                             <td>
-                                <a th:href="@{/facturas/nuevo/{id}(id=${orden.id})}" class="btn btn-primary">SELECCIONAR</a>
+                                <span th:if="${orden.estado.name() == 'FACTURADA'}" class="badge bg-success">✅ FACTURADA</span>
+                                <span th:if="${orden.estado.name() == 'RECIBIDA_COMPLETA'}" class="badge bg-info">📦 RECIBIDA</span>
+                                <span th:if="${orden.estado.name() == 'RECIBIDA_PARCIAL'}" class="badge bg-warning">📦 PARCIAL</span>
+                            </td>
+                            <td>
+                                <!-- Solo mostrar botón si está pendiente de facturar -->
+                                <a th:if="${mostrar == 'pendientes'}" 
+                                   th:href="@{/facturas/nuevo/{id}(id=${orden.id})}" 
+                                   class="btn btn-primary btn-sm">
+                                    📄 Facturar
+                                </a>
+                                <span th:if="${mostrar == 'facturadas'}" class="text-muted">
+                                    Ya facturada
+                                </span>
                             </td>
                         </tr>
                         <tr th:if="${ordenes.empty}">
-                            <td colspan="5" class="text-center">No hay órdenes pendientes de facturación.</td>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <span th:if="${mostrar == 'pendientes'}">
+                                    ℹ️ No hay órdenes pendientes de facturación.
+                                </span>
+                                <span th:if="${mostrar == 'facturadas'}">
+                                    ℹ️ No hay órdenes facturadas aún.
+                                </span>
+                            </td>
                         </tr>
         </tbody>
     </table>

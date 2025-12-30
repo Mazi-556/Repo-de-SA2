@@ -84,7 +84,8 @@ public class FacturaService {
         
         factura.setAsiento(asiento);
 
-        oc.setEstado(EstadoOrdenCompra.RECIBIDA_COMPLETA);
+        // Cambiar estado a FACTURADA para que no aparezca más en el listado de pendientes
+        oc.setEstado(EstadoOrdenCompra.FACTURADA);
         ordenCompraRepository.save(oc);
 
         oc.getItems().forEach(ocItem -> {
