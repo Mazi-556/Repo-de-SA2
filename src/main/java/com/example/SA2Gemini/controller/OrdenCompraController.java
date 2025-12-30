@@ -64,6 +64,12 @@ public class OrdenCompraController {
         System.out.println("DEBUG Controller: allParams recibido del formulario: " + allParams);
         System.out.println("--- Generar Orden de Compra desde Pedido de Cotización ID: " + pedidoCotizacionId + " ---");
 
+        // Validación: debe haber al menos un ítem seleccionado
+        if (itemIdsOrdenCompra == null || itemIdsOrdenCompra.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Debe seleccionar al menos un producto para generar la Orden de Compra.");
+            return "redirect:/ordenes-compra/" + pedidoCotizacionId;
+        }
+
         // Mapas para almacenar las cantidades y precios finales editados por el usuario para la OC
         Map<Long, Integer> cantidadesFinalesOC = new HashMap<>();
         Map<Long, BigDecimal> preciosUnitariosFinalesOC = new HashMap<>();

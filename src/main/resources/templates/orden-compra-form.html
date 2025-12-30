@@ -77,7 +77,7 @@
                 </tbody>
             </table>
 
-            <button type="submit" class="btn btn-success mt-3">GENERAR ORDEN DE COMPRA</button>
+            <button type="submit" class="btn btn-success mt-3" id="generarOrdenBtn">GENERAR ORDEN DE COMPRA</button>
         </form>
     </div>
 </div>
@@ -96,6 +96,16 @@
         let checkboxes = document.querySelectorAll('input[name="itemIdsOrdenCompra"]');
         for (let i = 0; i < checkboxes.length; i++) {
             checkboxes[i].checked = e.target.checked;
+        }
+    });
+
+    // Validación antes de enviar el formulario
+    document.querySelector('form[action*="/generar"]').addEventListener('submit', function(e) {
+        let checkboxes = document.querySelectorAll('input[name="itemIdsOrdenCompra"]:checked');
+        if (checkboxes.length === 0) {
+            e.preventDefault();
+            alert('⚠️ Debe seleccionar al menos un producto para generar la Orden de Compra.');
+            return false;
         }
     });
 </script>
