@@ -58,7 +58,14 @@ public class SolicitudCompraController {
     }
 
     @PostMapping("/guardar")
-    public String guardarSolicitud(@ModelAttribute SolicitudCompra solicitud) {
+    public String guardarSolicitud(@ModelAttribute SolicitudCompra solicitud, Model model) {
+        // Validación: la solicitud debe tener al menos un producto
+        if (solicitud.getItems() == null || solicitud.getItems().isEmpty()) {
+            model.addAttribute("error", "Debe agregar al menos un producto a la solicitud de compra.");
+            model.addAttribute("solicitud", solicitud);
+            model.addAttribute("productos", productoService.findAll());
+            return "solicitud-compra-form";
+        }
         solicitudCompraService.saveSolicitudCompra(solicitud);
         return "redirect:/solicitudes-compra";
     }

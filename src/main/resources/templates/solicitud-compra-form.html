@@ -8,6 +8,10 @@
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
 <div class="container mt-4">
     <h2>Solicitud de Compra</h2>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>⚠️ Error:</strong> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <form th:action="@{/solicitudes-compra/guardar}" th:object="${solicitud}" method="post" class="card p-4">
         <div class="mb-3">
             <label for="observaciones" class="form-label">Observaciones</label>
@@ -53,7 +57,7 @@
         </div>
 
         <div class="mt-4">
-            <button type="submit" class="btn btn-primary">CREAR SOLICITUD</button>
+            <button type="submit" class="btn btn-primary" id="crearSolicitudBtn">CREAR SOLICITUD</button>
             <a th:href="@{/solicitudes-compra}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
@@ -66,8 +70,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const cantidadProducto = document.getElementById('cantidadProducto');
     const agregarProductoBtn = document.getElementById('agregarProductoBtn');
     const solicitudItemsTableBody = document.querySelector('#solicitudItemsTable tbody');
+    const form = document.querySelector('form');
 
     let itemIndex = 0;
+
+    // Validación al enviar el formulario
+    form.addEventListener('submit', function(e) {
+        const rowCount = solicitudItemsTableBody.querySelectorAll('tr').length;
+        if (rowCount === 0) {
+            e.preventDefault();
+            alert('⚠️ Debe agregar al menos un producto a la solicitud de compra.');
+            return false;
+        }
+    });
 
     agregarProductoBtn.addEventListener('click', function() {
         const option = productoSeleccionado.options[productoSeleccionado.selectedIndex];
