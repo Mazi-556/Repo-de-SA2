@@ -44,6 +44,10 @@
                     <a th:href="@{/solicitudes-compra/detalle/{id}(id=${s.id})}" class="btn btn-sm btn-info">👁️</a>
                 </td>
             </tr>
+
+            <tr th:if="${solicitudes.empty}">
+                <td colspan="6" class="text-center text-muted italic">No hay solicitudes de compra registradas.</td>
+            </tr>
         </tbody>
     </table>
 </div>

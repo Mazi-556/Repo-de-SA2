@@ -39,6 +39,11 @@
                     <!-- Aquí podríamos añadir más acciones como descargar PDF de OC, etc. -->
                 </td>
             </tr>
+
+            <tr th:if="${ordenesCompra.empty}">
+                <td colspan="6" class="text-center text-muted italic">No se encontraron órdenes de compra.</td>
+            </tr>
+            
         </tbody>
     </table>
 

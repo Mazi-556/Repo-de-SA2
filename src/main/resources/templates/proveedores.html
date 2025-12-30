@@ -101,6 +101,9 @@
                     </span>
                 </td>
             </tr>
+            <tr th:if="${proveedores.empty}">
+                <td colspan="5" class="text-center text-muted italic">No hay proveedores registrados en el sistema.</td>
+            </tr>
         </tbody>
     </table>
 </div>

@@ -62,6 +62,11 @@
                     </span>
                 </td>
             </tr>
+
+            <tr th:if="${productos.empty}">
+                <td colspan="5" class="text-center text-muted italic">El inventario está vacío. Agregue un producto para comenzar.</td>
+            </tr>
+
         </tbody>
     </table>
 </div>
