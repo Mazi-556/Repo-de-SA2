@@ -4,6 +4,7 @@ import com.example.SA2Gemini.entity.*;
 import com.example.SA2Gemini.repository.OrdenCompraRepository;
 import com.example.SA2Gemini.repository.ProductoRepository;
 import com.example.SA2Gemini.repository.RemitoRepository;
+import com.example.SA2Gemini.repository.SolicitudCompraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,9 @@ public class RemitoService {
 
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired
+    private SolicitudCompraRepository solicitudCompraRepository;
 
     // Dentro de la clase OrdenCompraItem.java
     private int cantidadRecibida = 0; // Inicializar en 0 para que no sea nulo
@@ -131,6 +135,13 @@ public class RemitoService {
             }
     
             ordenCompraRepository.save(ordenCompra);
+
+            // --- NUEVO: Actualizar el estado de la Solicitud de Compra a INGRESADA ---
+            SolicitudCompra sc = ordenCompra.getSolicitudCompra();
+            if (sc != null) {
+                sc.setEstado(EstadoSolicitud.INGRESADA);
+                solicitudCompraRepository.save(sc);
+            }
     
             return savedRemito;
         }}

@@ -91,9 +91,12 @@ public class FacturaService {
 
         // Buscamos solicitudes tanto presupuestadas como las que ya tienen orden (comprometidas)
         List<SolicitudCompra> solicitudesAsociadas = solicitudCompraRepository.findAll().stream()
-            .filter(s -> s.getEstado() == EstadoSolicitud.PRESUPUESTADA || s.getEstado() == EstadoSolicitud.COMPROMETIDA)
+            .filter(s -> s.getEstado() == EstadoSolicitud.PRESUPUESTADA || 
+             s.getEstado() == EstadoSolicitud.COMPROMETIDA || 
+             s.getEstado() == EstadoSolicitud.INGRESADA)
             .toList();
-                       
+
+            
             for (SolicitudCompra sc : solicitudesAsociadas) {
                 // Lógica simple: si la solicitud tiene el producto que estamos facturando, la cerramos
                 boolean tieneProducto = sc.getItems().stream()
