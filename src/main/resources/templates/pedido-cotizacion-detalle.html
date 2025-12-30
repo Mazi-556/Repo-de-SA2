@@ -28,7 +28,6 @@
     </div>
 
     <h3 class="mb-3">Ítems del Pedido</h3>
-    <p>DEBUG: <span th:text="${pedido.items.size()}"></span> ítems cargados.</p>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -48,8 +47,18 @@
                 <td th:text="${item.producto.marca}"></td>
                 <td th:text="${item.producto.modelo}"></td>
                 <td th:text="${item.cantidad}"></td>
-                <td th:text="${item.precioUnitarioCotizado}"></td>
-                <td th:text="${item.totalItemCotizado}"></td>
+                <td>
+                    <span th:if="${item.precioUnitarioCotizado != null}">
+                        $<span th:text="${#numbers.formatDecimal(item.precioUnitarioCotizado, 1, 'POINT', 2, 'COMMA')}"></span>
+                    </span>
+                    <span th:if="${item.precioUnitarioCotizado == null}" class="text-muted">-</span>
+                </td>
+                <td>
+                    <span th:if="${item.totalItemCotizado != null}">
+                        $<span th:text="${#numbers.formatDecimal(item.totalItemCotizado, 1, 'POINT', 2, 'COMMA')}"></span>
+                    </span>
+                    <span th:if="${item.totalItemCotizado == null}" class="text-muted">-</span>
+                </td>
             </tr>
         </tbody>
     </table>

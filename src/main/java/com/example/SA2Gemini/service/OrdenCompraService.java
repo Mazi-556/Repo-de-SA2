@@ -89,6 +89,13 @@ public class OrdenCompraService {
             ocItem.setPrecioUnitario(precioUnitarioFinal != null ? precioUnitarioFinal : pcItem.getPrecioUnitarioCotizado());
             ocItem.setTotal(ocItem.getPrecioUnitario().multiply(new BigDecimal(ocItem.getCantidad())));
 
+            // IMPORTANTE: Actualizar el PedidoCotizacionItem con los precios cargados
+            if (precioUnitarioFinal != null) {
+                pcItem.setPrecioUnitarioCotizado(precioUnitarioFinal);
+                pcItem.setTotalItemCotizado(precioUnitarioFinal.multiply(new BigDecimal(cantidadFinal != null ? cantidadFinal : pcItem.getCantidad())));
+                pedidoCotizacionItemRepository.save(pcItem);
+            }
+
             ordenCompra.addOrderItem(ocItem);
             subtotal = subtotal.add(ocItem.getTotal());
 

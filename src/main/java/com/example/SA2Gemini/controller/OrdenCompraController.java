@@ -31,7 +31,15 @@ public class OrdenCompraController {
     @GetMapping
     public String mostrarFormularioOrdenCompra(Model model) {
         List<PedidoCotizacion> pedidosCotizacion = pedidoCotizacionService.getAllPedidosCotizacion();
-        model.addAttribute("pedidosCotizacion", pedidosCotizacion);
+        
+        // Filtrar solo pedidos que tengan cotización cargada (al menos un ítem con precio)
+        List<PedidoCotizacion> pedidosConCotizacion = pedidosCotizacion.stream()
+            .filter(pedido -> pedido.getItems().stream()
+                .anyMatch(item -> item.getPrecioUnitarioCotizado() != null && 
+                                  item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0))
+            .collect(java.util.stream.Collectors.toList());
+        
+        model.addAttribute("pedidosCotizacion", pedidosConCotizacion);
         // Inicialmente, no hay ningún pedido seleccionado
         model.addAttribute("pedidoSeleccionado", null);
         return "orden-compra-form";
@@ -40,10 +48,29 @@ public class OrdenCompraController {
     @GetMapping("/{id}")
     public String seleccionarPedidoCotizacion(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         List<PedidoCotizacion> pedidosCotizacion = pedidoCotizacionService.getAllPedidosCotizacion();
-        model.addAttribute("pedidosCotizacion", pedidosCotizacion);
+        
+        // Filtrar solo pedidos que tengan cotización cargada
+        List<PedidoCotizacion> pedidosConCotizacion = pedidosCotizacion.stream()
+            .filter(pedido -> pedido.getItems().stream()
+                .anyMatch(item -> item.getPrecioUnitarioCotizado() != null && 
+                                  item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0))
+            .collect(java.util.stream.Collectors.toList());
+        
+        model.addAttribute("pedidosCotizacion", pedidosConCotizacion);
 
         return pedidoCotizacionService.getPedidoCotizacionById(id)
                 .map(pedido -> {
+                    // Validar que el pedido tenga cotización cargada
+                    boolean tieneCotizacion = pedido.getItems().stream()
+                        .anyMatch(item -> item.getPrecioUnitarioCotizado() != null && 
+                                          item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0);
+                    
+                    if (!tieneCotizacion) {
+                        redirectAttributes.addFlashAttribute("errorMessage", 
+                            "Este pedido de cotización no tiene precios cargados. Debe cargar la cotización primero desde 'Pedidos de Cotización'.");
+                        return "redirect:/ordenes-compra";
+                    }
+                    
                     model.addAttribute("pedidoSeleccionado", pedido);
                     return "orden-compra-form";
                 })
@@ -113,6 +140,18 @@ public class OrdenCompraController {
         try {
             PedidoCotizacion pedido = pedidoCotizacionService.getPedidoCotizacionById(pedidoCotizacionId)
                                         .orElseThrow(() -> new RuntimeException("Pedido de Cotización no encontrado."));
+
+            // Validación adicional: verificar que todos los ítems seleccionados tengan precio cotizado
+            boolean todosConPrecio = itemIdsOrdenCompra.stream().allMatch(itemId -> 
+                preciosUnitariosFinalesOC.get(itemId) != null && 
+                preciosUnitariosFinalesOC.get(itemId).compareTo(BigDecimal.ZERO) > 0
+            );
+            
+            if (!todosConPrecio) {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                    "Todos los productos seleccionados deben tener un precio unitario mayor a 0.");
+                return "redirect:/ordenes-compra/" + pedidoCotizacionId;
+            }
 
             ordenCompraService.generarOrdenCompra(
                 pedido.getProveedor().getId(),
