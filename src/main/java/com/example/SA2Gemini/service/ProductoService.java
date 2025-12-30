@@ -13,9 +13,9 @@ public class ProductoService {
     private ProductoRepository productoRepository;
 
     public List<Producto> findAll() {
-        // Sort by 'activo' status (true first, then false) and then by 'nombre'
-        return productoRepository.findAll(Sort.by(Sort.Direction.DESC, "activo").and(Sort.by(Sort.Direction.ASC, "nombre")));
-    }
+            // Ordenar por ID descendente para que el último creado aparezca primero
+            return productoRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        }
 
     public Producto findById(Long id) {
         return productoRepository.findById(id).orElse(null);
