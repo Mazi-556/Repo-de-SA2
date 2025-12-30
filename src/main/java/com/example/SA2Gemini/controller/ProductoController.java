@@ -58,7 +58,26 @@ public class ProductoController {
     }
 
     @PostMapping("/guardar")
-    public String guardarProducto(@ModelAttribute Producto producto) {
+    public String guardarProducto(@ModelAttribute Producto producto, Model model) {
+        // Validación: el producto debe tener categoría y almacén
+        if (producto.getCategoria() == null || producto.getCategoria().getId() == null) {
+            model.addAttribute("error", "Debe seleccionar una categoría para el producto.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        if (producto.getAlmacen() == null || producto.getAlmacen().getId() == null) {
+            model.addAttribute("error", "Debe seleccionar un almacén para el producto.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
         // Detectamos si es un producto nuevo antes de guardarlo
         boolean esNuevo = (producto.getId() == null);
         
