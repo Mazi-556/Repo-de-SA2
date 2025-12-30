@@ -64,7 +64,10 @@
             </tr>
 
             <tr th:if="${productos.empty}">
-                <td colspan="5" class="text-center text-muted italic">El inventario está vacío. Agregue un producto para comenzar.</td>
+                <td colspan="9" class="text-center text-muted py-4">
+                    <i class="d-block mb-2">El inventario está vacío.</i>
+                    <a th:href="@{/productos/nuevo}" class="btn btn-sm btn-outline-primary">Agregue su primer producto</a>
+                </td>
             </tr>
 
         </tbody>
