@@ -36,8 +36,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     
-    <form th:action="@{/facturas/crear-asiento}" method="post" class="card p-4 shadow-sm">
-        
+    <form id="facturaForm" th:action="@{/facturas/crear-asiento}" method="post" class="card p-4 shadow-sm">        
         <input type="hidden" name="ocId" th:value="${ordenCompra.id}" />
         <!-- CSRF token for Spring Security -->
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -411,8 +410,8 @@
                 showErrorModal(validation.message);
             } else {
                 console.log("Validation passed. Submitting form...");
-                // Submit the form manually
-                document.querySelector('form').submit();
+                // Enviar específicamente el formulario de la factura por su ID
+                document.getElementById('facturaForm').submit();
             }
         });
     });
