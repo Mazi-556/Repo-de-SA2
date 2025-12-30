@@ -9,9 +9,28 @@
 <div class="container mt-4">
     <h2>Listado de Solicitudes de Compras</h2>
     <div class="d-flex justify-content-between mb-3">
-        <div>
-            <!-- TODO: Filtros -->
+
+        <div class="card p-3 mb-3 bg-light">
+            <form th:action="@{/solicitudes-compra}" method="get" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="estadoFilter" class="form-label mb-0 fw-bold">Filtrar solicitudes:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="estado" id="estadoFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Ver Activas (Sin Finalizar) </option>
+                        <option th:each="est : ${estados}" 
+                                th:value="${est}" 
+                                th:text="${est}"
+                                th:selected="${est == estadoSeleccionado}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-auto" th:if="${estadoSeleccionado != null}">
+                    <a th:href="@{/solicitudes-compra}" class="btn btn-sm btn-outline-secondary">Ver Activas</a>
+                </div>
+            </form>
         </div>
+
         <div>
             <a th:href="@{/solicitudes-compra/nuevo}" class="btn btn-primary">+</a>
         </div>

@@ -1,12 +1,17 @@
 package com.example.SA2Gemini.controller;
 
+import com.example.SA2Gemini.entity.EstadoSolicitud;
 import com.example.SA2Gemini.entity.SolicitudCompra;
-import com.example.SA2Gemini.service.ProductoService; // Import ProductoService
+import com.example.SA2Gemini.repository.SolicitudCompraRepository;
+import com.example.SA2Gemini.service.ProductoService;
 import com.example.SA2Gemini.service.SolicitudCompraService;
-import org.springframework.beans.factory.annotation.Autowired; // Import Autowired
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/solicitudes-compra")
@@ -16,20 +21,39 @@ public class SolicitudCompraController {
     private SolicitudCompraService solicitudCompraService;
 
     @Autowired
-    private ProductoService productoService; // Inject ProductoService
+    private SolicitudCompraRepository solicitudCompraRepository;
+
+    @Autowired
+    private ProductoService productoService;
 
     @GetMapping
-    public String listarSolicitudes(Model model) {
-        model.addAttribute("solicitudes", solicitudCompraService.getAllSolicitudesCompra());
+    public String listarSolicitudes(@RequestParam(required = false) EstadoSolicitud estado, Model model) {
+        List<SolicitudCompra> solicitudes;
+        
+        if (estado != null) {
+            // Filtra por el estado seleccionado
+            solicitudes = solicitudCompraRepository.findByEstado(estado);
+        } else {
+            // Por defecto muestra todas menos las FINALIZADAS para no saturar la vista
+            solicitudes = solicitudCompraRepository.findAll().stream()
+                    .filter(s -> s.getEstado() != EstadoSolicitud.FINALIZADA)
+                    .collect(Collectors.toList());
+        }
+
+        model.addAttribute("solicitudes", solicitudes);
+        // Esta línea es la que hace que aparezcan todas las opciones en el desplegable
+        model.addAttribute("estados", EstadoSolicitud.values());
+        model.addAttribute("estadoSeleccionado", estado);
+        
         return "solicitud-compra-listado";
     }
 
     @GetMapping("/nuevo")
     public String mostrarFormulario(Model model) {
         SolicitudCompra solicitud = new SolicitudCompra();
-        solicitud.setItems(new java.util.ArrayList<>()); // Explicitly initialize items list
+        solicitud.setItems(new java.util.ArrayList<>());
         model.addAttribute("solicitud", solicitud);
-        model.addAttribute("productos", productoService.findAll()); // Add products to the model
+        model.addAttribute("productos", productoService.findAll());
         return "solicitud-compra-form";
     }
 
