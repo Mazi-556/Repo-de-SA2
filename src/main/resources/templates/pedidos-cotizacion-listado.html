@@ -34,11 +34,9 @@
                     </span>
                 </td>
                 <td>
-                    <!-- Podríamos añadir un botón para ver detalles o descargar el PDF generado -->
                     <a th:href="@{/pedidos-cotizacion/{id}(id=${pedido.id})}" class="btn btn-info btn-sm">Ver Detalles</a>
                     <a th:href="@{/pedidos-cotizacion/{id}/cargar-cotizacion(id=${pedido.id})}" class="btn btn-warning btn-sm ms-2">Cargar Cotización</a>
-                    <!-- Añadir botón para descargar el PDF si fuera necesario, usando el ID del pedido -->
-                    <!-- <a th:href="@{/pedidos-cotizacion/descargar-pdf/{id}(id=${pedido.id})}" class="btn btn-primary btn-sm">Descargar PDF</a> -->
+                    <a th:href="@{/pedidos-cotizacion/{id}/descargar-pdf(id=${pedido.id})}" class="btn btn-success btn-sm ms-2">📄 Descargar PDF</a>
                 </td>
             </tr>
         </tbody>
