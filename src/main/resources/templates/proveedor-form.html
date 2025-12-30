@@ -8,6 +8,10 @@
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
 <div class="container mt-4">
     <h2 th:text="${titulo}"></h2>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>⚠️ Error:</strong> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <form th:action="@{/proveedores/guardar}" th:object="${proveedor}" method="post" class="card p-4">
         <input type="hidden" th:field="*{id}" />
         
@@ -61,15 +65,15 @@
         <hr>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="tipoProveedor" class="form-label">Tipo de Proveedor</label>
-                <select class="form-select" id="tipoProveedor" th:field="*{tipoProveedor}">
+                <label for="tipoProveedor" class="form-label">Tipo de Proveedor <span class="text-danger">*</span></label>
+                <select class="form-select" id="tipoProveedor" th:field="*{tipoProveedor}" required>
                     <option value="">Seleccionar...</option>
                     <option th:each="tipo : ${tiposProveedor}" th:value="${tipo.id}" th:text="${tipo.nombre}"></option>
                 </select>
             </div>
             <div class="col-md-6 mb-3">
-                <label for="rubro" class="form-label">Rubro</label>
-                <select class="form-select" id="rubro" th:field="*{rubro}">
+                <label for="rubro" class="form-label">Rubro <span class="text-danger">*</span></label>
+                <select class="form-select" id="rubro" th:field="*{rubro}" required>
                     <option value="">Seleccionar...</option>
                     <option th:each="r : ${rubros}" th:value="${r.id}" th:text="${r.nombre}"></option>
                 </select>

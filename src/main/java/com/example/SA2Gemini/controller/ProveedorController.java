@@ -38,7 +38,53 @@ public class ProveedorController {
     }
 
     @PostMapping("/guardar")
-    public String guardarProveedor(@ModelAttribute Proveedor proveedor) {
+    public String guardarProveedor(@ModelAttribute Proveedor proveedor, Model model) {
+        // Validaciones básicas
+        if (proveedor.getNombre() == null || proveedor.getNombre().trim().isEmpty()) {
+            model.addAttribute("error", "El nombre del proveedor es obligatorio.");
+            model.addAttribute("proveedor", proveedor);
+            model.addAttribute("titulo", proveedor.getId() == null ? "Alta de Proveedor" : "Edición de Proveedor");
+            model.addAttribute("tiposProveedor", tipoProveedorRepository.findAll());
+            model.addAttribute("rubros", rubroRepository.findAll());
+            return "proveedor-form";
+        }
+        
+        if (proveedor.getRazonSocial() == null || proveedor.getRazonSocial().trim().isEmpty()) {
+            model.addAttribute("error", "La razón social es obligatoria.");
+            model.addAttribute("proveedor", proveedor);
+            model.addAttribute("titulo", proveedor.getId() == null ? "Alta de Proveedor" : "Edición de Proveedor");
+            model.addAttribute("tiposProveedor", tipoProveedorRepository.findAll());
+            model.addAttribute("rubros", rubroRepository.findAll());
+            return "proveedor-form";
+        }
+        
+        if (proveedor.getCuit() == null || proveedor.getCuit().trim().isEmpty()) {
+            model.addAttribute("error", "El CUIT es obligatorio.");
+            model.addAttribute("proveedor", proveedor);
+            model.addAttribute("titulo", proveedor.getId() == null ? "Alta de Proveedor" : "Edición de Proveedor");
+            model.addAttribute("tiposProveedor", tipoProveedorRepository.findAll());
+            model.addAttribute("rubros", rubroRepository.findAll());
+            return "proveedor-form";
+        }
+        
+        if (proveedor.getTipoProveedor() == null || proveedor.getTipoProveedor().getId() == null) {
+            model.addAttribute("error", "Debe seleccionar un tipo de proveedor.");
+            model.addAttribute("proveedor", proveedor);
+            model.addAttribute("titulo", proveedor.getId() == null ? "Alta de Proveedor" : "Edición de Proveedor");
+            model.addAttribute("tiposProveedor", tipoProveedorRepository.findAll());
+            model.addAttribute("rubros", rubroRepository.findAll());
+            return "proveedor-form";
+        }
+        
+        if (proveedor.getRubro() == null || proveedor.getRubro().getId() == null) {
+            model.addAttribute("error", "Debe seleccionar un rubro.");
+            model.addAttribute("proveedor", proveedor);
+            model.addAttribute("titulo", proveedor.getId() == null ? "Alta de Proveedor" : "Edición de Proveedor");
+            model.addAttribute("tiposProveedor", tipoProveedorRepository.findAll());
+            model.addAttribute("rubros", rubroRepository.findAll());
+            return "proveedor-form";
+        }
+        
         proveedorService.save(proveedor);
         return "redirect:/proveedores";
     }
