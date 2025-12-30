@@ -45,15 +45,15 @@
         <div class="row">
             <div class="col-md-4 mb-3">
                 <label for="stockMinimo" class="form-label">Stock Mínimo</label>
-                <input type="number" class="form-control" id="stockMinimo" th:field="*{stockMinimo}">
+                <input type="number" class="form-control" id="stockMinimo" th:field="*{stockMinimo}" min="0">
             </div>
             <div class="col-md-4 mb-3">
                 <label for="stockMaximo" class="form-label">Stock Máximo</label>
-                <input type="number" class="form-control" id="stockMaximo" th:field="*{stockMaximo}">
+                <input type="number" class="form-control" id="stockMaximo" th:field="*{stockMaximo}" min="0">
             </div>
             <div class="col-md-4 mb-3">
                 <label for="puntoReposicion" class="form-label">Punto de Reposición</label>
-                <input type="number" class="form-control" id="puntoReposicion" th:field="*{puntoReposicion}">
+                <input type="number" class="form-control" id="puntoReposicion" th:field="*{puntoReposicion}" min="0">
             </div>
         </div>
 
@@ -62,11 +62,11 @@
         <div class="row">
             <div class="col-md-4 mb-3">
                 <label for="precioVenta" class="form-label">Precio de Venta</label>
-                <input type="number" step="0.01" class="form-control" id="precioVenta" th:field="*{precioVenta}">
+                <input type="number" step="0.01" class="form-control" id="precioVenta" th:field="*{precioVenta}" min="0">
             </div>
             <div class="col-md-4 mb-3">
                 <label for="iva" class="form-label">IVA %</label>
-                <input type="number" step="0.01" class="form-control" id="iva" th:field="*{iva}" value="21.00">
+                <input type="number" step="0.01" class="form-control" id="iva" th:field="*{iva}" value="21.00" min="0" max="100">
             </div>
             <div class="col-md-4 mb-3">
                 <label for="categoria" class="form-label">Categoría <span class="text-danger">*</span></label>
@@ -96,5 +96,33 @@
     </form>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Validaciones adicionales al enviar el formulario
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const stockMin = parseFloat(document.getElementById('stockMinimo').value) || 0;
+        const stockMax = parseFloat(document.getElementById('stockMaximo').value) || 0;
+        const puntoRepo = parseFloat(document.getElementById('puntoReposicion').value) || 0;
+        
+        // Validar stock mínimo vs máximo
+        if (stockMin > 0 && stockMax > 0 && stockMin > stockMax) {
+            e.preventDefault();
+            alert('⚠️ El stock mínimo no puede ser mayor que el stock máximo.');
+            return false;
+        }
+        
+        // Validar punto de reposición
+        if (puntoRepo > 0 && stockMin > 0 && puntoRepo < stockMin) {
+            e.preventDefault();
+            alert('⚠️ El punto de reposición no puede ser menor que el stock mínimo.');
+            return false;
+        }
+        
+        if (puntoRepo > 0 && stockMax > 0 && puntoRepo > stockMax) {
+            e.preventDefault();
+            alert('⚠️ El punto de reposición no puede ser mayor que el stock máximo.');
+            return false;
+        }
+    });
+</script>
 </body>
 </html>

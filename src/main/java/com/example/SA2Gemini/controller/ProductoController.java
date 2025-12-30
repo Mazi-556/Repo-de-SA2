@@ -78,6 +78,85 @@ public class ProductoController {
             return "producto-form";
         }
         
+        // Validaciones de stock
+        if (producto.getStockMinimo() != null && producto.getStockMinimo() < 0) {
+            model.addAttribute("error", "El stock mínimo no puede ser negativo.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        if (producto.getStockMaximo() != null && producto.getStockMaximo() < 0) {
+            model.addAttribute("error", "El stock máximo no puede ser negativo.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        if (producto.getStockMinimo() != null && producto.getStockMaximo() != null 
+            && producto.getStockMinimo() > producto.getStockMaximo()) {
+            model.addAttribute("error", "El stock mínimo no puede ser mayor que el stock máximo.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        if (producto.getPuntoReposicion() != null && producto.getPuntoReposicion() < 0) {
+            model.addAttribute("error", "El punto de reposición no puede ser negativo.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        if (producto.getPuntoReposicion() != null && producto.getStockMinimo() != null 
+            && producto.getPuntoReposicion() < producto.getStockMinimo()) {
+            model.addAttribute("error", "El punto de reposición no puede ser menor que el stock mínimo.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        if (producto.getPuntoReposicion() != null && producto.getStockMaximo() != null 
+            && producto.getPuntoReposicion() > producto.getStockMaximo()) {
+            model.addAttribute("error", "El punto de reposición no puede ser mayor que el stock máximo.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        // Validaciones de precios
+        if (producto.getPrecioVenta() != null && producto.getPrecioVenta().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            model.addAttribute("error", "El precio de venta no puede ser negativo.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
+        // Validación de IVA
+        if (producto.getIva() != null && (producto.getIva().compareTo(java.math.BigDecimal.ZERO) < 0 
+            || producto.getIva().compareTo(new java.math.BigDecimal("100")) > 0)) {
+            model.addAttribute("error", "El IVA debe estar entre 0% y 100%.");
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
+        }
+        
         // Detectamos si es un producto nuevo antes de guardarlo
         boolean esNuevo = (producto.getId() == null);
         
