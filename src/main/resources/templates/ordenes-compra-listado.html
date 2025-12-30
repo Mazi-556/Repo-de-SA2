@@ -32,18 +32,24 @@
                 <td th:text="${orden.id}"></td>
                 <td th:text="${orden.fecha}"></td>
                 <td th:text="${orden.proveedor.nombre}"></td>
-                <td th:text="${orden.estado}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${orden.estado.name() == 'EMITIDA' ? 'bg-primary' : 
+                                           orden.estado.name() == 'RECIBIDA_PARCIAL' ? 'bg-warning' :
+                                           orden.estado.name() == 'RECIBIDA_COMPLETA' ? 'bg-success' : 'bg-secondary'}"
+                          th:text="${orden.estado}">
+                    </span>
+                </td>
                 <td th:text="${orden.total}"></td>
                 <td>
                     <a th:href="@{/ordenes-compra/listado/{id}(id=${orden.id})}" class="btn btn-info btn-sm">Ver Detalles</a>
-                    <!-- Aquí podríamos añadir más acciones como descargar PDF de OC, etc. -->
                 </td>
             </tr>
 
             <tr th:if="${ordenesCompra.empty}">
                 <td colspan="6" class="text-center text-muted italic">No se encontraron órdenes de compra.</td>
             </tr>
-            
+
         </tbody>
     </table>
 

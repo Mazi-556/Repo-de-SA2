@@ -24,7 +24,15 @@
                 <td th:text="${pedido.id}"></td>
                 <td th:text="${pedido.fecha}"></td>
                 <td th:text="${pedido.proveedor.nombre}"></td>
-                <td th:text="${pedido.estado}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${pedido.estado.name() == 'ENVIADO' ? 'bg-secondary' : 
+                                           pedido.estado.name() == 'COTIZADO' ? 'bg-info' :
+                                           pedido.estado.name() == 'RECHAZADO' ? 'bg-danger' :
+                                           pedido.estado.name() == 'FINALIZADO' ? 'bg-success' : 'bg-dark'}"
+                          th:text="${pedido.estado}">
+                    </span>
+                </td>
                 <td>
                     <!-- Podríamos añadir un botón para ver detalles o descargar el PDF generado -->
                     <a th:href="@{/pedidos-cotizacion/{id}(id=${pedido.id})}" class="btn btn-info btn-sm">Ver Detalles</a>
