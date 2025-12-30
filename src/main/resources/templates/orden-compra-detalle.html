@@ -22,18 +22,14 @@
             <p><strong>Fecha de Emisión:</strong> <span th:text="${orden.fecha}"></span></p>
             <p><strong>Proveedor:</strong> <span th:text="${orden.proveedor.nombre}"></span></p>
             <p><strong>Estado:</strong> <span th:text="${orden.estado}"></span></p>
-            <p><strong>Forma de Pago:</strong> <span th:text="${orden.formaPago}"></span></p>
-            <p><strong>Plazo de Pago:</strong> <span th:text="${orden.plazoPago}"></span></p>
-            <p><strong>Con Envío:</strong> <span th:text="${orden.conEnvio ? 'Sí' : 'No'}"></span></p>
             <p th:if="${orden.solicitudCompra != null}"><strong>Solicitud de Compra Original:</strong> <span th:text="${orden.solicitudCompra.id}"></span></p>
-            <p><strong>Subtotal:</strong> <span th:text="${orden.subtotal}"></span></p>
-            <p><strong>IVA:</strong> <span th:text="${orden.iva}"></span></p>
-            <p><strong>Total:</strong> <span th:text="${orden.total}"></span></p>
+            <p><strong>Subtotal:</strong> $<span th:text="${#numbers.formatDecimal(orden.subtotal, 1, 'POINT', 2, 'COMMA')}"></span></p>
+            <p><strong>IVA:</strong> $<span th:text="${#numbers.formatDecimal(orden.iva, 1, 'POINT', 2, 'COMMA')}"></span></p>
+            <p><strong>Total:</strong> $<span th:text="${#numbers.formatDecimal(orden.total, 1, 'POINT', 2, 'COMMA')}"></span></p>
         </div>
     </div>
 
     <h3 class="mb-3">Ítems de la Orden de Compra</h3>
-    <p>DEBUG: <span th:text="${orden.items.size()}"></span> ítems cargados. Orden ID: <span th:text="${orden.id}"></span> Total: <span th:text="${orden.total}"></span></p>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -53,8 +49,8 @@
                 <td th:text="${item.producto.marca}"></td>
                 <td th:text="${item.producto.modelo}"></td>
                 <td th:text="${item.cantidad}"></td>
-                <td th:text="${item.precioUnitario}"></td>
-                <td th:text="${item.total}"></td>
+                <td>$<span th:text="${#numbers.formatDecimal(item.precioUnitario, 1, 'POINT', 2, 'COMMA')}"></span></td>
+                <td>$<span th:text="${#numbers.formatDecimal(item.total, 1, 'POINT', 2, 'COMMA')}"></span></td>
             </tr>
         </tbody>
     </table>
