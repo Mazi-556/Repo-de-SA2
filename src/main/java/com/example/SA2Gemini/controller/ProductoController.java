@@ -59,27 +59,28 @@ public class ProductoController {
 
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute Producto producto, Model model) {
-        // Validación: el producto debe tener categoría y almacén
-        if (producto.getCategoria() == null || producto.getCategoria().getId() == null) {
-            model.addAttribute("error", "Debe seleccionar una categoría para el producto.");
-            model.addAttribute("producto", producto);
-            model.addAttribute("categorias", categoriaProductoRepository.findAll());
-            model.addAttribute("almacenes", almacenRepository.findAll());
-            model.addAttribute("proveedores", proveedorRepository.findAll());
-            return "producto-form";
-        }
-        
-        if (producto.getAlmacen() == null || producto.getAlmacen().getId() == null) {
-            model.addAttribute("error", "Debe seleccionar un almacén para el producto.");
-            model.addAttribute("producto", producto);
-            model.addAttribute("categorias", categoriaProductoRepository.findAll());
-            model.addAttribute("almacenes", almacenRepository.findAll());
-            model.addAttribute("proveedores", proveedorRepository.findAll());
-            return "producto-form";
-        }
+        try {
+            // Validación: el producto debe tener categoría y almacén
+            if (producto.getCategoria() == null || producto.getCategoria().getId() == null) {
+                model.addAttribute("error", "Debe seleccionar una categoría para el producto.");
+                model.addAttribute("producto", producto);
+                model.addAttribute("categorias", categoriaProductoRepository.findAll());
+                model.addAttribute("almacenes", almacenRepository.findAll());
+                model.addAttribute("proveedores", proveedorRepository.findAll());
+                return "producto-form";
+            }
+            
+            if (producto.getAlmacen() == null || producto.getAlmacen().getId() == null) {
+                model.addAttribute("error", "Debe seleccionar un almacén para el producto.");
+                model.addAttribute("producto", producto);
+                model.addAttribute("categorias", categoriaProductoRepository.findAll());
+                model.addAttribute("almacenes", almacenRepository.findAll());
+                model.addAttribute("proveedores", proveedorRepository.findAll());
+                return "producto-form";
+            }
         
         // Validaciones de stock
-        if (producto.getStockMinimo() != null && producto.getStockMinimo() < 0) {
+        if (producto.getStockMinimo() < 0) {
             model.addAttribute("error", "El stock mínimo no puede ser negativo.");
             model.addAttribute("producto", producto);
             model.addAttribute("categorias", categoriaProductoRepository.findAll());
@@ -88,7 +89,7 @@ public class ProductoController {
             return "producto-form";
         }
         
-        if (producto.getStockMaximo() != null && producto.getStockMaximo() < 0) {
+        if (producto.getStockMaximo() < 0) {
             model.addAttribute("error", "El stock máximo no puede ser negativo.");
             model.addAttribute("producto", producto);
             model.addAttribute("categorias", categoriaProductoRepository.findAll());
@@ -97,7 +98,7 @@ public class ProductoController {
             return "producto-form";
         }
         
-        if (producto.getStockMinimo() != null && producto.getStockMaximo() != null 
+        if (producto.getStockMinimo() > 0 && producto.getStockMaximo() > 0 
             && producto.getStockMinimo() > producto.getStockMaximo()) {
             model.addAttribute("error", "El stock mínimo no puede ser mayor que el stock máximo.");
             model.addAttribute("producto", producto);
@@ -107,7 +108,7 @@ public class ProductoController {
             return "producto-form";
         }
         
-        if (producto.getPuntoReposicion() != null && producto.getPuntoReposicion() < 0) {
+        if (producto.getPuntoReposicion() < 0) {
             model.addAttribute("error", "El punto de reposición no puede ser negativo.");
             model.addAttribute("producto", producto);
             model.addAttribute("categorias", categoriaProductoRepository.findAll());
@@ -116,7 +117,7 @@ public class ProductoController {
             return "producto-form";
         }
         
-        if (producto.getPuntoReposicion() != null && producto.getStockMinimo() != null 
+        if (producto.getPuntoReposicion() > 0 && producto.getStockMinimo() > 0 
             && producto.getPuntoReposicion() < producto.getStockMinimo()) {
             model.addAttribute("error", "El punto de reposición no puede ser menor que el stock mínimo.");
             model.addAttribute("producto", producto);
@@ -126,7 +127,7 @@ public class ProductoController {
             return "producto-form";
         }
         
-        if (producto.getPuntoReposicion() != null && producto.getStockMaximo() != null 
+        if (producto.getPuntoReposicion() > 0 && producto.getStockMaximo() > 0 
             && producto.getPuntoReposicion() > producto.getStockMaximo()) {
             model.addAttribute("error", "El punto de reposición no puede ser mayor que el stock máximo.");
             model.addAttribute("producto", producto);
@@ -157,18 +158,26 @@ public class ProductoController {
             return "producto-form";
         }
         
-        // Detectamos si es un producto nuevo antes de guardarlo
-        boolean esNuevo = (producto.getId() == null);
-        
-        // Guardamos el producto para que la base de datos le asigne un ID
-        Producto productoGuardado = productoService.save(producto);
-        
-        if (esNuevo) {
-            // Si es nuevo, redirigimos automáticamente a la pantalla de asignar proveedores
-            return "redirect:/productos/asignar-proveedor/" + productoGuardado.getId();
-        } else {
-            // Si solo estábamos editando, volvemos a la lista general
-            return "redirect:/productos";
+            // Detectamos si es un producto nuevo antes de guardarlo
+            boolean esNuevo = (producto.getId() == null);
+            
+            // Guardamos el producto para que la base de datos le asigne un ID
+            Producto productoGuardado = productoService.save(producto);
+            
+            if (esNuevo) {
+                // Si es nuevo, redirigimos automáticamente a la pantalla de asignar proveedores
+                return "redirect:/productos/asignar-proveedor/" + productoGuardado.getId();
+            } else {
+                // Si solo estábamos editando, volvemos a la lista general
+                return "redirect:/productos";
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al guardar el producto: " + e.getMessage());
+            model.addAttribute("producto", producto);
+            model.addAttribute("categorias", categoriaProductoRepository.findAll());
+            model.addAttribute("almacenes", almacenRepository.findAll());
+            model.addAttribute("proveedores", proveedorRepository.findAll());
+            return "producto-form";
         }
     }
     
