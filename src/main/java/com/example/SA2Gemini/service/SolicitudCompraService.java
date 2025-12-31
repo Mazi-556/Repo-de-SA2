@@ -88,10 +88,14 @@ public class SolicitudCompraService {
         SolicitudCompra solicitudCompra = new SolicitudCompra();
         solicitudCompra.setFecha(LocalDate.now()); // Set current date
         solicitudCompra.setEstado(EstadoSolicitud.PENDIENTE); // Set initial status
+        solicitudCompra.setObservaciones("SC generada automáticamente: el producto '" + producto.getNombre() + 
+                                         "' alcanzó el punto de reposición (" + producto.getPuntoReposicion() + 
+                                         " unidades). Stock al momento de crear esta SC: " + producto.getStockActual());
 
         SolicitudCompraItem item = new SolicitudCompraItem();
         item.setProducto(producto);
         item.setCantidad(producto.getPuntoReposicion() * 2); // Example: Order double the reorder point
+        item.setDescripcion("Reposición automática");
         item.setPrecioUnitario(producto.getPrecioCosto()); // Use product cost as unit price
         item.setSolicitudCompra(solicitudCompra);
 
