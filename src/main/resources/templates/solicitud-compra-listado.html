@@ -50,9 +50,9 @@
                 <td th:text="${'SC-' + s.id}"></td>
                 <td th:text="${#temporals.format(s.fecha, 'dd/MM/yyyy')}"></td>
                 <td>
-                    <div style="max-width: 300px;">
-                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;" th:text="${s.observaciones}"></span>
-                        <button class="btn btn-sm btn-outline-primary mt-1" data-bs-toggle="modal" th:data-bs-target="'#modalObs' + ${s.id}">Ver más</button>
+                    <div class="observaciones-cell" th:data-id="${s.id}">
+                        <span class="obs-text" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;" th:text="${s.observaciones}"></span>
+                        <button class="btn btn-sm btn-outline-primary mt-1 obs-btn" style="display: none;" th:data-id="${s.id}">Ver más</button>
                     </div>
                 </td>
                 <td>
@@ -76,27 +76,47 @@
             </tr>
         </tbody>
     </table>
-
-    <!-- Modales para observaciones -->
-    <div th:each="s : ${solicitudes}">
-        <div class="modal fade" th:id="'modalObs' + ${s.id}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" th:text="'Observaciones - SC-' + ${s.id}"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p th:text="${s.observaciones}"></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Para cada celda de observaciones
+    document.querySelectorAll('.observaciones-cell').forEach(cell => {
+        const obsText = cell.querySelector('.obs-text');
+        const obsBtn = cell.querySelector('.obs-btn');
+        const cellId = cell.getAttribute('data-id');
+        
+        // Verificar si el texto excede el ancho de la columna (300px)
+        const isOverflowing = obsText.scrollWidth > obsText.clientWidth;
+        
+        if (isOverflowing) {
+            obsBtn.style.display = 'block';
+            obsBtn.textContent = 'Ver más';
+            
+            obsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const isExpanded = cell.classList.contains('expanded');
+                
+                if (!isExpanded) {
+                    // Expandir
+                    obsText.style.overflow = 'visible';
+                    obsText.style.whiteSpace = 'normal';
+                    obsText.style.textOverflow = 'clip';
+                    obsBtn.textContent = 'Ver menos';
+                    cell.classList.add('expanded');
+                } else {
+                    // Contraer
+                    obsText.style.overflow = 'hidden';
+                    obsText.style.whiteSpace = 'nowrap';
+                    obsText.style.textOverflow = 'ellipsis';
+                    obsBtn.textContent = 'Ver más';
+                    cell.classList.remove('expanded');
+                }
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>
