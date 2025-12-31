@@ -36,7 +36,8 @@
                 <td th:text="${'$' + #numbers.formatDecimal(orden.total, 1, 'POINT', 2, 'COMMA')}">60.50</td>
                 <td><span class="badge" th:classappend="${orden.estado.name() == 'EMITIDA' ? 'bg-warning text-dark' : (orden.estado.name() == 'RECIBIDA_PARCIAL' ? 'bg-info text-dark' : (orden.estado.name() == 'RECIBIDA_COMPLETA' ? 'bg-success' : 'bg-secondary'))}" th:text="${orden.estado}"></span></td>
                 <td>
-                    <a th:if="${!archivados}" th:href="@{/remitos/nuevo/{id}(id=${orden.id})}" class="btn btn-primary">SELECCIONAR</a>
+                    <a th:if="${!archivados}" th:href="@{/remitos/nuevo/{id}(id=${orden.id})}" class="btn btn-primary btn-sm">CREAR REMITO</a>
+                    <a th:if="${!archivados && orden.estado.name() == 'RECIBIDA_PARCIAL'}" th:href="@{/remitos/orden/{id}(id=${orden.id})}" class="btn btn-info btn-sm ms-1">Ver Remitos</a>
                     <a th:if="${archivados}" th:href="@{/ordenes-compra/listado/{id}(id=${orden.id})}" class="btn btn-info btn-sm">Ver Detalles OC</a>
                     <a th:if="${archivados}" th:href="@{/remitos/orden/{id}(id=${orden.id})}" class="btn btn-secondary btn-sm">Ver Remitos</a>
                 </td>
