@@ -185,13 +185,27 @@ public class OrdenCompraService {
         
         // Construir HTML para el PDF
         StringBuilder htmlBuilder = new StringBuilder();
-        htmlBuilder.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/></head><body>");
+        htmlBuilder.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>");
+        htmlBuilder.append("<style>");
+        htmlBuilder.append("body { font-family: Arial, sans-serif; margin: 20px; }");
+        htmlBuilder.append("h1 { color: #333; }");
+        htmlBuilder.append("table { width: 100%; border-collapse: collapse; margin-top: 20px; }");
+        htmlBuilder.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
+        htmlBuilder.append("th { background-color: #4CAF50; color: white; }");
+        htmlBuilder.append("</style>");
+        htmlBuilder.append("</head><body>");
         htmlBuilder.append("<h1>Pedido de Cotización</h1>");
-        htmlBuilder.append("<p>Fecha: ").append(LocalDate.now()).append("</p>");
-        htmlBuilder.append("<h2>Para Proveedor: ").append(proveedor.getNombre()).append("</h2>");
+        htmlBuilder.append("<p><strong>Fecha:</strong> ").append(LocalDate.now()).append("</p>");
+        htmlBuilder.append("<p><strong>Para Proveedor:</strong> ").append(proveedor.getNombre()).append("</p>");
 
-        htmlBuilder.append("<table border='1' cellpadding='5' cellspacing='0' style='width:100%; border-collapse: collapse;'>");
-        htmlBuilder.append("<thead><tr><th>Código</th><th>Nombre</th><th>Marca</th><th>Modelo</th><th>Cantidad</th></tr></thead>");
+        htmlBuilder.append("<table>");
+        htmlBuilder.append("<thead><tr>");
+        htmlBuilder.append("<th>Código</th>");
+        htmlBuilder.append("<th>Nombre</th>");
+        htmlBuilder.append("<th>Marca</th>");
+        htmlBuilder.append("<th>Modelo</th>");
+        htmlBuilder.append("<th>Cantidad</th>");
+        htmlBuilder.append("</tr></thead>");
         htmlBuilder.append("<tbody>");
 
         for (SolicitudCompraItem item : presupuestosAgrupados.get(proveedor)) {
@@ -199,11 +213,13 @@ public class OrdenCompraService {
             htmlBuilder.append("<td>").append(item.getProducto().getCodigo()).append("</td>");
             htmlBuilder.append("<td>").append(item.getProducto().getNombre()).append("</td>");
             htmlBuilder.append("<td>").append(item.getProducto().getMarca()).append("</td>");
-            htmlBuilder.append("<td>").append(item.getProducto().getModelo()).append("</td>"); // Se corrige a getModelo()
+            htmlBuilder.append("<td>").append(item.getProducto().getModelo()).append("</td>");
             htmlBuilder.append("<td>").append(item.getCantidad()).append("</td>");
             htmlBuilder.append("</tr>");
         }
         htmlBuilder.append("</tbody></table>");
+        htmlBuilder.append("<br/><br/>");
+        htmlBuilder.append("<p style='font-size: 12px; color: #666;'>Documento generado el ").append(LocalDate.now()).append("</p>");
         htmlBuilder.append("</body></html>");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

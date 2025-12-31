@@ -114,18 +114,18 @@
                         <th>Producto</th>
                         <th>Descripción</th>
                         <th>Cantidad Solicitada</th>
-                        <th>Precio Unitario</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="item : ${solicitud.items}">
-                        <td th:text="${item.producto.nombre}"></td>
-                        <td th:text="${item.descripcion}"></td>
-                        <td th:text="${item.cantidad}"></td>
-                        <td>
-                             <span th:if="${solicitud.estado.name() == 'INICIO'}" class="text-muted">No disponible</span>
-                             <!-- TODO: Mostrar precio si el estado es más avanzado -->
-                        </td>
+                    <th:block th:each="item : ${solicitud.items}">
+                        <tr th:if="${item.producto != null}">
+                            <td th:text="${item.producto.nombre}"></td>
+                            <td th:text="${item.descripcion}"></td>
+                            <td th:text="${item.cantidad}"></td>
+                        </tr>
+                    </th:block>
+                    <tr th:if="${#lists.isEmpty(solicitud.items)}">
+                        <td colspan="3" class="text-center text-muted">No hay ítems en esta solicitud</td>
                     </tr>
                 </tbody>
             </table>
