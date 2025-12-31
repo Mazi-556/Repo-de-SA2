@@ -4,18 +4,19 @@
     <title>Listado de Solicitudes de Compras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        .observaciones-cell {
+            width: 100%;
+        }
         .obs-text {
-            display: block !important;
+            display: block;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            word-break: break-all;
         }
         .observaciones-cell.expanded .obs-text {
             overflow: visible !important;
             white-space: normal !important;
             text-overflow: clip !important;
-            max-height: none !important;
         }
     </style>
 </head>
@@ -96,41 +97,52 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Para cada celda de observaciones
-    document.querySelectorAll('.observaciones-cell').forEach(cell => {
-        const obsText = cell.querySelector('.obs-text');
-        const obsBtn = cell.querySelector('.obs-btn');
-        const cellId = cell.getAttribute('data-id');
-        
-        // Verificar si el texto excede el ancho de la columna (300px)
-        const isOverflowing = obsText.scrollWidth > obsText.clientWidth;
-        
-        if (isOverflowing) {
-            obsBtn.style.display = 'block';
-            obsBtn.textContent = 'Ver más';
+    setTimeout(function() {
+        document.querySelectorAll('.observaciones-cell').forEach(cell => {
+            const obsText = cell.querySelector('.obs-text');
+            const obsBtn = cell.querySelector('.obs-btn');
+            const td = cell.closest('td');
             
-            obsBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const isExpanded = cell.classList.contains('expanded');
+            // Obtener el ancho real de la celda TD (sin padding)
+            const tdRect = td.getBoundingClientRect();
+            const tdWidth = tdRect.width;
+            
+            // Obtener el padding de la TD
+            const tdStyle = window.getComputedStyle(td);
+            const paddingLeft = parseFloat(tdStyle.paddingLeft);
+            const paddingRight = parseFloat(tdStyle.paddingRight);
+            
+            // Ancho disponible para el contenido
+            const availableWidth = tdWidth - paddingLeft - paddingRight - 10; // 10px de margen
+            
+            // Establecer ancho máximo al contenedor
+            cell.style.maxWidth = availableWidth + 'px';
+            
+            // Verificar si el texto se desborda
+            const isOverflowing = obsText.scrollWidth > obsText.clientWidth;
+            
+            if (isOverflowing) {
+                obsBtn.style.display = 'block';
+                obsBtn.textContent = 'Ver más';
                 
-                if (!isExpanded) {
-                    // Expandir
-                    obsText.style.overflow = 'visible';
-                    obsText.style.whiteSpace = 'normal';
-                    obsText.style.textOverflow = 'clip';
-                    obsBtn.textContent = 'Ver menos';
-                    cell.classList.add('expanded');
-                } else {
-                    // Contraer
-                    obsText.style.overflow = 'hidden';
-                    obsText.style.whiteSpace = 'nowrap';
-                    obsText.style.textOverflow = 'ellipsis';
-                    obsBtn.textContent = 'Ver más';
-                    cell.classList.remove('expanded');
-                }
-            });
-        }
-    });
+                obsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    if (cell.classList.contains('expanded')) {
+                        // Contraer
+                        cell.classList.remove('expanded');
+                        cell.style.maxWidth = availableWidth + 'px';
+                        obsBtn.textContent = 'Ver más';
+                    } else {
+                        // Expandir
+                        cell.classList.add('expanded');
+                        cell.style.maxWidth = 'none';
+                        obsBtn.textContent = 'Ver menos';
+                    }
+                });
+            }
+        });
+    }, 200);
 });
 </script>
 </body>
