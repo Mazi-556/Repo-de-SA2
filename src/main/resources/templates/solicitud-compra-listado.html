@@ -5,7 +5,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .observaciones-cell {
-            width: 100%;
+            text-align: center;
         }
         .obs-text {
             display: block;
@@ -17,6 +17,21 @@
             overflow: visible !important;
             white-space: normal !important;
             text-overflow: clip !important;
+        }
+        
+        /* Centrar headers y agregar líneas verticales */
+        table thead th {
+            text-align: center;
+            border-right: 1px solid #e0e0e0;
+        }
+        table thead th:last-child {
+            border-right: none;
+        }
+        table tbody td {
+            border-right: 1px solid #f0f0f0;
+        }
+        table tbody td:last-child {
+            border-right: none;
         }
     </style>
 </head>
@@ -103,20 +118,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const obsBtn = cell.querySelector('.obs-btn');
             const td = cell.closest('td');
             
-            // Obtener el ancho real de la celda TD (sin padding)
-            const tdRect = td.getBoundingClientRect();
-            const tdWidth = tdRect.width;
+            // Obtener el ancho real de la TD
+            const tdWidth = td.offsetWidth;
             
-            // Obtener el padding de la TD
-            const tdStyle = window.getComputedStyle(td);
-            const paddingLeft = parseFloat(tdStyle.paddingLeft);
-            const paddingRight = parseFloat(tdStyle.paddingRight);
-            
-            // Ancho disponible para el contenido
-            const availableWidth = tdWidth - paddingLeft - paddingRight - 10; // 10px de margen
-            
-            // Establecer ancho máximo al contenedor
-            cell.style.maxWidth = availableWidth + 'px';
+            // Establecer el ancho del contenedor al ancho de la TD
+            cell.style.width = tdWidth + 'px';
             
             // Verificar si el texto se desborda
             const isOverflowing = obsText.scrollWidth > obsText.clientWidth;
@@ -131,12 +137,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (cell.classList.contains('expanded')) {
                         // Contraer
                         cell.classList.remove('expanded');
-                        cell.style.maxWidth = availableWidth + 'px';
                         obsBtn.textContent = 'Ver más';
                     } else {
                         // Expandir
                         cell.classList.add('expanded');
-                        cell.style.maxWidth = 'none';
                         obsBtn.textContent = 'Ver menos';
                     }
                 });
