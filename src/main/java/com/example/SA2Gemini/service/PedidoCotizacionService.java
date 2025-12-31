@@ -51,6 +51,12 @@ public class PedidoCotizacionService {
         List<Long> solicitudCompraItemIds = new ArrayList<>(itemCantidades.keySet());
         List<SolicitudCompraItem> selectedSolicitudItems = solicitudCompraService.getSolicitudCompraItemsByIds(solicitudCompraItemIds);
 
+        // Asignar la SolicitudCompra al PedidoCotizacion (todos los items pertenecen a la misma SC)
+        if (!selectedSolicitudItems.isEmpty()) {
+            SolicitudCompra solicitudCompra = selectedSolicitudItems.get(0).getSolicitudCompra();
+            pedidoCotizacion.setSolicitudCompra(solicitudCompra);
+        }
+
         for (SolicitudCompraItem scItem : selectedSolicitudItems) {
             // Verificar si el ítem corresponde al proveedor para el que se está generando la cotización
             boolean isProvierForProduct = scItem.getProducto().getProductoProveedores().stream()
