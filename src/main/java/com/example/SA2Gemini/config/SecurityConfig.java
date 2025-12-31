@@ -40,8 +40,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/proveedores/**", "/productos/**", "/solicitudes-compra/**", "/presupuestos/**", "/ordenes-compra/**", "/remitos/**", "/facturas/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/proveedores/**", "/productos/**", "/solicitudes-compra/**", "/presupuestos/**", "/ordenes-compra/**", "/remitos/**", "/facturas/**", "/almacenes/**", "/categorias/**").hasAnyRole("USER", "ADMIN")                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/login", "/asientos/nuevo", "/presupuestos/confirmar", "/favicon.ico").permitAll() // Temporarily permit all for testing
                         .anyRequest().authenticated()
                 )
