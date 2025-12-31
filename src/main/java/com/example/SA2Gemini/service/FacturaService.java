@@ -101,8 +101,11 @@ public class FacturaService {
             
             for (SolicitudCompra sc : solicitudesAsociadas) {
                 // Lógica simple: si la solicitud tiene el producto que estamos facturando, la cerramos
+                // Filtrar items con producto null antes de comparar
                 boolean tieneProducto = sc.getItems().stream()
-                        .anyMatch(item -> item.getProducto().getId().equals(ocItem.getProducto().getId()));
+                        .filter(item -> item.getProducto() != null)  // Filtrar items sin producto
+                        .anyMatch(item -> ocItem.getProducto() != null && 
+                                         item.getProducto().getId().equals(ocItem.getProducto().getId()));
                 if (tieneProducto) {
                     sc.setEstado(EstadoSolicitud.FINALIZADA);
                     solicitudCompraRepository.save(sc);
