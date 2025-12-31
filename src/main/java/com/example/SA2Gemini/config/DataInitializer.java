@@ -10,6 +10,7 @@ import com.example.SA2Gemini.repository.RolRepository;
 import com.example.SA2Gemini.repository.RubroRepository;
 import com.example.SA2Gemini.repository.TipoProveedorRepository;
 import com.example.SA2Gemini.repository.UsuarioRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -29,15 +30,17 @@ public class DataInitializer implements CommandLineRunner {
     private final TipoProveedorRepository tipoProveedorRepository;
     private final RubroRepository rubroRepository;
     private final CuentaRepository cuentaRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public DataInitializer(RolRepository rolRepository, UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
-                           TipoProveedorRepository tipoProveedorRepository, RubroRepository rubroRepository, CuentaRepository cuentaRepository) {
+                           TipoProveedorRepository tipoProveedorRepository, RubroRepository rubroRepository, CuentaRepository cuentaRepository, JdbcTemplate jdbcTemplate) {
         this.rolRepository = rolRepository;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.tipoProveedorRepository = tipoProveedorRepository;
         this.rubroRepository = rubroRepository;
         this.cuentaRepository = cuentaRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -119,6 +122,35 @@ public class DataInitializer implements CommandLineRunner {
         
         logger.info("Critical accounting accounts check finished.");
         
+        // Migrar estados antiguos de SolicitudCompra
+        migrarEstadosSolicitudCompra();
+        
+    }
+    
+    private void migrarEstadosSolicitudCompra() {
+        logger.info("Migrando estados antiguos de SolicitudCompra...");
+        try {
+            // Primero, eliminar el constraint check que limita los valores del enum
+            try {
+                jdbcTemplate.execute("ALTER TABLE solicitud_compra DROP CONSTRAINT IF EXISTS solicitud_compra_estado_check");
+                logger.info("Constraint check eliminado (si existía)");
+            } catch (Exception e) {
+                logger.info("No se pudo eliminar constraint (puede que no exista): " + e.getMessage());
+            }
+            
+            // Ahora migrar los datos
+            int updatedInicio = jdbcTemplate.update(
+                "UPDATE solicitud_compra SET estado = 'PENDIENTE' WHERE estado = 'INICIO'");
+            
+            int updatedPresupuestada = jdbcTemplate.update(
+                "UPDATE solicitud_compra SET estado = 'COTIZANDO' WHERE estado = 'PRESUPUESTADA'");
+            
+            logger.info("Migrados " + updatedInicio + " registros de INICIO a PENDIENTE");
+            logger.info("Migrados " + updatedPresupuestada + " registros de PRESUPUESTADA a COTIZANDO");
+        } catch (Exception e) {
+            logger.warn("Error al migrar estados: " + e.getMessage());
+            logger.info("Posiblemente ya fueron migrados previamente.");
+        }
     } 
     
     // Método auxiliar para no repetir código

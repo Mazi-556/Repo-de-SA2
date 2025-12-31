@@ -24,7 +24,7 @@ public class SolicitudCompra {
     // Default constructor
     public SolicitudCompra() {
         this.fecha = LocalDate.now();
-        this.estado = EstadoSolicitud.INICIO;
+        this.estado = EstadoSolicitud.PENDIENTE;
         this.items = new java.util.ArrayList<>(); // Initialize the items list
     }
 

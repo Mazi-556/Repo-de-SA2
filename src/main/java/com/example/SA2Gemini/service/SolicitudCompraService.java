@@ -87,7 +87,7 @@ public class SolicitudCompraService {
     public void crearSolicitudAutomatica(Producto producto) {
         SolicitudCompra solicitudCompra = new SolicitudCompra();
         solicitudCompra.setFecha(LocalDate.now()); // Set current date
-        solicitudCompra.setEstado(EstadoSolicitud.INICIO); // Set initial status
+        solicitudCompra.setEstado(EstadoSolicitud.PENDIENTE); // Set initial status
 
         SolicitudCompraItem item = new SolicitudCompraItem();
         item.setProducto(producto);
@@ -102,7 +102,7 @@ public class SolicitudCompraService {
 
     // Nuevo método para obtener todos los SolicitudCompraItem de solicitudes en estado INICIO
     public List<SolicitudCompraItem> getSolicitudCompraItemsByEstadoInicio() {
-        List<SolicitudCompra> solicitudesEnInicio = solicitudCompraRepository.findByEstado(EstadoSolicitud.INICIO);
+        List<SolicitudCompra> solicitudesEnInicio = solicitudCompraRepository.findByEstado(EstadoSolicitud.PENDIENTE);
         return solicitudesEnInicio.stream()
                 .flatMap(solicitud -> solicitud.getItems().stream())
                 .collect(java.util.stream.Collectors.toList());

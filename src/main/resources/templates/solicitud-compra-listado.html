@@ -52,11 +52,12 @@
                 <td th:text="${s.observaciones}"></td>
                 <td>
                     <span class="badge"
-                          th:classappend="${s.estado.name() == 'INICIO' ? 'bg-secondary' : 
-                                           s.estado.name() == 'PRESUPUESTADA' ? 'bg-info' :
-                                           s.estado.name() == 'COMPROMETIDA' ? 'bg-primary' :
+                          th:classappend="${s.estado.name() == 'PENDIENTE' ? 'bg-secondary' : 
+                                           s.estado.name() == 'COTIZANDO' ? 'bg-info' :
+                                           s.estado.name() == 'COTIZADA' ? 'bg-primary' :
+                                           s.estado.name() == 'COMPROMETIDA' ? 'bg-success' :
                                            s.estado.name() == 'INGRESADA' ? 'bg-warning' : 
-                                           s.estado.name() == 'FINALIZADA' ? 'bg-success' : 'bg-dark'}"
+                                           s.estado.name() == 'FINALIZADA' ? 'bg-dark' : 'bg-secondary'}"
                           th:text="${s.estado}">
                     </span>
                 </td>

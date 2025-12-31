@@ -92,7 +92,8 @@ public class FacturaService {
 
         // Buscamos solicitudes tanto presupuestadas como las que ya tienen orden (comprometidas)
         List<SolicitudCompra> solicitudesAsociadas = solicitudCompraRepository.findAll().stream()
-            .filter(s -> s.getEstado() == EstadoSolicitud.PRESUPUESTADA || 
+            .filter(s -> s.getEstado() == EstadoSolicitud.COTIZANDO || 
+                         s.getEstado() == EstadoSolicitud.COTIZADA || 
              s.getEstado() == EstadoSolicitud.COMPROMETIDA || 
              s.getEstado() == EstadoSolicitud.INGRESADA)
             .toList();

@@ -71,8 +71,8 @@ public class PresupuestoController {
 
                 // Solo si tiene proveedores, cambiamos el estado de la solicitud
                 SolicitudCompra sc = item.getSolicitudCompra();
-                if (sc != null && sc.getEstado() == EstadoSolicitud.INICIO) {
-                    sc.setEstado(EstadoSolicitud.PRESUPUESTADA);
+                if (sc != null && sc.getEstado() == EstadoSolicitud.PENDIENTE) {
+                    sc.setEstado(EstadoSolicitud.COTIZANDO);
                     solicitudCompraRepository.save(sc); 
                 }
 

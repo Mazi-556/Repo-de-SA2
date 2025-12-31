@@ -3,10 +3,13 @@ package com.example.SA2Gemini.service;
 import com.example.SA2Gemini.entity.PedidoCotizacion;
 import com.example.SA2Gemini.entity.PedidoCotizacionItem;
 import com.example.SA2Gemini.entity.Proveedor; // Importar Proveedor
+import com.example.SA2Gemini.entity.SolicitudCompra;
 import com.example.SA2Gemini.entity.SolicitudCompraItem; // Importar SolicitudCompraItem
 import com.example.SA2Gemini.entity.EstadoPedidoCotizacion; // Importar EstadoPedidoCotizacion
+import com.example.SA2Gemini.entity.EstadoSolicitud;
 import com.example.SA2Gemini.repository.PedidoCotizacionRepository;
 import com.example.SA2Gemini.repository.ProveedorRepository;
+import com.example.SA2Gemini.repository.SolicitudCompraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,8 @@ public class PedidoCotizacionService {
     private ProveedorRepository proveedorRepository;
     @Autowired
     private SolicitudCompraService solicitudCompraService; // Para obtener los SolicitudCompraItem
+    @Autowired
+    private SolicitudCompraRepository solicitudCompraRepository;
 
     @Transactional
     public PedidoCotizacion guardarPedidoCotizacion(
@@ -89,6 +94,16 @@ public class PedidoCotizacionService {
         pedido.setEstado(EstadoPedidoCotizacion.COTIZADO);
         PedidoCotizacion pedidoGuardado = pedidoCotizacionRepository.save(pedido);
         System.out.println("DEBUG PedidoCotizacionService - Después de guardar: Pedido ID=" + pedidoGuardado.getId() + ", Estado=" + pedidoGuardado.getEstado());
+
+        // Cambiar el estado de la SolicitudCompra a COTIZADA cuando se carga la cotización
+        if (pedidoGuardado.getSolicitudCompra() != null) {
+            SolicitudCompra solicitud = pedidoGuardado.getSolicitudCompra();
+            if (solicitud.getEstado() == EstadoSolicitud.COTIZANDO) {
+                solicitud.setEstado(EstadoSolicitud.COTIZADA);
+                solicitudCompraRepository.save(solicitud);
+                System.out.println("DEBUG - SolicitudCompra ID=" + solicitud.getId() + " cambiada a estado COTIZADA");
+            }
+        }
 
         return pedidoGuardado;
     }
