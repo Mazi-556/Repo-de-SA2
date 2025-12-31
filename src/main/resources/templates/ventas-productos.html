@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ventas - Productos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Registrar Venta</h2>
+        <a th:href="@{/ventas/historial}" class="btn btn-info">📋 Ver Historial</a>
+    </div>
+    
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>⚠️ Error:</strong> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Stock Actual</th>
+                <th>Precio Venta</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="producto : ${productos}">
+                <td th:text="${producto.codigo}"></td>
+                <td th:text="${producto.nombre}"></td>
+                <td th:text="${producto.marca}"></td>
+                <td th:text="${producto.modelo}"></td>
+                <td>
+                    <span th:classappend="${producto.stockActual < producto.puntoReposicion ? 'text-danger fw-bold' : ''}" 
+                          th:text="${producto.stockActual}"></span>
+                </td>
+                <td>$<span th:text="${producto.precioVenta != null ? #numbers.formatDecimal(producto.precioVenta, 1, 'POINT', 2, 'COMMA') : '0.00'}"></span></td>
+                <td>
+                    <button type="button" class="btn btn-success btn-sm" 
+                            data-bs-toggle="modal" 
+                            th:attr="data-bs-target='#ventaModal' + ${producto.id},
+                                     data-producto-id=${producto.id},
+                                     data-producto-nombre=${producto.nombre},
+                                     data-stock-actual=${producto.stockActual}">
+                        🛒 Vender
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(productos)}">
+                <td colspan="7" class="text-center text-muted">No hay productos disponibles</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para registrar venta -->
+<div th:each="producto : ${productos}" class="modal fade" th:id="'ventaModal' + ${producto.id}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vender: <span th:text="${producto.nombre}"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/ventas/registrar}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="productoId" th:value="${producto.id}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Stock Actual:</label>
+                        <p class="fw-bold" th:text="${producto.stockActual}"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad a Vender <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" name="cantidad" 
+                               th:attr="max=${producto.stockActual}" 
+                               min="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Registrar Venta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

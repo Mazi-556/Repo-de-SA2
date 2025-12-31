@@ -161,6 +161,14 @@ public class ProductoController {
             // Detectamos si es un producto nuevo antes de guardarlo
             boolean esNuevo = (producto.getId() == null);
             
+            // Si estamos editando un producto existente, preservar el stock actual
+            if (!esNuevo) {
+                Producto productoExistente = productoService.findById(producto.getId());
+                if (productoExistente != null) {
+                    producto.setStockActual(productoExistente.getStockActual());
+                }
+            }
+            
             // Guardamos el producto para que la base de datos le asigne un ID
             Producto productoGuardado = productoService.save(producto);
             
