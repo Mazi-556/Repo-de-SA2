@@ -28,14 +28,19 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="item : ${solicitudItems}">
-                    <td><input type="checkbox" name="itemIds" th:value="${item.id}"></td>
-                    <td th:text="${item.producto.codigo}"></td>
-                    <td th:text="${item.producto.nombre}"></td>
-                    <td th:text="${item.producto.marca}"></td>
-                    <td th:text="${item.producto.modelo}"></td>
-                    <td th:text="${item.descripcion}"></td>
-                    <td th:text="${item.cantidad}"></td>
+                <th:block th:each="item : ${solicitudItems}">
+                    <tr th:if="${item.producto != null}">
+                        <td><input type="checkbox" name="itemIds" th:value="${item.id}"></td>
+                        <td th:text="${item.producto.codigo}"></td>
+                        <td th:text="${item.producto.nombre}"></td>
+                        <td th:text="${item.producto.marca}"></td>
+                        <td th:text="${item.producto.modelo}"></td>
+                        <td th:text="${item.descripcion}"></td>
+                        <td th:text="${item.cantidad}"></td>
+                    </tr>
+                </th:block>
+                <tr th:if="${#lists.isEmpty(solicitudItems)}">
+                    <td colspan="7" class="text-center text-muted">No hay ítems disponibles para generar presupuestos</td>
                 </tr>
             </tbody>
         </table>
