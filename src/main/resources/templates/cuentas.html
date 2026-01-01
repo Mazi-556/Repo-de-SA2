@@ -4,13 +4,56 @@
     <title>Plan de Cuentas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .tree-row { padding-left: 0; }
-        .tree-row-level-1 { padding-left: 0; }
-        .tree-row-level-2 { padding-left: 30px; }
-        .tree-row-level-3 { padding-left: 60px; }
-        .tree-row-level-4 { padding-left: 90px; }
-        .tree-row-level-5 { padding-left: 120px; }
-        .tree-row td:first-child { padding-left: inherit !important; }
+        .tree-row { 
+            background-color: #fff;
+        }
+        .tree-row-level-1 { 
+            background-color: #f9f9f9;
+            font-weight: 500;
+        }
+        .tree-row-level-2 { background-color: #fff; }
+        .tree-row-level-3 { background-color: #f5f5f5; }
+        .tree-row-level-4 { background-color: #fff; }
+        .tree-row-level-5 { background-color: #f5f5f5; }
+        
+        .tree-row.hidden { display: none; }
+        
+        .tree-expand-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 14px;
+            width: 24px;
+            height: 24px;
+            text-align: center;
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+        }
+        
+        .tree-expand-btn:hover {
+            color: #000;
+            background-color: #eee;
+            border-radius: 3px;
+        }
+        
+        .tree-expand-btn.no-children {
+            visibility: hidden;
+        }
+        
+        .tree-code-cell {
+            display: flex;
+            align-items: center;
+        }
+        
+        .tree-row-level-1 .tree-code-cell { padding-left: 0; }
+        .tree-row-level-2 .tree-code-cell { padding-left: 24px; }
+        .tree-row-level-3 .tree-code-cell { padding-left: 48px; }
+        .tree-row-level-4 .tree-code-cell { padding-left: 72px; }
+        .tree-row-level-5 .tree-code-cell { padding-left: 96px; }
     </style>
 </head>
 <body>
@@ -41,8 +84,11 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="cuenta : ${cuentas}" th:data-id="${cuenta.id}" th:data-padre-id="${cuenta.cuentaPadreId}" class="tree-row">
-            <td th:text="${cuenta.codigo}"></td>
+        <tr th:each="cuenta : ${cuentas}" th:data-id="${cuenta.id}" th:data-padre-id="${cuenta.cuentaPadreId}" class="tree-row" th:attr="data-level=1">
+            <td class="tree-code-cell">
+                <button class="tree-expand-btn" onclick="toggleChildren(this)"></button>
+                <span th:text="${cuenta.codigo}"></span>
+            </td>
             <td th:text="${cuenta.nombre}"></td>
             <td th:text="${cuenta.tipoCuenta}"></td>
             <td>
@@ -75,13 +121,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Crear un mapa de IDs a filas
     const rowsMap = {};
+    const childrenMap = {};
+    
     rows.forEach(row => {
-        rowsMap[row.getAttribute('data-id')] = row;
+        const id = row.getAttribute('data-id');
+        rowsMap[id] = row;
     });
     
     // Función para calcular el nivel de profundidad
     function getLevel(id, visited = new Set()) {
-        if (visited.has(id)) return 0; // Evitar ciclos infinitos
+        if (visited.has(id)) return 0;
         visited.add(id);
         
         const row = rowsMap[id];
@@ -89,38 +138,39 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const padreId = row.getAttribute('data-padre-id');
         if (!padreId || padreId === 'null' || padreId === '') {
-            return 1; // Es raíz
+            return 1;
         }
         
         return 1 + getLevel(padreId, visited);
     }
     
-    // Agregar clases de nivel a cada fila
-    rows.forEach(row => {
-        const id = row.getAttribute('data-id');
-        const level = getLevel(id);
-        row.classList.add('tree-row-level-' + level);
-    });
-    
     // Reorganizar las filas en orden de árbol
     function reorganizeTree() {
-        // Crear lista ordenada
         const orderedRows = [];
         const processed = new Set();
         
-        function addRowAndChildren(id) {
+        function addRowAndChildren(id, parentId = null) {
             if (processed.has(id)) return;
             processed.add(id);
             
             const row = rowsMap[id];
             if (row) {
-                orderedRows.push(row.cloneNode(true));
+                const level = getLevel(id);
+                row.setAttribute('data-level', level);
+                row.classList.remove(...Array.from(row.classList).filter(c => c.startsWith('tree-row-level')));
+                row.classList.add('tree-row-level-' + level);
+                orderedRows.push(row);
+                
+                // Guardar información de hijos
+                if (!childrenMap[id]) childrenMap[id] = [];
             }
             
             // Agregar todos los hijos
             rows.forEach(r => {
                 if (r.getAttribute('data-padre-id') === id && !processed.has(r.getAttribute('data-id'))) {
-                    addRowAndChildren(r.getAttribute('data-id'));
+                    if (!childrenMap[id]) childrenMap[id] = [];
+                    childrenMap[id].push(r.getAttribute('data-id'));
+                    addRowAndChildren(r.getAttribute('data-id'), id);
                 }
             });
         }
@@ -136,17 +186,71 @@ document.addEventListener('DOMContentLoaded', function() {
         // Limpiar y recargar la tabla
         tbody.innerHTML = '';
         orderedRows.forEach(row => {
-            // Regenerar las clases de nivel
-            const id = row.getAttribute('data-id');
-            const level = getLevel(id);
-            row.classList.remove(...Array.from(row.classList).filter(c => c.startsWith('tree-row-level')));
-            row.classList.add('tree-row-level-' + level);
             tbody.appendChild(row);
+        });
+        
+        // Actualizar botones de expandir
+        updateExpandButtons();
+    }
+    
+    function updateExpandButtons() {
+        rows.forEach(row => {
+            const id = row.getAttribute('data-id');
+            const btn = row.querySelector('.tree-expand-btn');
+            const hasChildren = childrenMap[id] && childrenMap[id].length > 0;
+            
+            if (hasChildren) {
+                btn.classList.remove('no-children');
+                btn.textContent = '▼';
+                btn.setAttribute('data-expanded', 'true');
+            } else {
+                btn.classList.add('no-children');
+                btn.textContent = '';
+            }
         });
     }
     
     reorganizeTree();
 });
+
+function toggleChildren(btn) {
+    const row = btn.closest('tr');
+    const id = row.getAttribute('data-id');
+    const isExpanded = btn.getAttribute('data-expanded') === 'true';
+    const tbody = row.closest('tbody');
+    
+    // Encontrar todos los hijos directos e indirectos
+    function getDescendantIds(parentId, allRows) {
+        const descendants = [];
+        allRows.forEach(r => {
+            if (r.getAttribute('data-padre-id') === parentId) {
+                const childId = r.getAttribute('data-id');
+                descendants.push(childId);
+                descendants.push(...getDescendantIds(childId, allRows));
+            }
+        });
+        return descendants;
+    }
+    
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    const descendantIds = getDescendantIds(id, allRows);
+    
+    // Alternar visibilidad
+    descendantIds.forEach(childId => {
+        const childRow = allRows.find(r => r.getAttribute('data-id') === childId);
+        if (childRow) {
+            if (isExpanded) {
+                childRow.classList.add('hidden');
+            } else {
+                childRow.classList.remove('hidden');
+            }
+        }
+    });
+    
+    // Cambiar icono
+    btn.textContent = isExpanded ? '▶' : '▼';
+    btn.setAttribute('data-expanded', isExpanded ? 'false' : 'true');
+}
 </script>
 </body>
 </html>
