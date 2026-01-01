@@ -1,19 +1,319 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Home</title>
+    <title>Home - Sistema Contable</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .hero-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .hero-banner h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .hero-banner p {
+            font-size: 1.2rem;
+            margin: 0;
+            opacity: 0.95;
+        }
+        
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px 25px;
+            display: inline-block;
+            margin-top: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-info .username {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .user-info .role {
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 40px 0 30px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .card-module {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: white;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .card-module:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-module i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .card-module h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .card-module-info-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            padding: 0;
+        }
+        
+        .card-module-info-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .card-module-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            width: 250px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .card-module-tooltip.show {
+            opacity: 1;
+            pointer-events: auto;
+            display: block;
+        }
+        
+        .card-module-body {
+            display: none;
+        }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
-<div class="container mt-4">
-    <h1>Bienvenido al Sistema Contable</h1>
-    <p>Hola, <span sec:authentication="name">Usuario</span>. Tu rol es:
-        <span th:with="role=${#authentication.principal.authorities.?[#this.authority.startsWith('ROLE_')].![#this.authority.substring(5)]?.get(0)}">
-            <span th:text="${#strings.capitalize(role)}"></span>
-        </span>
-    </p>
+
+<!-- Hero Banner -->
+<div class="hero-banner">
+    <h1>📊 Sistema Contable</h1>
+    <p>Gestión integral de contabilidad y abastecimiento</p>
+    <div class="user-info">
+        <div class="username">
+            <i class="bi bi-person-circle"></i> 
+            Hola, <span sec:authentication="name">Usuario</span>
+        </div>
+        <div class="role" th:with="role=${#authentication.principal.authorities.?[#this.authority.startsWith('ROLE_')].![#this.authority.substring(5)]?.get(0)}">
+            Rol: <span th:text="${#strings.capitalize(role)}"></span>
+        </div>
+    </div>
 </div>
+
+<div class="container">
+    <!-- Sección Contable -->
+    <div class="section-title">📈 Módulo Contable</div>
+    <div class="modules-grid">
+        <div class="card-module-wrapper">
+            <a href="/cuentas" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona la estructura jerárquica del plan de cuentas contables.')">ⓘ</button>
+                <i class="bi bi-journal-text"></i>
+                <h3>Plan de Cuentas</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/asientos/nuevo" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Crea y gestiona asientos contables para registrar operaciones.')">ⓘ</button>
+                <i class="bi bi-pencil-square"></i>
+                <h3>Registrar Asientos</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/reportes/libro-diario" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Visualiza el libro diario con todas las operaciones registradas.')">ⓘ</button>
+                <i class="bi bi-journal"></i>
+                <h3>Libro Diario</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/reportes/libro-mayor" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Visualiza el libro mayor con el detalle por cuenta.')">ⓘ</button>
+                <i class="bi bi-graph-up"></i>
+                <h3>Libro Mayor</h3>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sección Abastecimiento -->
+    <div class="section-title">📦 Módulo Abastecimiento</div>
+    <div class="modules-grid">
+        <div class="card-module-wrapper">
+            <a href="/solicitudes-compra" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Crea y gestiona solicitudes de compra de productos.')">ⓘ</button>
+                <i class="bi bi-file-earmark-text"></i>
+                <h3>Solicitudes de Compra</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/ordenes-compra" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona órdenes de compra confirmadas con proveedores.')">ⓘ</button>
+                <i class="bi bi-bag-check"></i>
+                <h3>Órdenes de Compra</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/pedidos-cotizacion" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Solicita cotizaciones a proveedores y gestiona ofertas.')">ⓘ</button>
+                <i class="bi bi-chat-dots"></i>
+                <h3>Pedidos de Cotización</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/remitos" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Registra entregas y recepción de mercadería.')">ⓘ</button>
+                <i class="bi bi-truck"></i>
+                <h3>Remitos</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/productos" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Administra el catálogo de productos disponibles.')">ⓘ</button>
+                <i class="bi bi-box"></i>
+                <h3>Productos</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/proveedores" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona la información de proveedores registrados.')">ⓘ</button>
+                <i class="bi bi-shop"></i>
+                <h3>Proveedores</h3>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sección Admin -->
+    <div class="section-title" sec:authorize="hasRole('ADMIN')">⚙️ Administración</div>
+    <div class="modules-grid" sec:authorize="hasRole('ADMIN')">
+        <div class="card-module-wrapper">
+            <a href="/admin/usuarios" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona usuarios del sistema y sus permisos.')">ⓘ</button>
+                <i class="bi bi-people"></i>
+                <h3>Usuarios</h3>
+            </a>
+        </div>
+        
+        <div class="card-module-wrapper">
+            <a href="/almacenes" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Administra almacenes y ubicaciones de stock.')">ⓘ</button>
+                <i class="bi bi-building"></i>
+                <h3>Almacenes</h3>
+            </a>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function showInfo(event, message) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Crear o reutilizar el tooltip
+    let tooltip = document.getElementById('info-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'info-tooltip';
+        tooltip.className = 'card-module-tooltip';
+        document.body.appendChild(tooltip);
+    }
+    
+    // Establecer el mensaje
+    tooltip.textContent = message;
+    
+    // Posicionar cerca del botón
+    const rect = event.target.getBoundingClientRect();
+    tooltip.style.top = (rect.top - 60) + 'px';
+    tooltip.style.left = (rect.left - 100) + 'px';
+    
+    // Mostrar
+    tooltip.classList.add('show');
+    
+    // Ocultar después de 4 segundos
+    setTimeout(() => {
+        tooltip.classList.remove('show');
+    }, 4000);
+    
+    // También ocultar al hacer clic fuera
+    document.addEventListener('click', function hideTooltip(e) {
+        if (e.target !== event.target && !tooltip.contains(e.target)) {
+            tooltip.classList.remove('show');
+            document.removeEventListener('click', hideTooltip);
+        }
+    });
+}
+</script>
 </body>
 </html>
