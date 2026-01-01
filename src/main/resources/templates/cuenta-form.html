@@ -31,6 +31,13 @@
                 <option th:each="tipo : ${tiposCuenta}" th:value="${tipo}" th:text="${tipo}"></option>
             </select>
         </div>
+        <div class="mb-3">
+            <label for="cuentaPadreId" class="form-label">Es hija de:</label>
+            <select class="form-select" id="cuentaPadreId" th:field="*{cuentaPadreId}">
+                <option value="">Sin cuenta padre (Nivel 1)</option>
+                <option th:each="cuenta : ${cuentas}" th:value="${cuenta.id}" th:text="${cuenta.codigo} + ' - ' + ${cuenta.nombre}"></option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary">Guardar</button>
         <button type="button" class="btn btn-secondary" onclick="history.back()">Volver</button>
     </form>

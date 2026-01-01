@@ -26,6 +26,7 @@ public class CuentaController {
     public String showNewCuentaForm(Model model) {
         model.addAttribute("cuenta", new Cuenta());
         model.addAttribute("tiposCuenta", TipoCuenta.values());
+        model.addAttribute("cuentas", cuentaService.getAllCuentas());
         return "cuenta-form";
     }
 
@@ -45,6 +46,7 @@ public class CuentaController {
     public String showEditCuentaForm(@PathVariable Long id, Model model) {
         model.addAttribute("cuenta", cuentaService.getCuentaById(id));
         model.addAttribute("tiposCuenta", TipoCuenta.values());
+        model.addAttribute("cuentas", cuentaService.getAllCuentas());
         return "cuenta-form";
     }
 

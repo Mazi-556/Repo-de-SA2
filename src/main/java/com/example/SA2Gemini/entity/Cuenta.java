@@ -27,6 +27,9 @@ public class Cuenta {
 
     private boolean activo = true;
 
+    @Column
+    private Long cuentaPadreId;
+
     public boolean isActivo() {
         return activo;
     }
@@ -65,5 +68,13 @@ public class Cuenta {
 
     public void setTipoCuenta(TipoCuenta tipoCuenta) {
         this.tipoCuenta = tipoCuenta;
+    }
+
+    public Long getCuentaPadreId() {
+        return cuentaPadreId;
+    }
+
+    public void setCuentaPadreId(Long cuentaPadreId) {
+        this.cuentaPadreId = cuentaPadreId;
     }
 }
