@@ -63,6 +63,8 @@ public class CuentaController {
                 existingCuenta.setNombre(cuenta.getNombre());
                 existingCuenta.setTipoCuenta(cuenta.getTipoCuenta()); // Allow tipoCuenta change
             }
+            // Allow changing the parent account
+            existingCuenta.setCuentaPadreId(cuenta.getCuentaPadreId());
             try {
                 cuentaService.saveCuenta(existingCuenta);
             } catch (CodigoCuentaExistsException e) {

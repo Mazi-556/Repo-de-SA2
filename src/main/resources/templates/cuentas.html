@@ -3,6 +3,15 @@
 <head>
     <title>Plan de Cuentas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .tree-row { padding-left: 0; }
+        .tree-row-level-1 { padding-left: 0; }
+        .tree-row-level-2 { padding-left: 30px; }
+        .tree-row-level-3 { padding-left: 60px; }
+        .tree-row-level-4 { padding-left: 90px; }
+        .tree-row-level-5 { padding-left: 120px; }
+        .tree-row td:first-child { padding-left: inherit !important; }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbarFragment}"></div>
@@ -32,7 +41,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="cuenta : ${cuentas}">
+        <tr th:each="cuenta : ${cuentas}" th:data-id="${cuenta.id}" th:data-padre-id="${cuenta.cuentaPadreId}" class="tree-row">
             <td th:text="${cuenta.codigo}"></td>
             <td th:text="${cuenta.nombre}"></td>
             <td th:text="${cuenta.tipoCuenta}"></td>
@@ -58,5 +67,86 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.querySelector('table tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Crear un mapa de IDs a filas
+    const rowsMap = {};
+    rows.forEach(row => {
+        rowsMap[row.getAttribute('data-id')] = row;
+    });
+    
+    // Función para calcular el nivel de profundidad
+    function getLevel(id, visited = new Set()) {
+        if (visited.has(id)) return 0; // Evitar ciclos infinitos
+        visited.add(id);
+        
+        const row = rowsMap[id];
+        if (!row) return 0;
+        
+        const padreId = row.getAttribute('data-padre-id');
+        if (!padreId || padreId === 'null' || padreId === '') {
+            return 1; // Es raíz
+        }
+        
+        return 1 + getLevel(padreId, visited);
+    }
+    
+    // Agregar clases de nivel a cada fila
+    rows.forEach(row => {
+        const id = row.getAttribute('data-id');
+        const level = getLevel(id);
+        row.classList.add('tree-row-level-' + level);
+    });
+    
+    // Reorganizar las filas en orden de árbol
+    function reorganizeTree() {
+        // Crear lista ordenada
+        const orderedRows = [];
+        const processed = new Set();
+        
+        function addRowAndChildren(id) {
+            if (processed.has(id)) return;
+            processed.add(id);
+            
+            const row = rowsMap[id];
+            if (row) {
+                orderedRows.push(row.cloneNode(true));
+            }
+            
+            // Agregar todos los hijos
+            rows.forEach(r => {
+                if (r.getAttribute('data-padre-id') === id && !processed.has(r.getAttribute('data-id'))) {
+                    addRowAndChildren(r.getAttribute('data-id'));
+                }
+            });
+        }
+        
+        // Procesar raíces primero
+        rows.forEach(row => {
+            const padreId = row.getAttribute('data-padre-id');
+            if (!padreId || padreId === 'null' || padreId === '') {
+                addRowAndChildren(row.getAttribute('data-id'));
+            }
+        });
+        
+        // Limpiar y recargar la tabla
+        tbody.innerHTML = '';
+        orderedRows.forEach(row => {
+            // Regenerar las clases de nivel
+            const id = row.getAttribute('data-id');
+            const level = getLevel(id);
+            row.classList.remove(...Array.from(row.classList).filter(c => c.startsWith('tree-row-level')));
+            row.classList.add('tree-row-level-' + level);
+            tbody.appendChild(row);
+        });
+    }
+    
+    reorganizeTree();
+});
+</script>
 </body>
 </html>
