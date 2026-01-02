@@ -69,12 +69,7 @@ public class PresupuestoController {
                 item.getProducto().getProductoProveedores() != null && 
                 !item.getProducto().getProductoProveedores().isEmpty()) {
 
-                // Solo si tiene proveedores, cambiamos el estado de la solicitud
-                SolicitudCompra sc = item.getSolicitudCompra();
-                if (sc != null && sc.getEstado() == EstadoSolicitud.PENDIENTE) {
-                    sc.setEstado(EstadoSolicitud.COTIZANDO);
-                    solicitudCompraRepository.save(sc); 
-                }
+                
 
                 // Agrupamos por proveedor
                 for (ProductoProveedor pp : item.getProducto().getProductoProveedores()) {
@@ -211,6 +206,18 @@ public class PresupuestoController {
 
         // Llamar al servicio para generar el PDF del pedido de cotización
         try {
+
+            if (selectedItemIds != null) {
+                List<SolicitudCompraItem> itemsAProcesar = solicitudCompraService.getSolicitudCompraItemsByIds(selectedItemIds);
+                for (SolicitudCompraItem item : itemsAProcesar) {
+                    SolicitudCompra sc = item.getSolicitudCompra();
+                    if (sc != null && sc.getEstado() == EstadoSolicitud.PENDIENTE) {
+                        sc.setEstado(EstadoSolicitud.COTIZANDO);
+                        solicitudCompraRepository.save(sc);
+                    }
+                }
+            }
+            
             // Guardar el PedidoCotizacion en la base de datos antes de generar el PDF
             pedidoCotizacionService.guardarPedidoCotizacion(proveedorId, itemCantidades);
             
