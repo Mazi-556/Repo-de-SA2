@@ -159,14 +159,19 @@ public class DataInitializer implements CommandLineRunner {
     
     // Método auxiliar para no repetir código
     private void crearCuentaSiNoExiste(String nombre, com.example.SA2Gemini.entity.TipoCuenta tipo, String codigo) {
-        if (cuentaRepository.findByNombre(nombre).isEmpty()) {
-            com.example.SA2Gemini.entity.Cuenta cuenta = new com.example.SA2Gemini.entity.Cuenta();
-            cuenta.setNombre(nombre);
-            cuenta.setTipoCuenta(tipo);
-            cuenta.setCodigo(codigo); // Código ficticio por defecto
-            cuenta.setActivo(true);
-            cuentaRepository.save(cuenta);
-            logger.info("Created account: " + nombre);
+        try {
+            if (cuentaRepository.findByNombre(nombre).isEmpty()) {
+                com.example.SA2Gemini.entity.Cuenta cuenta = new com.example.SA2Gemini.entity.Cuenta();
+                cuenta.setNombre(nombre);
+                cuenta.setTipoCuenta(tipo);
+                cuenta.setCodigo(codigo); // Código ficticio por defecto
+                cuenta.setActivo(true);
+                cuentaRepository.save(cuenta);
+                logger.info("Created account: " + nombre);
+            }
+        } catch (Exception e) {
+            // Ignorar si ya existe (puede ser por duplicado de código)
+            logger.debug("Account " + nombre + " already exists or error occurred: " + e.getMessage());
         }
     }
 }
