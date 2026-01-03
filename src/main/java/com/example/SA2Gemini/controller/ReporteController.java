@@ -199,9 +199,8 @@ public class ReporteController {
         data.put("reportePorCuenta", reportePorCuenta);
         data.put("fechaInicio", fechaInicio);
         data.put("fechaFin", fechaFin);
-        data.put("isPdf", true);
 
-        String htmlContent = pdfGeneratorService.generateHtml("libro-mayor-report", data, request, response);
+        String htmlContent = pdfGeneratorService.generateHtml("libro-mayor-pdf", data, request, response);
         byte[] pdfBytes = pdfGeneratorService.generatePdfFromHtml(htmlContent);
 
         return ResponseEntity.ok()

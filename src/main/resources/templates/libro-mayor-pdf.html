@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Libro Mayor</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 10px; margin: 20px; }
+        h1 { text-align: center; font-size: 16px; margin-bottom: 10px; }
+        .fecha { text-align: center; font-size: 11px; margin-bottom: 20px; }
+        .cuenta { margin-top: 20px; page-break-inside: avoid; }
+        .cuenta-nombre { font-weight: bold; font-size: 12px; margin-bottom: 5px; border-bottom: 2px solid #000; padding-bottom: 3px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #333; padding: 4px; text-align: left; }
+        th { background-color: #f0f0f0; font-weight: bold; font-size: 9px; }
+        td { font-size: 9px; }
+        .text-right { text-align: right; }
+        .balance-row { font-weight: bold; background-color: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Libro Mayor</h1>
+    <div class="fecha">
+        Período: <span th:text="${#temporals.format(fechaInicio, 'dd/MM/yyyy')}"></span> - 
+        <span th:text="${#temporals.format(fechaFin, 'dd/MM/yyyy')}"></span>
+    </div>
+
+    <div th:each="entry : ${reportePorCuenta}" class="cuenta">
+        <div class="cuenta-nombre" th:text="${entry.key}">Cuenta</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 12%;">Fecha</th>
+                    <th style="width: 48%;">Detalle</th>
+                    <th style="width: 13%;" class="text-right">Debe</th>
+                    <th style="width: 13%;" class="text-right">Haber</th>
+                    <th style="width: 14%;" class="text-right">Saldo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="balance-row">
+                    <td colspan="4">Saldo Inicial</td>
+                    <td class="text-right" th:text="${#numbers.formatDecimal(entry.value.saldoInicial, 1, 2)}">0.00</td>
+                </tr>
+                <tr th:each="mov : ${entry.value.movimientos}">
+                    <td th:text="${#temporals.format(mov.fecha, 'dd/MM/yyyy')}">01/01/2024</td>
+                    <td th:text="${mov.detalle}">Detalle</td>
+                    <td class="text-right" th:text="${mov.debe != null ? #numbers.formatDecimal(mov.debe, 1, 2) : ''}"></td>
+                    <td class="text-right" th:text="${mov.haber != null ? #numbers.formatDecimal(mov.haber, 1, 2) : ''}"></td>
+                    <td class="text-right" th:text="${#numbers.formatDecimal(mov.saldo, 1, 2)}">0.00</td>
+                </tr>
+                <tr class="balance-row">
+                    <td colspan="4">Saldo Final</td>
+                    <td class="text-right" th:text="${#numbers.formatDecimal(entry.value.saldoFinal, 1, 2)}">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
