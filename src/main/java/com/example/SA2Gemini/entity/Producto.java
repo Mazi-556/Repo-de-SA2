@@ -24,9 +24,9 @@ public class Producto {
     private BigDecimal iva; // e.g., 0.21
 
     private int stockActual = 0;
-    private int stockMaximo;
-    private int stockMinimo;
-    private int puntoReposicion;
+    private int stockMaximo = 0;
+    private int stockMinimo = 0;
+    private int puntoReposicion = 0;
     private boolean activo = true;
 
     @ManyToOne

@@ -118,7 +118,11 @@ public class DataInitializer implements CommandLineRunner {
         crearCuentaSiNoExiste("Mercaderías", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.2.1");
         crearCuentaSiNoExiste("IVA Crédito Fiscal", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.2.2");
         crearCuentaSiNoExiste("Proveedores", com.example.SA2Gemini.entity.TipoCuenta.PASIVO, "2.1.1");
-        // Puedes agregar más si son necesarias (ej: Caja, Ventas)
+        crearCuentaSiNoExiste("Caja", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.1.1");
+        crearCuentaSiNoExiste("Banco", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.1.2");
+        crearCuentaSiNoExiste("Valores a depositar", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.1.3");
+        crearCuentaSiNoExiste("Ventas", com.example.SA2Gemini.entity.TipoCuenta.RESULTADO_POSITIVO, "4.1.1");
+        crearCuentaSiNoExiste("Costo de Mercaderías Vendidas", com.example.SA2Gemini.entity.TipoCuenta.RESULTADO_NEGATIVO, "5.1.1");
         
         logger.info("Critical accounting accounts check finished.");
         
@@ -155,14 +159,19 @@ public class DataInitializer implements CommandLineRunner {
     
     // Método auxiliar para no repetir código
     private void crearCuentaSiNoExiste(String nombre, com.example.SA2Gemini.entity.TipoCuenta tipo, String codigo) {
-        if (cuentaRepository.findByNombre(nombre).isEmpty()) {
-            com.example.SA2Gemini.entity.Cuenta cuenta = new com.example.SA2Gemini.entity.Cuenta();
-            cuenta.setNombre(nombre);
-            cuenta.setTipoCuenta(tipo);
-            cuenta.setCodigo(codigo); // Código ficticio por defecto
-            cuenta.setActivo(true);
-            cuentaRepository.save(cuenta);
-            logger.info("Created account: " + nombre);
+        try {
+            if (cuentaRepository.findByNombre(nombre).isEmpty()) {
+                com.example.SA2Gemini.entity.Cuenta cuenta = new com.example.SA2Gemini.entity.Cuenta();
+                cuenta.setNombre(nombre);
+                cuenta.setTipoCuenta(tipo);
+                cuenta.setCodigo(codigo); // Código ficticio por defecto
+                cuenta.setActivo(true);
+                cuentaRepository.save(cuenta);
+                logger.info("Created account: " + nombre);
+            }
+        } catch (Exception e) {
+            // Ignorar si ya existe (puede ser por duplicado de código)
+            logger.debug("Account " + nombre + " already exists or error occurred: " + e.getMessage());
         }
     }
 }

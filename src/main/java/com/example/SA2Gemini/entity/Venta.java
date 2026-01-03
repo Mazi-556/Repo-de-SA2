@@ -22,6 +22,8 @@ public class Venta {
     private BigDecimal total;
     
     private LocalDate fecha;
+
+    private String formaPago;
     
     // Constructors
     public Venta() {
@@ -76,4 +78,7 @@ public class Venta {
     public void setFecha(LocalDate fecha) {
         this.fecha = fecha;
     }
+
+    public String getFormaPago() { return formaPago; }
+    public void setFormaPago(String formaPago) { this.formaPago = formaPago; }
 }
