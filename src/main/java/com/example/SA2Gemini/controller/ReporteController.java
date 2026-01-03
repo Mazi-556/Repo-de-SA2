@@ -176,7 +176,7 @@ public class ReporteController {
     }
 
     @GetMapping("/reportes/libro-mayor/pdf")
-    public ResponseEntity<byte[]> generateLibroMayorPdf(@RequestParam(value = "fechaInicio", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+    public ResponseEntity<?> generateLibroMayorPdf(@RequestParam(value = "fechaInicio", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
                                                         @RequestParam(value = "fechaFin", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
                                                         @RequestParam(value = "cuentaId", required = false) Long cuentaId,
                                                         HttpServletRequest request, HttpServletResponse response) throws DocumentException {
@@ -188,6 +188,12 @@ public class ReporteController {
         }
 
         Map<String, LibroMayorCuentaReport> reportePorCuenta = asientoService.generarLibroMayorReporte(fechaInicio, fechaFin, cuentaId);
+
+        // Validar que hay datos antes de generar PDF
+        if (reportePorCuenta == null || reportePorCuenta.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("No hay movimientos para generar el reporte en el período seleccionado.");
+        }
 
         Map<String, Object> data = new HashMap<>();
         data.put("reportePorCuenta", reportePorCuenta);
