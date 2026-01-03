@@ -54,40 +54,38 @@ public class VentaService {
     }
     
     @Transactional
-    public Venta registrarVenta(Long productoId, Integer cantidad, String formaPago) { // 1. Cambiamos la firma
+    public Venta registrarVenta(Long productoId, Integer cantidad, String formaPago) {
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        // Verificar que haya stock suficiente
         if (producto.getStockActual() < cantidad) {
             throw new RuntimeException("Stock insuficiente. Stock actual: " + producto.getStockActual());
         }
 
-        // Crear la venta
+        // 1. Crear el objeto Venta
         Venta venta = new Venta();
         venta.setProducto(producto);
         venta.setCantidad(cantidad);
         venta.setPrecioUnitario(producto.getPrecioVenta() != null ? producto.getPrecioVenta() : BigDecimal.ZERO);
         venta.setTotal(venta.getPrecioUnitario().multiply(BigDecimal.valueOf(cantidad)));
         venta.setFecha(LocalDate.now());
-        venta.setFormaPago(formaPago); // 2. Seteamos la forma de pago
+        venta.setFormaPago(formaPago);
 
-        // Disminuir el stock
+        // 2. Actualizar stock físico
         producto.setStockActual(producto.getStockActual() - cantidad);
         productoRepository.save(producto);
         
-        // TRIGGER DE PUNTO DE REPOSICIÓN 
         if (producto.getStockActual() < producto.getPuntoReposicion()) {
             solicitudCompraService.crearSolicitudAutomatica(producto);
         }
 
         try {
-            Asiento asiento = new Asiento();
-            asiento.setFecha(LocalDate.now());
-            asiento.setDescripcion("Venta de producto: " + producto.getNombre());
-            asiento.setMovimientos(new ArrayList<>());
+            // --- ASIENTO 1: REGISTRO DE VENTA (Precio de Venta) ---
+            Asiento asientoVenta = new Asiento();
+            asientoVenta.setFecha(LocalDate.now());
+            asientoVenta.setDescripcion("Venta de producto: " + producto.getNombre());
+            asientoVenta.setMovimientos(new ArrayList<>());
 
-            // Lógica de cuentas según forma de pago
             String nombreCuentaDebe = switch (formaPago) {
                 case "EFECTIVO" -> "Caja";
                 case "TRANSFERENCIA" -> "Banco";
@@ -95,36 +93,52 @@ public class VentaService {
                 default -> "Caja";
             };
 
-            Cuenta cuentaDebe = cuentaRepository.findByNombre(nombreCuentaDebe)
-                    .orElseThrow(() -> new RuntimeException("No existe la cuenta: " + nombreCuentaDebe));
+            Cuenta cDebe = cuentaRepository.findByNombre(nombreCuentaDebe)
+                    .orElseThrow(() -> new RuntimeException("No existe: " + nombreCuentaDebe));
+            Cuenta cVentas = cuentaRepository.findByNombre("Ventas")
+                    .orElseThrow(() -> new RuntimeException("No existe: Ventas"));
 
-            Cuenta cuentaHaber = cuentaRepository.findByNombre("Ventas")
-                    .orElseThrow(() -> new RuntimeException("No existe la cuenta: Ventas"));
+            // Caja/Banco a Ventas
+            agregarMovimiento(asientoVenta, cDebe, venta.getTotal(), BigDecimal.ZERO);
+            agregarMovimiento(asientoVenta, cVentas, BigDecimal.ZERO, venta.getTotal());
+            asientoService.saveAsiento(asientoVenta);
 
-            // Movimiento DEBE
-            Movimiento movDebe = new Movimiento();
-            movDebe.setCuenta(cuentaDebe);
-            movDebe.setDebe(venta.getTotal());
-            movDebe.setHaber(BigDecimal.ZERO);
-            movDebe.setAsiento(asiento);
-            asiento.getMovimientos().add(movDebe);
+            // --- ASIENTO 2: REGISTRO DE COSTO (Precio de Costo) ---
+            BigDecimal precioCosto = producto.getPrecioCosto() != null ? producto.getPrecioCosto() : BigDecimal.ZERO;
+            BigDecimal costoTotal = precioCosto.multiply(BigDecimal.valueOf(cantidad));
 
-            // Movimiento HABER
-            Movimiento movHaber = new Movimiento();
-            movHaber.setCuenta(cuentaHaber);
-            movHaber.setDebe(BigDecimal.ZERO);
-            movHaber.setHaber(venta.getTotal());
-            movHaber.setAsiento(asiento);
-            asiento.getMovimientos().add(movHaber);
+            if (costoTotal.compareTo(BigDecimal.ZERO) > 0) {
+                Asiento asientoCosto = new Asiento();
+                asientoCosto.setFecha(LocalDate.now());
+                asientoCosto.setDescripcion("CMV por venta de: " + producto.getNombre());
+                asientoCosto.setMovimientos(new ArrayList<>());
 
-            asientoService.saveAsiento(asiento);
+                Cuenta cCmv = cuentaRepository.findByNombre("Costo de Mercaderías Vendidas")
+                        .orElseThrow(() -> new RuntimeException("No existe: Costo de Mercaderías Vendidas"));
+                Cuenta cMercaderias = cuentaRepository.findByNombre("Mercaderías")
+                        .orElseThrow(() -> new RuntimeException("No existe: Mercaderías"));
+
+                // CMV a Mercaderías
+                agregarMovimiento(asientoCosto, cCmv, costoTotal, BigDecimal.ZERO);
+                agregarMovimiento(asientoCosto, cMercaderias, BigDecimal.ZERO, costoTotal);
+                asientoService.saveAsiento(asientoCosto);
+            }
 
         } catch (Exception e) {
-            // Si el asiento falla, se cancela todo (Rollback)
             throw new RuntimeException("Error contable: " + e.getMessage());
         }
 
         return ventaRepository.save(venta);
+    }
+
+    // Método auxiliar para limpiar el código de movimientos
+    private void agregarMovimiento(Asiento a, Cuenta c, BigDecimal debe, BigDecimal haber) {
+        Movimiento m = new Movimiento();
+        m.setCuenta(c);
+        m.setDebe(debe);
+        m.setHaber(haber);
+        m.setAsiento(a);
+        a.getMovimientos().add(m);
     }
     
     public List<Venta> getAllVentas() {

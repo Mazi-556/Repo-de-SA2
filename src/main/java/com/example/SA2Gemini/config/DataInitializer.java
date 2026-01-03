@@ -122,6 +122,7 @@ public class DataInitializer implements CommandLineRunner {
         crearCuentaSiNoExiste("Banco", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.1.2");
         crearCuentaSiNoExiste("Valores a depositar", com.example.SA2Gemini.entity.TipoCuenta.ACTIVO, "1.1.3");
         crearCuentaSiNoExiste("Ventas", com.example.SA2Gemini.entity.TipoCuenta.RESULTADO_POSITIVO, "4.1.1");
+        crearCuentaSiNoExiste("Costo de Mercaderías Vendidas", com.example.SA2Gemini.entity.TipoCuenta.RESULTADO_NEGATIVO, "5.1.1");
         
         logger.info("Critical accounting accounts check finished.");
         
