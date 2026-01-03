@@ -37,7 +37,8 @@ public class VentaController {
                              @RequestParam String formaPago, // Agregamos este parámetro
                              RedirectAttributes redirectAttributes) {
         try {
-            ventaService.registrarVenta(productoId, cantidad, formaPago); // Se lo pasamos al servicio            redirectAttributes.addFlashAttribute("success", "Venta registrada exitosamente. Stock actualizado.");
+            ventaService.registrarVenta(productoId, cantidad, formaPago); // Se lo pasamos al servicio            
+            redirectAttributes.addFlashAttribute("success", "Venta registrada exitosamente. Stock actualizado.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }

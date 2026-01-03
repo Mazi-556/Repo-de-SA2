@@ -80,12 +80,14 @@ public class VentaService {
         }
 
         try {
-            // --- ASIENTO 1: REGISTRO DE VENTA (Precio de Venta) ---
-            Asiento asientoVenta = new Asiento();
-            asientoVenta.setFecha(LocalDate.now());
-            asientoVenta.setDescripcion("Venta de producto: " + producto.getNombre());
-            asientoVenta.setMovimientos(new ArrayList<>());
+            // Creamos UN SOLO asiento para todo el movimiento
+            Asiento asiento = new Asiento();
+            asiento.setFecha(LocalDate.now());
+            asiento.setDescripcion("Venta y CMV - Producto: " + producto.getNombre());
+            asiento.setMovimientos(new ArrayList<>());
 
+            // --- PARTE 1: El Ingreso (DEBE) ---
+            // Si es CHEQUE, el sistema busca "Valores a depositar"
             String nombreCuentaDebe = switch (formaPago) {
                 case "EFECTIVO" -> "Caja";
                 case "TRANSFERENCIA" -> "Banco";
@@ -94,38 +96,40 @@ public class VentaService {
             };
 
             Cuenta cDebe = cuentaRepository.findByNombre(nombreCuentaDebe)
-                    .orElseThrow(() -> new RuntimeException("No existe: " + nombreCuentaDebe));
+                    .orElseThrow(() -> new RuntimeException("No existe la cuenta: " + nombreCuentaDebe));
+            
+            // Agregamos el movimiento del dinero que entra
+            agregarMovimiento(asiento, cDebe, venta.getTotal(), BigDecimal.ZERO);
+
+            // --- PARTE 2: La Venta (HABER) ---
             Cuenta cVentas = cuentaRepository.findByNombre("Ventas")
-                    .orElseThrow(() -> new RuntimeException("No existe: Ventas"));
+                    .orElseThrow(() -> new RuntimeException("No existe la cuenta: Ventas"));
+            
+            // Registramos el ingreso por venta
+            agregarMovimiento(asiento, cVentas, BigDecimal.ZERO, venta.getTotal());
 
-            // Caja/Banco a Ventas
-            agregarMovimiento(asientoVenta, cDebe, venta.getTotal(), BigDecimal.ZERO);
-            agregarMovimiento(asientoVenta, cVentas, BigDecimal.ZERO, venta.getTotal());
-            asientoService.saveAsiento(asientoVenta);
-
-            // --- ASIENTO 2: REGISTRO DE COSTO (Precio de Costo) ---
+            // --- PARTE 3: El Costo y la Mercadería (CMV a Mercaderías) ---
             BigDecimal precioCosto = producto.getPrecioCosto() != null ? producto.getPrecioCosto() : BigDecimal.ZERO;
             BigDecimal costoTotal = precioCosto.multiply(BigDecimal.valueOf(cantidad));
 
             if (costoTotal.compareTo(BigDecimal.ZERO) > 0) {
-                Asiento asientoCosto = new Asiento();
-                asientoCosto.setFecha(LocalDate.now());
-                asientoCosto.setDescripcion("CMV por venta de: " + producto.getNombre());
-                asientoCosto.setMovimientos(new ArrayList<>());
-
                 Cuenta cCmv = cuentaRepository.findByNombre("Costo de Mercaderías Vendidas")
-                        .orElseThrow(() -> new RuntimeException("No existe: Costo de Mercaderías Vendidas"));
+                        .orElseThrow(() -> new RuntimeException("No existe la cuenta: Costo de Mercaderías Vendidas"));
                 Cuenta cMercaderias = cuentaRepository.findByNombre("Mercaderías")
-                        .orElseThrow(() -> new RuntimeException("No existe: Mercaderías"));
+                        .orElseThrow(() -> new RuntimeException("No existe la cuenta: Mercaderías"));
 
-                // CMV a Mercaderías
-                agregarMovimiento(asientoCosto, cCmv, costoTotal, BigDecimal.ZERO);
-                agregarMovimiento(asientoCosto, cMercaderias, BigDecimal.ZERO, costoTotal);
-                asientoService.saveAsiento(asientoCosto);
+                // CMV (DEBE)
+                agregarMovimiento(asiento, cCmv, costoTotal, BigDecimal.ZERO);
+                // Mercaderías (HABER - Baja el stock contable)
+                agregarMovimiento(asiento, cMercaderias, BigDecimal.ZERO, costoTotal);
             }
 
+            // Guardamos el asiento único
+            asientoService.saveAsiento(asiento);
+
         } catch (Exception e) {
-            throw new RuntimeException("Error contable: " + e.getMessage());
+            // Si algo falla, se cancela la venta (Rollback)
+            throw new RuntimeException("Error al generar el asiento: " + e.getMessage());
         }
 
         return ventaRepository.save(venta);
