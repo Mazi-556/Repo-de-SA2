@@ -87,6 +87,17 @@
                                th:attr="max=${producto.stockActual}" 
                                min="1" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="formaPago" class="form-label">Forma de Pago <span class="text-danger">*</span></label>
+                        <select class="form-select" name="formaPago" required>
+                            <option value="" selected disabled>Seleccione una opción...</option>
+                            <option value="EFECTIVO">Efectivo (Caja)</option>
+                            <option value="TRANSFERENCIA">Transferencia (Banco)</option>
+                            <option value="CHEQUE">Cheque (Valores a depositar)</option>
+                        </select>
+                    </div>
+                    
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
