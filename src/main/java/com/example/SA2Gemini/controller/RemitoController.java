@@ -7,6 +7,7 @@ import com.example.SA2Gemini.service.OrdenCompraService;
 import com.example.SA2Gemini.service.RemitoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
 @Controller
 @RequestMapping("/remitos")
 public class RemitoController {

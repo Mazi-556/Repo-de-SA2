@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import java.util.HashMap; // Importar HashMap
 import java.util.List;
 import java.util.Map;
 
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
 @Controller
 @RequestMapping("/pedidos-cotizacion")
 public class PedidoCotizacionController {

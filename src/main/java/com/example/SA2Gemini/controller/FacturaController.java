@@ -12,6 +12,7 @@ import com.example.SA2Gemini.service.FacturaService;
 import com.example.SA2Gemini.repository.AsientoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
 @Controller
 @RequestMapping("/facturas")
 public class FacturaController {

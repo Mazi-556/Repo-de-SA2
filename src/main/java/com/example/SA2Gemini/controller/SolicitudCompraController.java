@@ -6,6 +6,7 @@ import com.example.SA2Gemini.repository.SolicitudCompraRepository;
 import com.example.SA2Gemini.service.ProductoService;
 import com.example.SA2Gemini.service.SolicitudCompraService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
 @Controller
 @RequestMapping("/solicitudes-compra")
 public class SolicitudCompraController {

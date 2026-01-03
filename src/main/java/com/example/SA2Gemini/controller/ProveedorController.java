@@ -5,10 +5,12 @@ import com.example.SA2Gemini.repository.RubroRepository; // Import RubroReposito
 import com.example.SA2Gemini.repository.TipoProveedorRepository; // Import TipoProveedorRepository
 import com.example.SA2Gemini.service.ProveedorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
 @Controller
 @RequestMapping("/proveedores")
 public class ProveedorController {

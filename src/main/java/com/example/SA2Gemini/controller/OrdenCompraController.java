@@ -4,6 +4,7 @@ import com.example.SA2Gemini.entity.PedidoCotizacion;
 import com.example.SA2Gemini.service.PedidoCotizacionService;
 import com.example.SA2Gemini.service.OrdenCompraService; // Necesario para generar la OrdenCompra
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import java.util.Map; // Para recibir itemCantidades
 import java.util.HashMap; // Importar HashMap
 import java.math.BigDecimal; // Importar BigDecimal
 
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
 @Controller
 @RequestMapping("/ordenes-compra")
 public class OrdenCompraController {
