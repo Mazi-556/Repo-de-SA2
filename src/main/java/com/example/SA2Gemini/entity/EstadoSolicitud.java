@@ -5,6 +5,7 @@ public enum EstadoSolicitud {
     COTIZANDO,          // Se envió pedido de cotización al proveedor
     COTIZADA,           // El proveedor respondió con precios
     COMPROMETIDA,       // Se creó la Orden de Compra
-    INGRESADA,          // Se recibió mercadería (remito)
+    INGRESADA_PARCIAL,  // Se recibió mercadería parcialmente (remito parcial)
+    INGRESADA,          // Se recibió toda la mercadería (remito)
     FINALIZADA          // Se registró la factura
 }

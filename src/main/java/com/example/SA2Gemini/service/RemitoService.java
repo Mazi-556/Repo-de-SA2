@@ -136,10 +136,16 @@ public class RemitoService {
     
             ordenCompraRepository.save(ordenCompra);
 
-            // --- NUEVO: Actualizar el estado de la Solicitud de Compra a INGRESADA ---
+            // --- Actualizar el estado de la Solicitud de Compra según si es parcial o completa ---
             SolicitudCompra sc = ordenCompra.getSolicitudCompra();
             if (sc != null) {
-                sc.setEstado(EstadoSolicitud.INGRESADA);
+                // Usar la misma lógica que OrdenCompra: si está RECIBIDA_COMPLETA, entonces INGRESADA
+                // Si está RECIBIDA_PARCIAL, entonces INGRESADA_PARCIAL
+                if (ordenCompra.getEstado() == EstadoOrdenCompra.RECIBIDA_COMPLETA) {
+                    sc.setEstado(EstadoSolicitud.INGRESADA);
+                } else if (ordenCompra.getEstado() == EstadoOrdenCompra.RECIBIDA_PARCIAL) {
+                    sc.setEstado(EstadoSolicitud.INGRESADA_PARCIAL);
+                }
                 solicitudCompraRepository.save(sc);
             }
     
