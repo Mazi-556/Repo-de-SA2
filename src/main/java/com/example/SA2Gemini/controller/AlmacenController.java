@@ -3,6 +3,7 @@ package com.example.SA2Gemini.controller;
 import com.example.SA2Gemini.entity.Almacen;
 import com.example.SA2Gemini.repository.AlmacenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,14 @@ public class AlmacenController {
         return "almacenes-listado";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/nuevo")
     public String mostrarFormulario(Model model) {
         model.addAttribute("almacen", new Almacen());
         return "almacen-form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/guardar")
     public String guardarAlmacen(@ModelAttribute Almacen almacen, Model model) {
         if (almacen.getNombre() == null || almacen.getNombre().trim().isEmpty()) {
@@ -38,6 +41,7 @@ public class AlmacenController {
         return "redirect:/almacenes";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/editar/{id}")
     public String editarAlmacen(@PathVariable Long id, Model model) {
         Almacen almacen = almacenRepository.findById(id)
@@ -46,6 +50,7 @@ public class AlmacenController {
         return "almacen-form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/eliminar/{id}")
     public String eliminarAlmacen(@PathVariable Long id) {
         almacenRepository.deleteById(id);

@@ -3,6 +3,7 @@ package com.example.SA2Gemini.controller;
 import com.example.SA2Gemini.entity.CategoriaProducto;
 import com.example.SA2Gemini.repository.CategoriaProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,14 @@ public class CategoriaProductoController {
         return "categorias-listado";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/nuevo")
     public String mostrarFormulario(Model model) {
         model.addAttribute("categoria", new CategoriaProducto());
         return "categoria-form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/guardar")
     public String guardarCategoria(@ModelAttribute CategoriaProducto categoria, Model model) {
         if (categoria.getNombre() == null || categoria.getNombre().trim().isEmpty()) {
@@ -38,6 +41,7 @@ public class CategoriaProductoController {
         return "redirect:/categorias";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/editar/{id}")
     public String editarCategoria(@PathVariable Long id, Model model) {
         CategoriaProducto categoria = categoriaProductoRepository.findById(id)
@@ -46,6 +50,7 @@ public class CategoriaProductoController {
         return "categoria-form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/eliminar/{id}")
     public String eliminarCategoria(@PathVariable Long id) {
         categoriaProductoRepository.deleteById(id);
