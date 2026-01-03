@@ -15,6 +15,7 @@ public class CategoriaProductoController {
     @Autowired
     private CategoriaProductoRepository categoriaProductoRepository;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String listarCategorias(Model model) {
         model.addAttribute("categorias", categoriaProductoRepository.findAll());
