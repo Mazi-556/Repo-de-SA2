@@ -49,7 +49,7 @@ INSERT INTO cuenta (id, codigo, nombre, tipo_cuenta, activo) VALUES
 (4, '1.2.2', 'IVA Crédito Fiscal', 'ACTIVO', true),
 (5, '2.1.1', 'Proveedores', 'PASIVO', true),
 (6, '2.2.1', 'IVA Débito Fiscal', 'PASIVO', true),
-(7, '4.1.1', 'Costo de Mercadería Vendida', 'RESULTADO_NEGATIVO', true),
+(7, '4.1.1', 'Costo de Mercaderías Vendidas', 'RESULTADO_NEGATIVO', true),
 (8, '5.1.1', 'Ventas', 'RESULTADO_POSITIVO', true);
 
 -- 4. rubro

@@ -6,7 +6,10 @@
     <link href="/css/navbar-style.css" rel="stylesheet">
     <style>
         /* Style to make disabled select look read-only */
-        select:disabled, input:read-only {
+        select:disabled, input:not([type="checkbox"]):read-only {
+        input[type="checkbox"] {
+            cursor: pointer;
+        }
             background-color: #e9ecef !important; /* Bootstrap's disabled background */
             opacity: 1 !important; /* Ensure it's not faded */
             cursor: not-allowed !important; /* Indicate it's not clickable */

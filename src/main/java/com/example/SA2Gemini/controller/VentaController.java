@@ -33,10 +33,11 @@ public class VentaController {
 
     @PostMapping("/registrar")
     public String registrarVenta(@RequestParam Long productoId, 
-                                 @RequestParam Integer cantidad,
-                                 RedirectAttributes redirectAttributes) {
+                             @RequestParam Integer cantidad,
+                             @RequestParam String formaPago, // Agregamos este parámetro
+                             RedirectAttributes redirectAttributes) {
         try {
-            ventaService.registrarVenta(productoId, cantidad);
+            ventaService.registrarVenta(productoId, cantidad, formaPago); // Se lo pasamos al servicio            
             redirectAttributes.addFlashAttribute("success", "Venta registrada exitosamente. Stock actualizado.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
