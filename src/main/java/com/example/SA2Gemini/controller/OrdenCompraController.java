@@ -29,7 +29,8 @@ public class OrdenCompraController {
     private OrdenCompraService ordenCompraService;
 
     @GetMapping
-    public String mostrarFormularioOrdenCompra(Model model) {
+    public String mostrarPaginaUnificada(Model model) {
+        // Cargar pedidos de cotización para la sección "Generar"
         List<PedidoCotizacion> pedidosCotizacion = pedidoCotizacionService.getAllPedidosCotizacion();
         
         // Filtrar solo pedidos que tengan cotización cargada (al menos un ítem con precio)
@@ -39,10 +40,14 @@ public class OrdenCompraController {
                                   item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0))
             .collect(java.util.stream.Collectors.toList());
         
+        // Cargar órdenes de compra para la sección "Listado"
+        List<com.example.SA2Gemini.entity.OrdenCompra> ordenesCompra = ordenCompraService.getAllOrdenesCompra();
+        
         model.addAttribute("pedidosCotizacion", pedidosConCotizacion);
-        // Inicialmente, no hay ningún pedido seleccionado
         model.addAttribute("pedidoSeleccionado", null);
-        return "orden-compra-form";
+        model.addAttribute("ordenesCompra", ordenesCompra);
+        
+        return "orden-compra-unified";
     }
 
     @GetMapping("/{id}")

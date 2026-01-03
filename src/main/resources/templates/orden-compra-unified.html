@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Orden de Compra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/navbar-style.css" rel="stylesheet">
+    <style>
+        .toggle-buttons {
+            margin-bottom: 20px;
+        }
+        .toggle-btn {
+            padding: 10px 30px;
+            font-weight: bold;
+            border: 2px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .toggle-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .toggle-btn:hover {
+            background-color: #0056b3;
+            color: white;
+            border-color: #0056b3;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <h1>Orden de Compra</h1>
+    
+    <!-- Toggle Buttons -->
+    <div class="toggle-buttons">
+        <button class="toggle-btn active" onclick="showSection('generar')">
+            <i class="bi bi-plus-circle"></i> Generar Orden de Compra
+        </button>
+        <button class="toggle-btn" onclick="showSection('listado')">
+            <i class="bi bi-list-ul"></i> Listado de Órdenes de Compra
+        </button>
+    </div>
+
+    <!-- SECTION 1: Generar Orden de Compra -->
+    <div id="generar" class="content-section active">
+        <h2>Generar Orden de Compra a partir de Pedido de Cotización</h2>
+
+        <div th:if="${successMessage}" class="alert alert-success" role="alert">
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <form th:action="@{/ordenes-compra}" method="get"></form>
+            <div class="mb-3">
+                <label for="pedidoCotizacionSelect" class="form-label">Seleccionar Pedido de Cotización:</label>
+                <select class="form-select" id="pedidoCotizacionSelect" name="id" onchange="this.form.submit()">
+                    <option value="">-- Seleccione un Pedido de Cotización --</option>
+                    <option th:each="pedido : ${pedidosCotizacion}" 
+                            th:value="${pedido.id}" 
+                            th:text="'ID: ' + ${pedido.id} + ' - Proveedor: ' + ${pedido.proveedor.nombre} + ' - Fecha: ' + ${pedido.fecha}"
+                            th:selected="${pedidoSeleccionado != null and pedido.id == pedidoSeleccionado.id}">
+                    </option>
+                </select>
+            </div>
+        </form>
+
+        <div th:if="${pedidoSeleccionado != null}">
+            <h3 class="mt-5">Detalles del Pedido de Cotización Seleccionado (#<span th:text="${pedidoSeleccionado.id}"></span>)</h3>
+            <div class="card mb-4">
+                <div class="card-header">
+                    Información General
+                </div>
+                <div class="card-body">
+                    <p><strong>ID del Pedido:</strong> <span th:text="${pedidoSeleccionado.id}"></span></p>
+                    <p><strong>Fecha de Emisión:</strong> <span th:text="${pedidoSeleccionado.fecha}"></span></p>
+                    <p><strong>Proveedor:</strong> <span th:text="${pedidoSeleccionado.proveedor.nombre}"></span></p>
+                    <p><strong>Estado:</strong> <span th:text="${pedidoSeleccionado.estado}"></span></p>
+                    <p th:if="${pedidoSeleccionado.solicitudCompra != null}"><strong>Solicitud de Compra Original:</strong> <span th:text="${pedidoSeleccionado.solicitudCompra.id}"></span></p>
+                </div>
+            </div>
+
+            <h4 class="mb-3">Ítems del Pedido para Orden de Compra</h4>
+            <form th:action="@{/ordenes-compra/generar}" method="post">
+                <input type="hidden" name="pedidoCotizacionId" th:value="${pedidoSeleccionado.id}" />
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllItems"/></th>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Cantidad (Final)</th>
+                            <th>Precio Unitario (Final)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${pedidoSeleccionado.items}">
+                            <td><input type="checkbox" name="itemIdsOrdenCompra" th:value="${item.id}" checked></td>
+                            <td th:text="${item.producto.codigo}"></td>
+                            <td th:text="${item.producto.nombre}"></td>
+                            <td th:text="${item.producto.marca}"></td>
+                            <td th:text="${item.producto.modelo}"></td>
+                            <td>
+                                <input type="number" th:name="'cantidad_oc_item_' + ${item.id}" th:value="${item.cantidad}" min="1" class="form-control form-control-sm w-auto" required>
+                            </td>
+                            <td>
+                                <input type="number" th:name="'precio_oc_item_' + ${item.id}" th:value="${item.precioUnitarioCotizado}" step="0.01" min="0" class="form-control form-control-sm w-auto" required>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button type="submit" class="btn btn-success mt-3" id="generarOrdenBtn">GENERAR ORDEN DE COMPRA</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SECTION 2: Listado de Órdenes de Compra -->
+    <div id="listado" class="content-section">
+        <h2>Listado de Órdenes de Compra</h2>
+
+        <div th:if="${successMessageListado}" class="alert alert-success" role="alert">
+            <span th:text="${successMessageListado}"></span>
+        </div>
+        <div th:if="${errorMessageListado}" class="alert alert-danger" role="alert">
+            <span th:text="${errorMessageListado}"></span>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="orden : ${ordenesCompra}">
+                    <td th:text="${orden.id}"></td>
+                    <td th:text="${orden.fecha}"></td>
+                    <td th:text="${orden.proveedor.nombre}"></td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${orden.estado.name() == 'EMITIDA' ? 'bg-primary' : 
+                                               orden.estado.name() == 'RECIBIDA_PARCIAL' ? 'bg-warning' :
+                                               orden.estado.name() == 'RECIBIDA_COMPLETA' ? 'bg-success' : 'bg-secondary'}"
+                              th:text="${orden.estado}">
+                        </span>
+                    </td>
+                    <td th:text="${orden.total}"></td>
+                    <td>
+                        <a th:href="@{/ordenes-compra/listado/{id}(id=${orden.id})}" class="btn btn-info btn-sm">Ver Detalles</a>
+                    </td>
+                </tr>
+
+                <tr th:if="${ordenesCompra.empty}">
+                    <td colspan="6" class="text-center text-muted italic">No se encontraron órdenes de compra.</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Remove active class from all buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Show selected section
+        document.getElementById(sectionId).classList.add('active');
+        
+        // Add active class to clicked button
+        event.target.classList.add('active');
+    }
+
+    // Original scripts from orden-compra-form.html
+    document.getElementById('pedidoCotizacionSelect').addEventListener('change', function() {
+        if (this.value) {
+            window.location.href = '/ordenes-compra/' + this.value;
+        } else {
+            window.location.href = '/ordenes-compra';
+        }
+    });
+
+    // Script para seleccionar/deseleccionar todos los ítems
+    document.getElementById('selectAllItems').addEventListener('change', function(e) {
+        let checkboxes = document.querySelectorAll('input[name="itemIdsOrdenCompra"]');
+        for (let i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = e.target.checked;
+        }
+    });
+
+    // Validación antes de enviar el formulario
+    let form = document.querySelector('form[action*="/generar"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let checkboxes = document.querySelectorAll('input[name="itemIdsOrdenCompra"]:checked');
+            if (checkboxes.length === 0) {
+                e.preventDefault();
+                alert('⚠️ Debe seleccionar al menos un producto para generar la Orden de Compra.');
+                return false;
+            }
+        });
+    }
+</script>
+</body>
+</html>
