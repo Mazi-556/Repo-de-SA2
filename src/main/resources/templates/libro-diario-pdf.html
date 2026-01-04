@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Libro Diario</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 10px; margin: 20px; }
+        h1 { text-align: center; font-size: 16px; margin-bottom: 10px; }
+        .fecha { text-align: center; font-size: 11px; margin-bottom: 20px; }
+        .asiento-block { margin-top: 20px; page-break-inside: avoid; }
+        .asiento-header { font-weight: bold; font-size: 11px; margin-bottom: 5px; border-bottom: 1px solid #000; padding-bottom: 3px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #333; padding: 4px; text-align: left; }
+        th { background-color: #f0f0f0; font-weight: bold; font-size: 9px; }
+        td { font-size: 9px; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Libro Diario</h1>
+    <div class="fecha">
+        Período: <span th:text="${#temporals.format(startDate, 'dd/MM/yyyy')}"></span> - 
+        <span th:text="${#temporals.format(endDate, 'dd/MM/yyyy')}"></span>
+    </div>
+
+    <div th:if="${asientos.isEmpty()}" style="text-align: center; padding: 20px;">
+        <p>No se encontraron asientos para el período seleccionado.</p>
+    </div>
+
+    <div th:each="asiento : ${asientos}" class="asiento-block">
+        <div class="asiento-header">
+            Asiento #<span th:text="${asiento.id}"></span> - Fecha: <span th:text="${#temporals.format(asiento.fecha, 'dd/MM/yyyy')}"></span> - <span th:text="${asiento.descripcion}"></span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Descripción</th>
+                    <th style="width: 30%;">Cuenta</th>
+                    <th style="width: 17%;" class="text-right">Debe</th>
+                    <th style="width: 18%;" class="text-right">Haber</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="movimiento : ${asiento.movimientos}">
+                    <td th:text="${movimiento.cuenta.nombre}"></td>
+                    <td th:text="${movimiento.cuenta.codigo}"></td>
+                    <td class="text-right" th:text="${movimiento.debe != null ? #numbers.formatDecimal(movimiento.debe, 1, 2) : '-'}"></td>
+                    <td class="text-right" th:text="${movimiento.haber != null ? #numbers.formatDecimal(movimiento.haber, 1, 2) : '-'}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -110,9 +110,8 @@ public class ReporteController {
         data.put("totalDebePeriodo", totalDebePeriodo);
         data.put("totalHaberPeriodo", totalHaberPeriodo);
         data.put("saldoFinal", saldoFinal);
-        data.put("isPdf", true);
 
-        String htmlContent = pdfGeneratorService.generateHtml("libro-diario-report", data, request, response);
+        String htmlContent = pdfGeneratorService.generateHtml("libro-diario-pdf", data, request, response);
         byte[] pdfBytes = pdfGeneratorService.generatePdfFromHtml(htmlContent);
 
         return ResponseEntity.ok()
