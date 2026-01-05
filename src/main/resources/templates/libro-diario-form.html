@@ -23,14 +23,13 @@
                 <label for="startDate" class="col-form-label">Fecha de Inicio</label>
             </div>
             <div class="col-auto">
-                <input type="date" id="startDate" name="startDate" class="form-control" required>
+                <input type="date" id="startDate" name="startDate" th:value="${startDate}" class="form-control" required>            
             </div>
             <div class="col-auto">
                 <label for="endDate" class="col-form-label">Fecha de Fin</label>
             </div>
             <div class="col-auto">
-                <input type="date" id="endDate" name="endDate" class="form-control" required>
-            </div>
+                <input type="date" id="endDate" name="endDate" th:value="${endDate}" class="form-control" required>            </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Generar Reporte</button>
             </div>

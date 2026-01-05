@@ -95,7 +95,7 @@
                                            s.estado.name() == 'COMPROMETIDA' ? 'bg-success' :
                                            s.estado.name() == 'INGRESADA' ? 'bg-warning' : 
                                            s.estado.name() == 'FINALIZADA' ? 'bg-dark' : 'bg-secondary'}"
-                          th:text="${s.estado}">
+                          th:text="${#strings.replace(s.estado, '_', ' ')}">
                     </span>
                 </td>
                 <td>

@@ -37,8 +37,10 @@ public class ReporteController {
     @Autowired
     private PdfGeneratorService pdfGeneratorService;
 
-    @GetMapping("/reportes/libro-diario")
-    public String showLibroDiarioForm() {
+   @GetMapping("/reportes/libro-diario")
+    public String showLibroDiarioForm(Model model) {
+        model.addAttribute("startDate", java.time.LocalDate.now());
+        model.addAttribute("endDate", java.time.LocalDate.now());
         return "libro-diario-form";
     }
 
