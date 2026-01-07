@@ -1,6 +1,7 @@
 package com.example.SA2Gemini.controller;
 
 import com.example.SA2Gemini.entity.Usuario;
+import com.example.SA2Gemini.repository.RolRepository;
 import com.example.SA2Gemini.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,8 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    private RolRepository rolRepository;
 
     @GetMapping
     public String listUsuarios(Model model) {

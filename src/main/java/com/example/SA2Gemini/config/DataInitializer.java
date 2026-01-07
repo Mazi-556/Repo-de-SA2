@@ -112,6 +112,10 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("Admin user 'admin' created.");
         }
 
+        crearRolSiNoExiste("COMPRAS");
+        crearRolSiNoExiste("CONTABILIDAD");
+        crearRolSiNoExiste("ALMACEN");
+
 
         logger.info("Checking critical accounting accounts...");
         
@@ -172,6 +176,13 @@ public class DataInitializer implements CommandLineRunner {
         } catch (Exception e) {
             // Ignorar si ya existe (puede ser por duplicado de código)
             logger.debug("Account " + nombre + " already exists or error occurred: " + e.getMessage());
+        }
+    }
+
+    private void crearRolSiNoExiste(String nombreRol) {
+        if (rolRepository.findByName(nombreRol).isEmpty()) {
+            logger.info("Creando rol: " + nombreRol);
+            rolRepository.save(new Rol(nombreRol));
         }
     }
 }
