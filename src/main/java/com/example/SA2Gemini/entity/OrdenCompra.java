@@ -1,5 +1,10 @@
 package com.example.SA2Gemini.entity;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -7,6 +12,7 @@ import java.util.ArrayList; // Importar ArrayList
 import java.math.BigDecimal; // Importar BigDecimal
 
 @Entity
+@EntityListeners(AuditingEntityListener.class) 
 public class OrdenCompra {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +41,20 @@ public class OrdenCompra {
 
     @OneToMany(mappedBy = "ordenCompra", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrdenCompraItem> items;
+
+    @CreatedBy
+    private String creadoPor;
+
+    @CreatedDate
+    private LocalDateTime fechaCreacion;
+
+    public String getCreadoPor() {
+        return creadoPor;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
 
     // Constructor por defecto
     public OrdenCompra() {

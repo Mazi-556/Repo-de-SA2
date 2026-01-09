@@ -40,12 +40,14 @@
                     <li><div class="form-check dropdown-item px-4"><input class="form-check-input" type="checkbox" value="rubro" id="check-rubro" checked><label class="form-check-label" for="check-rubro">Rubro</label></div></li>
                     <li><div class="form-check dropdown-item px-4"><input class="form-check-input" type="checkbox" value="activo" id="check-activo" checked><label class="form-check-label" for="check-activo">Activo</label></div></li>
                     <li><div class="form-check dropdown-item px-4"><input class="form-check-input" type="checkbox" value="acciones" id="check-acciones" checked><label class="form-check-label" for="check-acciones">Acciones</label></div></li>
+                    <li><div class="form-check dropdown-item px-4" th:if="${#authorization.expression('hasRole(''ADMIN'')')}"><input class="form-check-input" type="checkbox" value="creado-por" id="check-creado-por" checked><label class="form-check-label" for="check-creado-por">Creado Por</label></div></li>
+                    <li><div class="form-check dropdown-item px-4" th:if="${#authorization.expression('hasRole(''ADMIN'')')}"><input class="form-check-input" type="checkbox" value="fecha-reg" id="check-fecha-reg" checked><label class="form-check-label" for="check-fecha-reg">Fecha Registro</label></div></li>
                 </ul>
             </div>
         </div>
     </div>
     <table class="table table-striped" id="tablaProveedores">
-        <thead>
+<thead>
             <tr>
                 <th id="id">ID</th>
                 <th id="nombre">Nombre Proveedor</th>
@@ -61,6 +63,8 @@
                 <th id="numero-cuenta">Número de Cuenta</th>
                 <th id="tipo-proveedor">Tipo de Proveedor</th>
                 <th id="rubro">Rubro</th>
+                <th id="creado-por" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Creado Por</th>
+                <th id="fecha-reg" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Fecha Reg.</th>
                 <th id="activo">Activo</th>
                 <th id="acciones">Acciones</th>
             </tr>
@@ -81,6 +85,8 @@
                 <td headers="numero-cuenta" th:text="${p.numeroCuenta}"></td>
                 <td headers="tipo-proveedor" th:text="${p.tipoProveedor?.nombre}"></td>
                 <td headers="rubro" th:text="${p.rubro?.nombre}"></td>
+                <td headers="creado-por" th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:text="${p.creadoPor}"></td>
+                <td headers="fecha-reg" th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:text="${#temporals.format(p.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                 <td headers="activo">
                     <span th:if="${p.activo}" class="badge bg-success">Sí</span>
                     <span th:unless="${p.activo}" class="badge bg-danger">No</span>
@@ -103,7 +109,7 @@
                 </td>
             </tr>
             <tr th:if="${proveedores.empty}">
-                <td colspan="5" class="text-center text-muted italic">No hay proveedores registrados en el sistema.</td>
+                <td colspan="18" class="text-center text-muted italic">No hay proveedores registrados en el sistema.</td>
             </tr>
         </tbody>
     </table>

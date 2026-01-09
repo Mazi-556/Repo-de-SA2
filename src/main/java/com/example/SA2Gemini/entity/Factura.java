@@ -1,11 +1,19 @@
 package com.example.SA2Gemini.entity;
 
+import org.springframework.data.annotation.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+import jakarta.persistence.Id;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class) 
 public class Factura {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,6 +30,18 @@ public class Factura {
     private Asiento asiento; // Vínculo con el asiento contable generado
     
     private BigDecimal total;
+
+    @CreatedBy
+    private String creadoPor;
+
+    @CreatedDate
+    private LocalDateTime fechaCreacion;
+
+    @LastModifiedBy
+    private String modificadoPor;
+
+    @LastModifiedDate
+    private LocalDateTime fechaModificacion;
 
     public Long getId() {
         return id;

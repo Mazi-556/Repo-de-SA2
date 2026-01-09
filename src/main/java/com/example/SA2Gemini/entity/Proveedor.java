@@ -1,10 +1,15 @@
 package com.example.SA2Gemini.entity;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import java.util.List;
 
-//@Data // Removed
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Proveedor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +38,16 @@ public class Proveedor {
 
     @OneToMany(mappedBy = "proveedor")
     private List<ProductoProveedor> productoProveedores;
+
+    @CreatedBy
+    private String creadoPor;
+
+    @CreatedDate
+    private LocalDateTime fechaCreacion;
+
+    // Getters
+    public String getCreadoPor() { return creadoPor; }
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
 
     // Getters and Setters
     public Long getId() {

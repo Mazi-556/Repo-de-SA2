@@ -42,42 +42,35 @@
                 <th>Fecha</th>
                 <th>Total</th>
                 <th>Estado</th>
+                <th th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Creado Por</th>
+                <th th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Fecha Reg.</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="orden : ${ordenes}">
-                            <td th:text="${orden.id}"></td>
-                            <td th:text="${orden.proveedor.nombre}"></td>
-                            <td th:text="${#temporals.format(orden.fecha, 'dd/MM/yyyy')}"></td>
-                            <td th:text="${'$' + #numbers.formatDecimal(orden.total, 1, 'POINT', 2, 'COMMA')}"></td>
-                            <td>
-                                <span th:if="${orden.estado.name() == 'FACTURADA'}" class="badge bg-success">✅ FACTURADA</span>
-                                <span th:if="${orden.estado.name() == 'RECIBIDA_COMPLETA'}" class="badge bg-info">📦 RECIBIDA</span>
-                                <span th:if="${orden.estado.name() == 'RECIBIDA_PARCIAL'}" class="badge bg-warning">📦 PARCIAL</span>
-                            </td>
-                            <td>
-                                <!-- Solo mostrar botón si está pendiente de facturar -->
-                                <a th:if="${mostrar == 'pendientes'}" 
-                                   th:href="@{/facturas/nuevo/{id}(id=${orden.id})}" 
-                                   class="btn btn-primary btn-sm">
-                                    📄 Facturar
-                                </a>
-                                <span th:if="${mostrar == 'facturadas'}" class="text-muted">
-                                    Ya facturada
-                                </span>
-                            </td>
-                        </tr>
-                        <tr th:if="${ordenes.empty}">
-                            <td colspan="6" class="text-center text-muted py-4">
-                                <span th:if="${mostrar == 'pendientes'}">
-                                    ℹ️ No hay órdenes pendientes de facturación.
-                                </span>
-                                <span th:if="${mostrar == 'facturadas'}">
-                                    ℹ️ No hay órdenes facturadas aún.
-                                </span>
-                            </td>
-                        </tr>
+                <td th:text="${orden.id}"></td>
+                <td th:text="${orden.proveedor.nombre}"></td>
+                <td th:text="${#temporals.format(orden.fecha, 'dd/MM/yyyy')}"></td>
+                <td th:text="${'$' + #numbers.formatDecimal(orden.total, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td>
+                    <span th:if="${orden.estado.name() == 'FACTURADA'}" class="badge bg-success">✅ FACTURADA</span>
+                    <span th:if="${orden.estado.name() == 'RECIBIDA_COMPLETA'}" class="badge bg-info">📦 RECIBIDA</span>
+                    <span th:if="${orden.estado.name() == 'RECIBIDA_PARCIAL'}" class="badge bg-warning">📦 PARCIAL</span>
+                </td>
+                <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:text="${orden.creadoPor}"></td>
+                <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}" th:text="${#temporals.format(orden.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <a th:if="${mostrar == 'pendientes'}" 
+                    th:href="@{/facturas/nuevo/{id}(id=${orden.id})}" 
+                    class="btn btn-primary btn-sm">
+                        📄 Facturar
+                    </a>
+                    <span th:if="${mostrar == 'facturadas'}" class="text-muted">
+                        Ya facturada
+                    </span>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
