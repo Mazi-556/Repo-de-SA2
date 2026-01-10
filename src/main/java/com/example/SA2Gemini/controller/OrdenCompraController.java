@@ -19,7 +19,7 @@ import java.util.Map; // Para recibir itemCantidades
 import java.util.HashMap; // Importar HashMap
 import java.math.BigDecimal; // Importar BigDecimal
 
-@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN', 'ALMACEN')")
 @Controller
 @RequestMapping("/ordenes-compra")
 public class OrdenCompraController {

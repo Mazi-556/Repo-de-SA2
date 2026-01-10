@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN', 'ALMACEN')")
 @Controller
 @RequestMapping("/solicitudes-compra")
 public class SolicitudCompraController {
