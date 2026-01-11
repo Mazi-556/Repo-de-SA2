@@ -27,10 +27,15 @@
             </div>
             <div class="modal-footer">
                 <a th:href="@{/presupuestos/generado}" class="btn btn-secondary">Cancelar</a>
-                <form th:action="@{/presupuestos/generar-pdf}" method="post">
+                <form th:action="@{/presupuestos/generar-pdf}" method="post" class="d-inline">
                     <!-- Campos ocultos para enviar los IDs de los ítems seleccionados -->
                     <input type="hidden" th:each="id : ${selectedItemIds}" name="itemIds" th:value="${id}" />
-                    <button type="submit" class="btn btn-primary">GENERAR PDF</button>
+                    <button type="submit" class="btn btn-primary me-2">📄 GENERAR PDF</button>
+                </form>
+                <form th:action="@{/presupuestos/generar-excel}" method="post" class="d-inline">
+                    <!-- Campos ocultos para enviar los IDs de los ítems seleccionados -->
+                    <input type="hidden" th:each="id : ${selectedItemIds}" name="itemIds" th:value="${id}" />
+                    <button type="submit" class="btn btn-success">📊 GENERAR EXCEL</button>
                 </form>
             </div>
         </div>

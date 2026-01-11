@@ -16,6 +16,7 @@ import com.example.SA2Gemini.entity.Proveedor;
 import java.util.Optional; 
 
 
+@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
 @Controller
 @RequestMapping("/productos")
 public class ProductoController {

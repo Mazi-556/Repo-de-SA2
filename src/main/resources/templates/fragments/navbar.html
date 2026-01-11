@@ -68,6 +68,11 @@
                 <li sec:authorize="hasRole('ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/admin/usuarios}">Gestión de Usuarios</a>
                 </li>
+                <li sec:authorize="hasRole('ADMIN')" class="nav-item">
+                    <a class="nav-link" th:href="@{/auditoria}">
+                        <i class="bi bi-shield-check"></i> Auditoría
+                    </a>
+                </li>
             </ul>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">

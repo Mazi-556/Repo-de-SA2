@@ -27,19 +27,17 @@ DELETE FROM cuenta;
 -- 1. rol
 INSERT INTO rol (id, name) VALUES
 (1, 'ADMIN'),
-(2, 'COMPRAS'),
-(3, 'CONTABILIDAD'),
-(4, 'ALMACEN'),
-(5, 'USER');
+(2, 'CONTADOR'),
+(3, 'DEPOSITO'),
+(4, 'COMERCIAL');
 
 -- 2. usuario
--- The 'user' password is BCrypt encoded. The other passwords are not for legacy/example purposes.
+-- Contraseñas: admin=admin, contador1=contador1, deposito1=deposito1, comercial1=comercial1
 INSERT INTO usuario (id, username, password, rol_id) VALUES
-(1, 'admin', 'adminpass', 1),
-(2, 'comprador1', 'compradorpass', 2),
-(3, 'contador1', 'contadorpass', 3),
-(4, 'almacenista1', 'almacenpass', 4),
-(5, 'user', '$2a$10$yj/iS8xOQodkrcMbGNr7LOxAWJOArby5fVFV5xy1H8eIqkZu2SOMG', 5);
+(1, 'admin', '$2a$10$DOwdDPyYOiEGIP9f5UmOTOlyoMJu/33FhEiV9WcSh1/vKyTOxAF7O', 1),
+(2, 'contador1', '$2a$10$0zj5WdanPLYn8O5SvE4YpOX9b6jKYGFw1WN1gJF5BVYaUWf4WjjTq', 2),
+(3, 'deposito1', '$2a$10$FQ3V1BafQTj9Z2MhJYj5GOmKF4VqYgLxJFhPz9MdKf5Y2QjKYfJmu', 3),
+(4, 'comercial1', '$2a$10$Xy5P9FgHYjT5Q4fKlJjZAOLkHf3g2RnM9WcXVjY8dP6QzF5yJkT3e', 4);
 
 -- 3. cuenta (Plan de Cuentas Básico)
 INSERT INTO cuenta (id, codigo, nombre, tipo_cuenta, activo) VALUES

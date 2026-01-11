@@ -68,7 +68,7 @@
                     <option value="">-- Seleccione un Pedido de Cotización --</option>
                     <option th:each="pedido : ${pedidosCotizacion}" 
                             th:value="${pedido.id}" 
-                            th:text="'ID: ' + ${pedido.id} + ' - Proveedor: ' + ${pedido.proveedor.nombre} + ' - Fecha: ' + ${pedido.fecha}"
+                            th:text="'Proveedor: ' + ${pedido.proveedor.nombre} + ' (' + ${pedido.items.size()} + ' productos disponibles) - Fecha: ' + ${pedido.fecha}"
                             th:selected="${pedidoSeleccionado != null and pedido.id == pedidoSeleccionado.id}">
                     </option>
                 </select>
@@ -76,17 +76,19 @@
         </form>
 
         <div th:if="${pedidoSeleccionado != null}">
-            <h3 class="mt-5">Detalles del Pedido de Cotización Seleccionado (#<span th:text="${pedidoSeleccionado.id}"></span>)</h3>
+            <h3 class="mt-5">Productos Cotizados del Proveedor: <span th:text="${pedidoSeleccionado.proveedor.nombre}"></span></h3>
             <div class="card mb-4">
                 <div class="card-header">
-                    Información General
+                    <i class="bi bi-info-circle"></i> Información del Proveedor
                 </div>
                 <div class="card-body">
-                    <p><strong>ID del Pedido:</strong> <span th:text="${pedidoSeleccionado.id}"></span></p>
-                    <p><strong>Fecha de Emisión:</strong> <span th:text="${pedidoSeleccionado.fecha}"></span></p>
                     <p><strong>Proveedor:</strong> <span th:text="${pedidoSeleccionado.proveedor.nombre}"></span></p>
+                    <p><strong>Total de Productos Cotizados:</strong> <span th:text="${pedidoSeleccionado.items.size()}"></span></p>
+                    <p><strong>Fecha de Cotización:</strong> <span th:text="${pedidoSeleccionado.fecha}"></span></p>
                     <p><strong>Estado:</strong> <span th:text="${pedidoSeleccionado.estado}"></span></p>
-                    <p th:if="${pedidoSeleccionado.solicitudCompra != null}"><strong>Solicitud de Compra Original:</strong> <span th:text="${pedidoSeleccionado.solicitudCompra.id}"></span></p>
+                    <div class="alert alert-info mt-2">
+                        <small><i class="bi bi-lightbulb"></i> <strong>Nota:</strong> Los productos de este proveedor han sido agrupados automáticamente para facilitar la generación de órdenes de compra.</small>
+                    </div>
                 </div>
             </div>
 

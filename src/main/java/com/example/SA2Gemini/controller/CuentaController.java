@@ -5,11 +5,13 @@ import com.example.SA2Gemini.entity.TipoCuenta;
 import com.example.SA2Gemini.service.CodigoCuentaExistsException;
 import com.example.SA2Gemini.service.CuentaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@PreAuthorize("hasAnyRole('CONTADOR', 'ADMIN')")
 @Controller
 public class CuentaController {
 

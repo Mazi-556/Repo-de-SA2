@@ -58,28 +58,18 @@ public class DataInitializer implements CommandLineRunner {
             adminRol = adminRolOpt.get();
         }
 
-        Rol userRol;
-        Optional<Rol> userRolOpt = rolRepository.findByName("USER");
-        if (userRolOpt.isEmpty()) {
-            logger.info("Creating USER role...");
-            userRol = rolRepository.save(new Rol("USER"));
-        } else {
-            logger.info("USER role already exists.");
-            userRol = userRolOpt.get();
-        }
+        // Crear los nuevos roles: CONTADOR, DEPOSITO, COMERCIAL
+        Rol contadorRol = crearRolSiNoExiste("CONTADOR");
+        Rol depositoRol = crearRolSiNoExiste("DEPOSITO");
+        Rol comercialRol = crearRolSiNoExiste("COMERCIAL");
 
-        // Crear usuario normal si no existe
-        if (usuarioRepository.count() == 0) {
-            logger.info("No users found in the database. Creating default user...");
-            Usuario user = new Usuario();
-            user.setUsername("user");
-            user.setPassword(passwordEncoder.encode("user"));
-            user.setRol(userRol);
-            usuarioRepository.save(user);
-            logger.info("Default user 'user' created.");
-        } else {
-            logger.info("Users already exist in the database. Default user not created.");
-        }
+        // Migrar usuarios de roles viejos a roles nuevos y eliminar roles obsoletos
+        migrarYEliminarRolesViejos(adminRol, contadorRol, depositoRol, comercialRol);
+
+        // Crear usuarios por defecto si no existen
+        crearUsuarioSiNoExiste("contador1", "contador1", contadorRol);
+        crearUsuarioSiNoExiste("deposito1", "deposito1", depositoRol);
+        crearUsuarioSiNoExiste("comercial1", "comercial1", comercialRol);
 
         // Crear tipos de proveedor si no existen
         if (tipoProveedorRepository.count() == 0) {
@@ -112,9 +102,7 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("Admin user 'admin' created.");
         }
 
-        crearRolSiNoExiste("COMPRAS");
-        crearRolSiNoExiste("CONTABILIDAD");
-        crearRolSiNoExiste("ALMACEN");
+        // Los roles nuevos ya se crean arriba: CONTADOR, DEPOSITO, COMERCIAL
 
 
         logger.info("Checking critical accounting accounts...");
@@ -179,11 +167,88 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void crearRolSiNoExiste(String nombreRol) {
-        if (rolRepository.findByName(nombreRol).isEmpty()) {
+    private Rol crearRolSiNoExiste(String nombreRol) {
+        Optional<Rol> rolOpt = rolRepository.findByName(nombreRol);
+        if (rolOpt.isEmpty()) {
             logger.info("Creando rol: " + nombreRol);
-            rolRepository.save(new Rol(nombreRol));
+            return rolRepository.save(new Rol(nombreRol));
         }
+        return rolOpt.get();
+    }
+
+    private void crearUsuarioSiNoExiste(String username, String password, Rol rol) {
+        if (usuarioRepository.findByUsername(username).isEmpty()) {
+            logger.info("Creando usuario: " + username);
+            Usuario usuario = new Usuario();
+            usuario.setUsername(username);
+            usuario.setPassword(passwordEncoder.encode(password));
+            usuario.setRol(rol);
+            usuarioRepository.save(usuario);
+            logger.info("Usuario '" + username + "' creado con rol " + rol.getName());
+        }
+    }
+
+    private void migrarYEliminarRolesViejos(Rol adminRol, Rol contadorRol, Rol depositoRol, Rol comercialRol) {
+        logger.info("Migrando usuarios de roles viejos a roles nuevos...");
+        
+        // Mapeo de roles viejos a nuevos:
+        // COMPRAS -> COMERCIAL
+        // CONTABILIDAD -> CONTADOR
+        // ALMACEN -> DEPOSITO
+        // USER -> COMERCIAL (por defecto)
+        
+        String[][] migraciones = {
+            {"COMPRAS", "COMERCIAL"},
+            {"CONTABILIDAD", "CONTADOR"},
+            {"ALMACEN", "DEPOSITO"},
+            {"USER", "COMERCIAL"}
+        };
+        
+        for (String[] migracion : migraciones) {
+            String rolViejo = migracion[0];
+            String rolNuevo = migracion[1];
+            
+            Optional<Rol> rolViejoOpt = rolRepository.findByName(rolViejo);
+            if (rolViejoOpt.isPresent()) {
+                Rol rolAntiguo = rolViejoOpt.get();
+                Rol rolDestino;
+                
+                switch (rolNuevo) {
+                    case "CONTADOR":
+                        rolDestino = contadorRol;
+                        break;
+                    case "DEPOSITO":
+                        rolDestino = depositoRol;
+                        break;
+                    case "COMERCIAL":
+                        rolDestino = comercialRol;
+                        break;
+                    default:
+                        rolDestino = adminRol;
+                }
+                
+                // Migrar usuarios con el rol viejo al rol nuevo
+                var usuariosConRolViejo = usuarioRepository.findAll().stream()
+                    .filter(u -> u.getRol() != null && u.getRol().getId().equals(rolAntiguo.getId()))
+                    .toList();
+                
+                for (Usuario usuario : usuariosConRolViejo) {
+                    logger.info("Migrando usuario '{}' de rol {} a {}", usuario.getUsername(), rolViejo, rolNuevo);
+                    usuario.setRol(rolDestino);
+                    usuarioRepository.save(usuario);
+                }
+                
+                // Eliminar el rol viejo
+                try {
+                    rolRepository.delete(rolAntiguo);
+                    logger.info("Rol {} eliminado exitosamente", rolViejo);
+                } catch (Exception e) {
+                    logger.warn("No se pudo eliminar el rol {}: {}", rolViejo, e.getMessage());
+                }
+            }
+        }
+        
+        logger.info("Migración de roles completada.");
     }
 }
 

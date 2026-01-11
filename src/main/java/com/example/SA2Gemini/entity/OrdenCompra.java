@@ -12,8 +12,8 @@ import java.util.ArrayList; // Importar ArrayList
 import java.math.BigDecimal; // Importar BigDecimal
 
 @Entity
-@EntityListeners(AuditingEntityListener.class) 
-public class OrdenCompra {
+@EntityListeners({AuditingEntityListener.class, com.example.SA2Gemini.config.AuditEntityListener.class})
+public class OrdenCompra extends BaseAuditEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

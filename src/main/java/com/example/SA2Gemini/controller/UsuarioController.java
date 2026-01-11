@@ -4,11 +4,13 @@ import com.example.SA2Gemini.entity.Usuario;
 import com.example.SA2Gemini.repository.RolRepository;
 import com.example.SA2Gemini.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/usuarios")
 public class UsuarioController {

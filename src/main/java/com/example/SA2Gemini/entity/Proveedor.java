@@ -9,8 +9,8 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-public class Proveedor {
+@EntityListeners({AuditingEntityListener.class, com.example.SA2Gemini.config.AuditEntityListener.class})
+public class Proveedor extends BaseAuditEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

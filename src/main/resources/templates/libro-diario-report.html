@@ -70,7 +70,8 @@
 
     <div th:unless="${isPdf}">
         <button type="button" class="btn btn-secondary mb-3" onclick="history.back()">Volver</button>
-        <a th:href="@{/reportes/libro-diario/pdf(startDate=${startDate}, endDate=${endDate})}" class="btn btn-info mb-3 ms-2">Imprimir a PDF</a>
+        <a th:href="@{/reportes/libro-diario/pdf(startDate=${startDate}, endDate=${endDate})}" class="btn btn-info mb-3 ms-2">📄 Imprimir a PDF</a>
+        <a th:href="@{/reportes/libro-diario/excel(startDate=${startDate}, endDate=${endDate})}" class="btn btn-success mb-3 ms-2">📊 Exportar a Excel</a>
     </div>
 
     <div th:if="${asientos.isEmpty()}">

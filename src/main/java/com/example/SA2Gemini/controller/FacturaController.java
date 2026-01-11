@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
 @Controller
 @RequestMapping("/facturas")
 public class FacturaController {

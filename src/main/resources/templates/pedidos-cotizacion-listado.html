@@ -37,7 +37,8 @@
                 <td>
                     <a th:href="@{/pedidos-cotizacion/{id}(id=${pedido.id})}" class="btn btn-info btn-sm">Ver Detalles</a>
                     <a th:href="@{/pedidos-cotizacion/{id}/cargar-cotizacion(id=${pedido.id})}" class="btn btn-warning btn-sm ms-2">Cargar Cotización</a>
-                    <a th:href="@{/pedidos-cotizacion/{id}/descargar-pdf(id=${pedido.id})}" class="btn btn-success btn-sm ms-2">📄 Descargar PDF</a>
+                    <a th:href="@{/pedidos-cotizacion/{id}/descargar-pdf(id=${pedido.id})}" class="btn btn-primary btn-sm ms-2">📄 Descargar PDF</a>
+                    <a th:href="@{/pedidos-cotizacion/{id}/descargar-excel(id=${pedido.id})}" class="btn btn-success btn-sm ms-2">📊 Descargar Excel</a>
                 </td>
             </tr>
         </tbody>

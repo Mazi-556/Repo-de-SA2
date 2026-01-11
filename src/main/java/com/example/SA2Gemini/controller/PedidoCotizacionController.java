@@ -3,6 +3,7 @@ package com.example.SA2Gemini.controller;
 import com.example.SA2Gemini.entity.PedidoCotizacion;
 import com.example.SA2Gemini.entity.PedidoCotizacionItem;
 import com.example.SA2Gemini.service.PedidoCotizacionService;
+import com.example.SA2Gemini.service.ExcelGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,19 +20,25 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes; // Import
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal; // Importar BigDecimal
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap; // Importar HashMap
 import java.util.List;
 import java.util.Map;
 
-@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
 @Controller
 @RequestMapping("/pedidos-cotizacion")
 public class PedidoCotizacionController {
 
     @Autowired
     private PedidoCotizacionService pedidoCotizacionService;
+
+    @Autowired
+    private ExcelGeneratorService excelGeneratorService;
 
     @GetMapping
     public String listarPedidosCotizacion(Model model) {
@@ -162,6 +169,46 @@ public class PedidoCotizacionController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(("Error al generar PDF: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @GetMapping("/{id}/descargar-excel")
+    public ResponseEntity<byte[]> descargarExcelPedidoCotizacion(@PathVariable Long id) {
+        try {
+            PedidoCotizacion pedido = pedidoCotizacionService.getPedidoCotizacionById(id)
+                    .orElseThrow(() -> new RuntimeException("Pedido de Cotización no encontrado con ID: " + id));
+
+            // Preparar datos para Excel
+            List<String> headers = Arrays.asList("Código", "Nombre", "Marca", "Modelo", "Cantidad");
+            List<List<Object>> data = new ArrayList<>();
+
+            for (PedidoCotizacionItem item : pedido.getItems()) {
+                List<Object> row = Arrays.asList(
+                    item.getProducto().getCodigo(),
+                    item.getProducto().getNombre(), 
+                    item.getProducto().getMarca(),
+                    item.getProducto().getModelo(),
+                    item.getCantidad()
+                );
+                data.add(row);
+            }
+
+            String title = "PEDIDO DE COTIZACIÓN #" + pedido.getId() + 
+                          " - Proveedor: " + pedido.getProveedor().getNombre() + 
+                          " - Fecha: " + pedido.getFecha().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+            byte[] excelBytes = excelGeneratorService.generateExcel("Pedido Cotización", headers, data, title);
+
+            HttpHeaders headersResponse = new HttpHeaders();
+            headersResponse.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            String filename = "pedido_cotizacion_" + pedido.getId() + "_" + pedido.getProveedor().getNombre().replace(" ", "_") + ".xlsx";
+            headersResponse.setContentDispositionFormData("attachment", filename);
+
+            return ResponseEntity.ok().headers(headersResponse).body(excelBytes);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(("Error al generar Excel: " + e.getMessage()).getBytes());
         }
     }
 }
