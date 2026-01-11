@@ -46,7 +46,8 @@
                     <span th:unless="${p.activo}" class="badge bg-danger">No</span>
                 </td>
                 <td>
-                    <a th:href="@{/productos/editar/{id}(id=${p.id})}" class="btn btn-sm btn-warning">✏️</a>
+                    <button sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')" th:onclick="'window.location.href=\'' + @{/productos/editar/{id}(id=${p.id})} + '\''" class="btn btn-sm btn-warning">✏️</button>
+                    <button sec:authorize="!hasRole('COMPRAS') and !hasRole('ADMIN')" onclick="alert('🔒 Acceso Denegado\n\nNo tienes permisos para editar productos.');" class="btn btn-sm btn-warning" style="opacity: 0.5; cursor: not-allowed;">✏️</button>
                     <a th:href="@{/productos/detalle/{id}(id=${p.id})}" class="btn btn-sm btn-info">👁️</a>
                     <a th:href="@{/productos/asignar-proveedor/{id}(id=${p.id})}" class="btn btn-sm btn-secondary">🚚</a>
                     

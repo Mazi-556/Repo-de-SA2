@@ -7,6 +7,7 @@ import com.example.SA2Gemini.repository.ProveedorRepository;
 import com.example.SA2Gemini.repository.ProductoProveedorRepository;
 import com.example.SA2Gemini.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -34,12 +35,14 @@ public class ProductoController {
     @Autowired
     private ProductoProveedorRepository productoProveedorRepository;
 
+    @PreAuthorize("hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')")
     @GetMapping
     public String listarProductos(Model model) {
         model.addAttribute("productos", productoService.findAll());
         return "productos";
     }
 
+    @PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
     @GetMapping("/nuevo")
     public String mostrarFormularioDeAlta(Model model) {
         model.addAttribute("producto", new Producto());
@@ -49,6 +52,7 @@ public class ProductoController {
         return "producto-form";
     }
 
+    @PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
     @GetMapping("/editar/{id}")
     public String mostrarFormularioDeEdicion(@PathVariable Long id, Model model) {
         model.addAttribute("producto", productoService.findById(id));
@@ -57,6 +61,7 @@ public class ProductoController {
         return "producto-form";
     }
 
+    @PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute Producto producto, Model model) {
         try {

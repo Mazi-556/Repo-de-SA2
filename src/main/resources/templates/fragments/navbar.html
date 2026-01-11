@@ -30,24 +30,38 @@
                         <li><a class="dropdown-item" th:href="@{/reportes/libro-mayor}">Libro Mayor</a></li>
                     </ul>
                 </li>
-                <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN', 'ALMACEN')" class="nav-item dropdown">
+                <!-- Abastecimiento: solo si tiene al menos UN item permitido -->
+                <li sec:authorize="hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')" class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAbastecimiento" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Abastecimiento
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownAbastecimiento">
+                        <!-- Proveedores: solo COMPRAS y ADMIN -->
                         <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/proveedores}">Proveedores</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/productos}">Productos</a></li>
+                        
+                        <!-- Productos: COMPRAS, ALMACEN y ADMIN -->
+                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN', 'ALMACEN')"><a class="dropdown-item" th:href="@{/productos}">Productos</a></li>
+                        
+                        <!-- Ventas: solo COMPRAS y ADMIN -->
                         <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/ventas}">🛒 Ventas</a></li>
                         <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><hr class="dropdown-divider"></li>
                         
-                        <li><a class="dropdown-item" th:href="@{/solicitudes-compra}">Solicitud De Compra</a></li>
+                        <!-- Solicitudes: COMPRAS y ADMIN -->
+                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/solicitudes-compra}">Solicitud De Compra</a></li>
                         
+                        <!-- Presupuesto: solo COMPRAS y ADMIN -->
                         <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/presupuestos/pedidos}">Presupuesto</a></li>
                         
-                        <li><a class="dropdown-item" th:href="@{/ordenes-compra}">Orden de Compra</a></li>
+                        <!-- Órdenes de Compra: COMPRAS, ALMACEN y ADMIN -->
+                        <li sec:authorize="hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/ordenes-compra}">Orden de Compra</a></li>
                         
-                        <li><a class="dropdown-item" th:href="@{/remitos}">Remitos</a></li>
+                        <!-- Remitos: COMPRAS, ALMACEN y ADMIN -->
+                        <li sec:authorize="hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/remitos}">Remitos</a></li>
                         
+                        <!-- Almacenes: solo ALMACEN y ADMIN -->
+                        <li sec:authorize="hasAnyRole('ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/almacenes}">Almacenes</a></li>
+                        
+                        <!-- Facturas: solo COMPRAS y ADMIN -->
                         <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/facturas}">Facturas</a></li>
                     </ul>
                 </li>
@@ -65,6 +79,18 @@
         </div>
     </div>
 </nav>
+
+<script>
+    // Mostrar popup de acceso denegado si el parámetro está en la URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('accessDenied')) {
+            alert('🔒 Acceso Denegado\n\nNo tienes permisos para acceder a esta sección.');
+            // Limpiar la URL sin recargar
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>
 
 </body>
 </html>

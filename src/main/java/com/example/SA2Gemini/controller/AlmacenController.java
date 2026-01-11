@@ -15,7 +15,7 @@ public class AlmacenController {
     @Autowired
     private AlmacenRepository almacenRepository;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ALMACEN', 'ADMIN')")
     @GetMapping
     public String listarAlmacenes(Model model) {
         model.addAttribute("almacenes", almacenRepository.findAll());
