@@ -211,9 +211,7 @@
 
 <div class="container">
     <!-- Sección Contable -->
-    <div class="section-title" sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')">📈 Módulo Contable</div>
-    <div class="modules-grid" sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')">
-    </div>
+    <div class="section-title">📈 Módulo Contable</div>
     <div class="modules-grid">
         <div class="card-module-wrapper">
             <a href="/cuentas" class="card-module">
@@ -251,7 +249,7 @@
     <!-- Sección Abastecimiento -->
     <div class="section-title">📦 Módulo Abastecimiento</div>
     <div class="modules-grid">
-        <div class="card-module-wrapper" sec:authorize="hasAnyRole('COMPRAS', 'ADMIN', 'ALMACEN')">            
+        <div class="card-module-wrapper">
             <a href="/solicitudes-compra" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Crea y gestiona solicitudes de compra de productos.')">ⓘ</button>
                 <i class="bi bi-file-earmark-text"></i>
@@ -267,9 +265,9 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper" sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')">
+        <div class="card-module-wrapper">
             <a href="/pedidos-cotizacion" class="card-module">
-                <button class="card-module-info-btn" ...>ⓘ</button>
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Solicita cotizaciones a proveedores y gestiona ofertas.')">ⓘ</button>
                 <i class="bi bi-chat-dots"></i>
                 <h3>Pedidos de Cotización</h3>
             </a>
@@ -283,23 +281,24 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper" sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')">
+        <div class="card-module-wrapper">
             <a href="/productos" class="card-module">
-                <button class="card-module-info-btn" ...>ⓘ</button>
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Administra el catálogo de productos disponibles.')">ⓘ</button>
                 <i class="bi bi-box"></i>
                 <h3>Productos</h3>
             </a>
         </div>
         
-        <div class="card-module-wrapper" sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')">
+        <div class="card-module-wrapper">
             <a href="/proveedores" class="card-module">
-                <button class="card-module-info-btn" ...>ⓘ</button>
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona la información de proveedores registrados.')">ⓘ</button>
                 <i class="bi bi-shop"></i>
                 <h3>Proveedores</h3>
             </a>
         </div>
+    </div>
 
-        <!-- Sección Admin -->
+    <!-- Sección Admin -->
     <div class="section-title" sec:authorize="hasRole('ADMIN')">⚙️ Administración</div>
     <div class="modules-grid" sec:authorize="hasRole('ADMIN')">
         <div class="card-module-wrapper">
