@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
 @Controller
 @RequestMapping("/proveedores")
 public class ProveedorController {

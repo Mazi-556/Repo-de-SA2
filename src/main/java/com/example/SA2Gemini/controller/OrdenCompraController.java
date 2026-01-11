@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Map; // Para recibir itemCantidades
 import java.util.HashMap; // Importar HashMap
 import java.math.BigDecimal; // Importar BigDecimal
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
-@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN', 'ALMACEN')")
+@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
 @Controller
 @RequestMapping("/ordenes-compra")
 public class OrdenCompraController {
@@ -42,10 +44,28 @@ public class OrdenCompraController {
                                   item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0))
             .collect(java.util.stream.Collectors.toList());
         
+        // AGRUPAR POR PROVEEDOR para evitar duplicados
+        Map<Long, PedidoCotizacion> pedidosAgrupadosPorProveedor = new HashMap<>();
+        for (PedidoCotizacion pedido : pedidosConCotizacion) {
+            Long proveedorId = pedido.getProveedor().getId();
+            
+            if (!pedidosAgrupadosPorProveedor.containsKey(proveedorId)) {
+                // Primera vez que vemos este proveedor, agregarlo
+                pedidosAgrupadosPorProveedor.put(proveedorId, pedido);
+            } else {
+                // Ya existe un pedido para este proveedor, combinar los items
+                PedidoCotizacion pedidoExistente = pedidosAgrupadosPorProveedor.get(proveedorId);
+                pedidoExistente.getItems().addAll(pedido.getItems());
+            }
+        }
+        
+        // Convertir el mapa de vuelta a lista
+        List<PedidoCotizacion> pedidosAgrupados = new ArrayList<>(pedidosAgrupadosPorProveedor.values());
+        
         // Cargar órdenes de compra para la sección "Listado"
         List<com.example.SA2Gemini.entity.OrdenCompra> ordenesCompra = ordenCompraService.getAllOrdenesCompra();
         
-        model.addAttribute("pedidosCotizacion", pedidosConCotizacion);
+        model.addAttribute("pedidosCotizacion", pedidosAgrupados);
         model.addAttribute("pedidoSeleccionado", null);
         model.addAttribute("ordenesCompra", ordenesCompra);
         
@@ -63,7 +83,21 @@ public class OrdenCompraController {
                                   item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0))
             .collect(java.util.stream.Collectors.toList());
         
-        model.addAttribute("pedidosCotizacion", pedidosConCotizacion);
+        // AGRUPAR POR PROVEEDOR para evitar duplicados (misma lógica que en mostrarPaginaUnificada)
+        Map<Long, PedidoCotizacion> pedidosAgrupadosPorProveedor = new HashMap<>();
+        for (PedidoCotizacion pedido : pedidosConCotizacion) {
+            Long proveedorId = pedido.getProveedor().getId();
+            
+            if (!pedidosAgrupadosPorProveedor.containsKey(proveedorId)) {
+                pedidosAgrupadosPorProveedor.put(proveedorId, pedido);
+            } else {
+                PedidoCotizacion pedidoExistente = pedidosAgrupadosPorProveedor.get(proveedorId);
+                pedidoExistente.getItems().addAll(pedido.getItems());
+            }
+        }
+        
+        List<PedidoCotizacion> pedidosAgrupados = new ArrayList<>(pedidosAgrupadosPorProveedor.values());
+        model.addAttribute("pedidosCotizacion", pedidosAgrupados);
 
         return pedidoCotizacionService.getPedidoCotizacionById(id)
                 .map(pedido -> {

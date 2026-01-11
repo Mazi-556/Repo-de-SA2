@@ -40,14 +40,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                // Rutas exclusivas de administración/compras
-                .requestMatchers("/proveedores/**", "/facturas/**", "/presupuestos/**", "/ventas/**").hasAnyRole("COMPRAS", "ADMIN")
+                // CONTADOR: Todo lo contable (plan de cuentas, asientos, libro diario y mayor)
+                .requestMatchers("/cuentas/**", "/asientos/**", "/libro-diario/**", "/libro-mayor/**", "/auditoria/**").hasAnyRole("CONTADOR", "ADMIN")
                 
-                // Rutas que puede ver el Almacén
-                .requestMatchers("/solicitudes-compra/**", "/remitos/**", "/ordenes-compra/**", "/productos/**", "/almacenes/**").hasAnyRole("ALMACEN", "COMPRAS", "ADMIN")
+                // COMERCIAL: Ventas, pedidos, presupuestos, órdenes de compra, facturas, productos y precios
+                .requestMatchers("/ventas/**", "/pedidos-cotizacion/**", "/presupuestos/**", "/ordenes-compra/**", "/facturas/**", "/productos/**", "/proveedores/**").hasAnyRole("COMERCIAL", "ADMIN")
                 
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/login", "/asientos/nuevo", "/favicon.ico").permitAll()
+                // DEPOSITO: Remitos y solicitudes de compra
+                .requestMatchers("/remitos/**", "/solicitudes-compra/**", "/almacenes/**").hasAnyRole("DEPOSITO", "ADMIN")
+                
+                // ADMIN: Acceso a todo
+                .requestMatchers("/usuarios/**").hasRole("ADMIN")
+                
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/login", "/favicon.ico").permitAll()
                 .anyRequest().authenticated()
 )
                 .formLogin(form -> form

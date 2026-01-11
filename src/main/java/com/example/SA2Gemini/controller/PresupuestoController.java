@@ -1,5 +1,6 @@
 package com.example.SA2Gemini.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,8 @@ import com.example.SA2Gemini.entity.SolicitudCompra;
 import com.example.SA2Gemini.entity.EstadoSolicitud;
 import com.example.SA2Gemini.entity.ProductoProveedor; // Importar ProductoProveedor
 import com.example.SA2Gemini.service.OrdenCompraService; // Importar OrdenCompraService
-import com.example.SA2Gemini.service.PedidoCotizacionService; // Importar PedidoCotizacionService
+import com.example.SA2Gemini.service.PedidoCotizacionService;
+import com.example.SA2Gemini.service.ExcelGeneratorService; // Importar PedidoCotizacionService
 import com.example.SA2Gemini.entity.SolicitudCompra; // Necesario para la clase Solicitud
 import com.example.SA2Gemini.entity.EstadoSolicitud; // Necesario para el Enum de estados
 import com.example.SA2Gemini.repository.SolicitudCompraRepository; // El que mencionaste
@@ -29,7 +31,10 @@ import org.springframework.http.ResponseEntity; // Importar ResponseEntity
 import org.xhtmlrenderer.pdf.ITextRenderer; // Importar ITextRenderer
 
 import java.io.ByteArrayOutputStream; // Importar ByteArrayOutputStream
+import java.io.IOException;
+import java.util.Arrays;
 
+@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
 @Controller
 @RequestMapping("/presupuestos")
 public class PresupuestoController {
@@ -49,6 +54,9 @@ public class PresupuestoController {
 
     @Autowired
     private SolicitudCompraRepository solicitudCompraRepository;
+
+    @Autowired
+    private ExcelGeneratorService excelGeneratorService;
 
     @GetMapping("/pedidos")
     public String listarPedidosParaPresupuesto(Model model) {
@@ -224,6 +232,66 @@ public class PresupuestoController {
             return ordenCompraService.generarPedidoCotizacionPdf(proveedorId, itemCantidades);
         } catch (Exception e) {
             System.err.println("Error al generar PDF de Pedido de Cotización: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @PostMapping("/generar-excel")
+    public ResponseEntity<byte[]> generarExcelPresupuesto(@RequestParam List<Long> itemIds) {
+        try {
+            List<SolicitudCompraItem> selectedItems = solicitudCompraService.getSolicitudCompraItemsByIds(itemIds);
+
+            Map<Proveedor, List<SolicitudCompraItem>> presupuestosAgrupados = new HashMap<>();
+            for (SolicitudCompraItem item : selectedItems) {
+                if (item.getProducto() != null && item.getProducto().getProductoProveedores() != null) {
+                    for (ProductoProveedor pp : item.getProducto().getProductoProveedores()) {
+                        Proveedor proveedor = pp.getProveedor();
+                        presupuestosAgrupados
+                                .computeIfAbsent(proveedor, k -> new ArrayList<>())
+                                .add(item);
+                    }
+                }
+            }
+
+            // Preparar datos para Excel
+            List<String> headers = Arrays.asList("Proveedor", "Producto", "Cantidad", "Precio Unitario", "Precio Total");
+            List<List<Object>> data = new ArrayList<>();
+
+            for (Map.Entry<Proveedor, List<SolicitudCompraItem>> entry : presupuestosAgrupados.entrySet()) {
+                String nombreProveedor = entry.getKey().getNombre();
+                
+                for (SolicitudCompraItem item : entry.getValue()) {
+                    List<Object> row = Arrays.asList(
+                        nombreProveedor,
+                        item.getProducto().getNombre(),
+                        item.getCantidad(),
+                        item.getPrecioUnitario(),
+                        item.getPrecioUnitario().multiply(java.math.BigDecimal.valueOf(item.getCantidad()))
+                    );
+                    data.add(row);
+                    
+                    // Vaciar proveedor para las siguientes filas del mismo proveedor
+                    nombreProveedor = "";
+                }
+                
+                // Línea en blanco entre proveedores
+                data.add(Arrays.asList("", "", "", "", ""));
+            }
+
+            String title = "PRESUPUESTO GENERADO - Fecha: " + 
+                          java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+            byte[] excelBytes = excelGeneratorService.generateExcel("Presupuesto", headers, data, title);
+
+            HttpHeaders headers2 = new HttpHeaders();
+            headers2.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers2.setContentDispositionFormData("attachment", "presupuesto.xlsx");
+
+            return ResponseEntity.ok().headers(headers2).body(excelBytes);
+
+        } catch (IOException e) {
+            System.err.println("Error al generar Excel: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(500).body(null);
         }

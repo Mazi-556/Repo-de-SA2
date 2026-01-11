@@ -6,7 +6,8 @@ import java.util.List;
 
 //@Data // Removed
 @Entity
-public class Producto {
+@EntityListeners(com.example.SA2Gemini.config.AuditEntityListener.class)
+public class Producto extends BaseAuditEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

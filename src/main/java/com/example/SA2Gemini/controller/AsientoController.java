@@ -5,6 +5,7 @@ import com.example.SA2Gemini.entity.Cuenta;
 import com.example.SA2Gemini.service.AsientoService;
 import com.example.SA2Gemini.service.CuentaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
+@PreAuthorize("hasAnyRole('CONTADOR', 'ADMIN')")
 @Controller
 public class AsientoController {
 

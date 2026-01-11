@@ -7,6 +7,7 @@ import com.example.SA2Gemini.repository.ProveedorRepository;
 import com.example.SA2Gemini.repository.ProductoProveedorRepository;
 import com.example.SA2Gemini.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import com.example.SA2Gemini.entity.Proveedor;
 import java.util.Optional; 
 
 
+@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
 @Controller
 @RequestMapping("/productos")
 public class ProductoController {
