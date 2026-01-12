@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard de Auditoría</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/navbar-style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="bi bi-shield-check"></i> Dashboard de Auditoría</h1>
+            <p class="text-muted">Sistema de seguimiento y auditoría de cambios</p>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-activity"></i> Actividad Reciente
+                    </h5>
+                    <h3 th:text="${logsRecientes.size()}">0</h3>
+                    <small>Últimas 50 acciones</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-people"></i> Usuarios Activos
+                    </h5>
+                    <h3 th:text="${actividadPorUsuario.size()}">0</h3>
+                    <small>Usuarios con actividad</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-database"></i> Entidades Auditadas
+                    </h5>
+                    <h3 th:text="${actividadPorEntidad.size()}">0</h3>
+                    <small>Tipos de entidades</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegación -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-search"></i> Búsqueda y Consultas</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="/auditoria/buscar" class="btn btn-outline-primary btn-lg w-100 mb-2">
+                                <i class="bi bi-search"></i> Búsqueda Avanzada
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="/auditoria/buscar?fechaInicio=" th:href="@{/auditoria/buscar(fechaInicio=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')})}" 
+                               class="btn btn-outline-secondary btn-lg w-100 mb-2">
+                                <i class="bi bi-calendar-day"></i> Actividad de Hoy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actividad por Usuario -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-person-gear"></i> Actividad por Usuario</h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    <div th:if="${actividadPorUsuario.empty}" class="text-muted text-center">
+                        No hay datos de actividad disponibles
+                    </div>
+                    <div th:each="stat : ${actividadPorUsuario}" class="d-flex justify-content-between align-items-center mb-2">
+                        <span>
+                            <i class="bi bi-person-circle"></i>
+                            <strong th:text="${stat[0]}">Usuario</strong>
+                        </span>
+                        <span class="badge bg-primary" th:text="${stat[1]}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actividad por Entidad -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-diagram-3"></i> Actividad por Entidad</h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    <div th:if="${actividadPorEntidad.empty}" class="text-muted text-center">
+                        No hay datos de actividad disponibles
+                    </div>
+                    <div th:each="stat : ${actividadPorEntidad}" class="d-flex justify-content-between align-items-center mb-2">
+                        <span>
+                            <i class="bi bi-box"></i>
+                            <strong th:text="${stat[0]}">Entidad</strong>
+                        </span>
+                        <span class="badge bg-info" th:text="${stat[1]}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Recientes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-clock-history"></i> Actividad Reciente</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${logsRecientes.empty}" class="text-muted text-center">
+                        No hay registros de auditoría disponibles
+                    </div>
+                    <div th:unless="${logsRecientes.empty}" class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha/Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Operación</th>
+                                    <th>Entidad</th>
+                                    <th>ID</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="log : ${logsRecientes}">
+                                    <td>
+                                        <small th:text="${#temporals.format(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}"></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary" th:text="${log.userName}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${log.operationType.name() == 'CREATE' ? 'bg-success' : 
+                                                               log.operationType.name() == 'UPDATE' ? 'bg-warning' :
+                                                               log.operationType.name() == 'DELETE' ? 'bg-danger' : 'bg-primary'}"
+                                              th:text="${log.operationType.displayName}">
+                                        </span>
+                                    </td>
+                                    <td th:text="${log.entityName}"></td>
+                                    <td>
+                                        <a th:href="@{/auditoria/entidad(entidad=${log.entityName}, entidadId=${log.entityId})}"
+                                           class="text-decoration-none"
+                                           th:text="${log.entityId}">
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <small th:text="${log.description}"></small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
