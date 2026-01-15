@@ -1,0 +1,47 @@
+# ============================================
+# Docker Compose para desarrollo local
+# ============================================
+# Uso: docker-compose up -d
+# ============================================
+
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: sa2gemini-db
+    environment:
+      POSTGRES_DB: SA2_BD
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Aplicación Spring Boot (opcional, para probar producción localmente)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sa2gemini-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - PORT=8080
+      - DATABASE_URL=jdbc:postgresql://db:5432/SA2_BD
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=123
+      - SPRING_PROFILES_ACTIVE=prod
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

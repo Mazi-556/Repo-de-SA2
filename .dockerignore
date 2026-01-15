@@ -1,0 +1,42 @@
+# ============================================
+# Docker Ignore - SA2Gemini
+# ============================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# Documentación
+*.md
+!README.md
+docs/
+
+# Archivos temporales
+*.tmp
+*.bak
+*.orig
+
+# Configuración local
+docker-compose.yml
+*.local.*
+
+# Diagramas
+*.dot
+*.html
+!src/main/resources/templates/**/*.html

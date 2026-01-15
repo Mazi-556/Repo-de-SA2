@@ -1,0 +1,38 @@
+# ============================================
+# Configuración para Render.com
+# ============================================
+# Blueprint para deploy automático
+# ============================================
+
+services:
+  - type: web
+    name: sa2gemini
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free
+    healthCheckPath: /login
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sa2gemini-db
+          property: connectionString
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: sa2gemini-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: sa2gemini-db
+          property: password
+
+databases:
+  - name: sa2gemini-db
+    databaseName: sa2_bd
+    user: sa2gemini
+    plan: free
+    region: oregon
