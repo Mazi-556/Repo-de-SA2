@@ -50,5 +50,10 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8080}/login || exit 1
 
-# Ejecutar la aplicación con perfil de producción
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
+# Variables de entorno por defecto
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Ejecutar la aplicación - CMD permite que las variables de entorno se expandan en runtime
+CMD java -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \
+    -Dserver.port=${PORT:-8080} \
+    -jar app.jar
