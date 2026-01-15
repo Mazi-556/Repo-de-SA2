@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Búsqueda de Auditoría</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/navbar-style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="bi bi-search"></i> Búsqueda de Auditoría</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/auditoria">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Búsqueda</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Formulario de Búsqueda -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-funnel"></i> Filtros de Búsqueda</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/auditoria/buscar}" method="get">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="usuario" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" id="usuario" name="usuario" 
+                                       th:value="${usuario}" placeholder="Nombre de usuario">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="entidad" class="form-label">Entidad</label>
+                                <input type="text" class="form-control" id="entidad" name="entidad" 
+                                       th:value="${entidad}" placeholder="ej: Producto, OrdenCompra">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="entidadId" class="form-label">ID Entidad</label>
+                                <input type="text" class="form-control" id="entidadId" name="entidadId" 
+                                       th:value="${entidadId}" placeholder="ID específico">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="operacion" class="form-label">Operación</label>
+                                <select class="form-select" id="operacion" name="operacion">
+                                    <option value="">Todas las operaciones</option>
+                                    <option th:each="op : ${operaciones}" 
+                                            th:value="${op}" 
+                                            th:text="${op.displayName}"
+                                            th:selected="${op == operacion}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label for="fechaInicio" class="form-label">Fecha Inicio</label>
+                                <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" 
+                                       th:value="${fechaInicio}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="fechaFin" class="form-label">Fecha Fin</label>
+                                <input type="date" class="form-control" id="fechaFin" name="fechaFin" 
+                                       th:value="${fechaFin}">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                                <a href="/auditoria/buscar" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise"></i> Limpiar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="row" th:if="${resultados != null}">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-list-ol"></i> Resultados de Búsqueda</h5>
+                    <span class="badge bg-primary" th:text="${resultados.size()} + ' registros'">0 registros</span>
+                </div>
+                <div class="card-body">
+                    <div th:if="${resultados.empty}" class="text-muted text-center">
+                        <i class="bi bi-search"></i>
+                        <p>No se encontraron registros con los criterios especificados</p>
+                    </div>
+                    <div th:unless="${resultados.empty}" class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha/Hora</th>
+                                    <th>Usuario</th>
+                                    <th>IP</th>
+                                    <th>Operación</th>
+                                    <th>Entidad</th>
+                                    <th>ID</th>
+                                    <th>Descripción</th>
+                                    <th>Campos Modificados</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="log : ${resultados}">
+                                    <td>
+                                        <small th:text="${#temporals.format(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}"></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary" th:text="${log.userName}"></span>
+                                    </td>
+                                    <td>
+                                        <small th:text="${log.userIp}"></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${log.operationType.name() == 'CREATE' ? 'bg-success' : 
+                                                               log.operationType.name() == 'UPDATE' ? 'bg-warning' :
+                                                               log.operationType.name() == 'DELETE' ? 'bg-danger' : 'bg-primary'}"
+                                              th:text="${log.operationType.displayName}">
+                                        </span>
+                                    </td>
+                                    <td th:text="${log.entityName}"></td>
+                                    <td>
+                                        <a th:href="@{/auditoria/entidad(entidad=${log.entityName}, entidadId=${log.entityId})}"
+                                           class="text-decoration-none"
+                                           th:text="${log.entityId}">
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <small th:text="${log.description}"></small>
+                                    </td>
+                                    <td>
+                                        <small th:text="${log.changedFields ?: '-'}"></small>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/auditoria/entidad(entidad=${log.entityName}, entidadId=${log.entityId})}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

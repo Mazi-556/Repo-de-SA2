@@ -1,28 +1,30 @@
 package com.example.SA2Gemini.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Configuration
-public class AuditorAwareConfig {
+@Component
+public class AuditorAwareConfig implements AuditorAware<String> {
 
-    /**
-     * Bean requerido por Spring Data JPA Auditing.
-     * Devuelve el nombre de usuario autenticado o 'system' si no hay autenticación.
-     */
-    @Bean(name = "auditorAware")
-    public AuditorAware<String> auditorProvider() {
-        return () -> {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
-                return Optional.of("system");
-            }
-            return Optional.ofNullable(authentication.getName());
-        };
+    @Override
+    public Optional<String> getCurrentAuditor() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Optional.of("SYSTEM");
+        }
+
+        String username = authentication.getName();
+        
+        // Si es anonymous, retornar ANONYMOUS
+        if ("anonymousUser".equals(username)) {
+            return Optional.of("ANONYMOUS");
+        }
+
+        return Optional.of(username);
     }
 }
