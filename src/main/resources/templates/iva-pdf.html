@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Reporte IVA</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 10px; margin: 20px; }
+        h1 { text-align: center; font-size: 16px; margin-bottom: 10px; }
+        .fecha { text-align: center; font-size: 11px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #333; padding: 4px; }
+        th { background-color: #f0f0f0; }
+        .text-right { text-align: right; }
+        .summary { margin: 10px 0 15px 0; }
+    </style>
+</head>
+<body>
+<h1>Reporte de IVA</h1>
+<div class="fecha">
+    Período: <span th:text="${#temporals.format(fechaInicio, 'dd/MM/yyyy')}"></span> -
+    <span th:text="${#temporals.format(fechaFin, 'dd/MM/yyyy')}"></span>
+</div>
+
+<div class="summary">
+    <strong>Subtotal:</strong> <span th:text="${#numbers.formatDecimal(subtotalTotal, 1, 2)}"></span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <strong>IVA Total:</strong> <span th:text="${#numbers.formatDecimal(ivaTotal, 1, 2)}"></span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <strong>Total:</strong> <span th:text="${#numbers.formatDecimal(totalTotal, 1, 2)}"></span>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Número</th>
+        <th>Fecha</th>
+        <th>Proveedor</th>
+        <th class="text-right">Subtotal</th>
+        <th class="text-right">IVA</th>
+        <th class="text-right">Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="f : ${facturas}">
+        <td th:text="${f.numeroFactura}"></td>
+        <td th:text="${#temporals.format(f.fecha, 'dd/MM/yyyy')}"></td>
+        <td th:text="${f.ordenCompra != null ? f.ordenCompra.proveedor.nombre : ''}"></td>
+        <td class="text-right" th:text="${#numbers.formatDecimal(f.subtotal, 1, 2)}"></td>
+        <td class="text-right" th:text="${#numbers.formatDecimal(f.ivaTotal, 1, 2)}"></td>
+        <td class="text-right" th:text="${#numbers.formatDecimal(f.total, 1, 2)}"></td>
+    </tr>
+    <tr th:if="${facturas == null or facturas.isEmpty()}">
+        <td colspan="6" style="text-align:center;">No se encontraron facturas.</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -42,7 +42,7 @@ public class FacturaController {
     @Autowired
     private AsientoRepository asientoRepository;
 
-    private static final BigDecimal IVA_RATE = new BigDecimal("0.21");
+    private static final BigDecimal DEFAULT_IVA_PCT = new BigDecimal("21");
 
     @GetMapping
     public String listarOrdenesDeCompraParaFactura(@RequestParam(value = "mostrar", required = false, defaultValue = "pendientes") String mostrar,
@@ -90,15 +90,15 @@ public class FacturaController {
                 .map(item -> Optional.ofNullable(item.getPrecioUnitario()).orElse(BigDecimal.ZERO).multiply(BigDecimal.valueOf(item.getCantidad())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
-        BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
+        BigDecimal ivaTotal = subtotal.multiply(DEFAULT_IVA_PCT.divide(new BigDecimal("100")));
         BigDecimal totalFactura = subtotal.add(ivaTotal);
 
-        // Preparar datos de ítems para JavaScript, asegurando que los precios sean strings numéricos
+        // Preparar datos de ítems para JavaScript
         List<Map<String, Object>> itemsData = oc.getItems().stream()
                 .map(item -> {
                     Map<String, Object> data = new HashMap<>();
+                    data.put("id", item.getId());
                     data.put("cantidad", item.getCantidad());
-                    // Usamos toPlainString() para asegurar que BigDecimal se serialice como una cadena numérica simple
                     data.put("precioUnitario", Optional.ofNullable(item.getPrecioUnitario()).orElse(BigDecimal.ZERO).toPlainString());
                     return data;
                 })
@@ -112,11 +112,12 @@ public class FacturaController {
         model.addAttribute("ivaTotal", ivaTotal);
         model.addAttribute("totalFactura", totalFactura);
         
-        // Añadir la tasa de IVA para cálculos unitarios en la vista si es necesario
-        model.addAttribute("ivaRate", IVA_RATE);
+        // IVA por defecto (por línea)
+        model.addAttribute("defaultIvaPct", DEFAULT_IVA_PCT);
         
         // Añadir los datos de ítems pre-formateados para JS
         model.addAttribute("itemsData", itemsData);
+        model.addAttribute("defaultIvaPct", DEFAULT_IVA_PCT);
         
         return "factura-form";
     }
@@ -124,14 +125,15 @@ public class FacturaController {
     @PostMapping("/crear-asiento")
     public String crearFacturaYAsiento(@RequestParam("ocId") Long ocId,
                                        @RequestParam("numeroFactura") String numeroFactura,
-                                       @RequestParam("ivaPorcentaje") java.math.BigDecimal ivaPorcentaje,
+                                       @RequestParam("itemIds") List<Long> itemIds,
+                                       @RequestParam Map<String, String> params,
                                        Model model) {
         
         System.out.println("========================================");
         System.out.println(">>> CONTROLLER: crearFacturaYAsiento LLAMADO");
         System.out.println(">>> ocId: " + ocId);
         System.out.println(">>> numeroFactura: " + numeroFactura);
-        System.out.println(">>> ivaPorcentaje: " + ivaPorcentaje);
+        System.out.println(">>> itemIds: " + itemIds);
         System.out.println("========================================");
                                     
         try {
@@ -143,8 +145,22 @@ public class FacturaController {
             factura.setOrdenCompra(oc);
             factura.setFecha(LocalDate.now());
 
-        // Ahora le enviamos también el porcentaje que el usuario eligió
-        Factura facturaCreada = facturaService.crearFacturaYAsiento(factura, ivaPorcentaje);
+        // Construir mapa de IVA% por ítem desde params (ivaPorcentaje_item_{id})
+        Map<Long, BigDecimal> ivaPorItem = new HashMap<>();
+        for (Long itemId : itemIds) {
+            String key = "ivaPorcentaje_item_" + itemId;
+            BigDecimal pct = DEFAULT_IVA_PCT;
+            if (params.containsKey(key)) {
+                try {
+                    pct = new BigDecimal(params.get(key));
+                } catch (Exception ignored) {
+                    pct = DEFAULT_IVA_PCT;
+                }
+            }
+            ivaPorItem.put(itemId, pct);
+        }
+
+        Factura facturaCreada = facturaService.crearFacturaYAsiento(factura, itemIds, ivaPorItem);
         
         // Redirigir a página de éxito con el ID del asiento creado
         return "redirect:/facturas/exito?asientoId=" + facturaCreada.getAsiento().getId() + 
@@ -159,7 +175,7 @@ public class FacturaController {
                         .map(item -> Optional.ofNullable(item.getPrecioUnitario()).orElse(BigDecimal.ZERO).multiply(BigDecimal.valueOf(item.getCantidad())))
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 
-                BigDecimal ivaTotal = subtotal.multiply(IVA_RATE);
+                BigDecimal ivaTotal = subtotal.multiply(DEFAULT_IVA_PCT.divide(new BigDecimal("100")));
                 BigDecimal totalFactura = subtotal.add(ivaTotal);
 
                 // Recalcular itemsData para el caso de error
@@ -177,7 +193,7 @@ public class FacturaController {
                 model.addAttribute("subtotal", subtotal);
                 model.addAttribute("ivaTotal", ivaTotal);
                 model.addAttribute("totalFactura", totalFactura);
-                model.addAttribute("ivaRate", IVA_RATE);
+                model.addAttribute("defaultIvaPct", DEFAULT_IVA_PCT);
                 model.addAttribute("itemsData", itemsData); // Añadir itemsData
             }
             return "factura-form";

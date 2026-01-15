@@ -198,7 +198,7 @@ public class DataInitializer implements CommandLineRunner {
         // USER -> COMERCIAL (por defecto)
         
         String[][] migraciones = {
-            {"COMPRAS", "COMERCIAL"},
+            {"COMPRA_VENTA", "COMERCIAL"},
             {"CONTABILIDAD", "CONTADOR"},
             {"ALMACEN", "DEPOSITO"},
             {"USER", "COMERCIAL"}

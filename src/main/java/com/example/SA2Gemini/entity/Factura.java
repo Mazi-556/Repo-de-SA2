@@ -29,7 +29,14 @@ public class Factura {
     @JoinColumn(name = "asiento_id")
     private Asiento asiento; // Vínculo con el asiento contable generado
     
-    private BigDecimal total;
+    private BigDecimal subtotal = BigDecimal.ZERO;
+
+    private BigDecimal ivaTotal = BigDecimal.ZERO;
+
+    private BigDecimal total = BigDecimal.ZERO;
+
+    @OneToMany(mappedBy = "factura", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<FacturaItem> items = new java.util.ArrayList<>();
 
     @CreatedBy
     private String creadoPor;
@@ -81,6 +88,30 @@ public class Factura {
 
     public void setAsiento(Asiento asiento) {
         this.asiento = asiento;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public BigDecimal getIvaTotal() {
+        return ivaTotal;
+    }
+
+    public void setIvaTotal(BigDecimal ivaTotal) {
+        this.ivaTotal = ivaTotal;
+    }
+
+    public java.util.List<FacturaItem> getItems() {
+        return items;
+    }
+
+    public void setItems(java.util.List<FacturaItem> items) {
+        this.items = items;
     }
 
     public BigDecimal getTotal() {

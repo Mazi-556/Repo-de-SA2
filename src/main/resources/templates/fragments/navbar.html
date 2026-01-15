@@ -1,13 +1,13 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
+<nav xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     th:fragment="navbarFragment"
+     th:if="${isPdf == null or !isPdf}"
+     class="navbar navbar-expand-lg navbar-light bg-light">
+
+    <!-- Optional assets (kept here for backwards compatibility) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/css/navbar-style.css" rel="stylesheet">
-    <script src="http://localhost:35729/livereload.js"></script>
-</head>
-<body>
 
-<nav th:fragment="navbarFragment" th:if="${isPdf == null or !isPdf}" class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <a class="navbar-brand" th:href="@{/}">Sistema Contable</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,50 +21,37 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/asientos/nuevo}">Registrar Asiento</a>
                 </li>
+
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdownReportes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Reportes
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownReportes">
                         <li><a class="dropdown-item" th:href="@{/reportes/libro-diario}">Libro Diario</a></li>
                         <li><a class="dropdown-item" th:href="@{/reportes/libro-mayor}">Libro Mayor</a></li>
+                        <li><a class="dropdown-item" th:href="@{/reportes/iva}">IVA</a></li>
                     </ul>
                 </li>
+
                 <!-- Abastecimiento: solo si tiene al menos UN item permitido -->
-                <li sec:authorize="hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')" class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAbastecimiento" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')" class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdownAbastecimiento" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Abastecimiento
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownAbastecimiento">
-                        <!-- Proveedores: solo COMPRAS y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/proveedores}">Proveedores</a></li>
-                        
-                        <!-- Productos: COMPRAS, ALMACEN y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN', 'ALMACEN')"><a class="dropdown-item" th:href="@{/productos}">Productos</a></li>
-                        
-                        <!-- Ventas: solo COMPRAS y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/ventas}">🛒 Ventas</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><hr class="dropdown-divider"></li>
-                        
-                        <!-- Solicitudes: COMPRAS y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/solicitudes-compra}">Solicitud De Compra</a></li>
-                        
-                        <!-- Presupuesto: solo COMPRAS y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/presupuestos/pedidos}">Presupuesto</a></li>
-                        
-                        <!-- Órdenes de Compra: COMPRAS, ALMACEN y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/ordenes-compra}">Orden de Compra</a></li>
-                        
-                        <!-- Remitos: COMPRAS, ALMACEN y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/remitos}">Remitos</a></li>
-                        
-                        <!-- Almacenes: solo ALMACEN y ADMIN -->
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/proveedores}">Proveedores</a></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN', 'ALMACEN')"><a class="dropdown-item" th:href="@{/productos}">Productos</a></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/ventas}">🛒 Ventas</a></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><hr class="dropdown-divider"></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/solicitudes-compra}">Solicitud De Compra</a></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/presupuestos/pedidos}">Presupuesto</a></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/ordenes-compra}">Orden de Compra</a></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/remitos}">Remitos</a></li>
                         <li sec:authorize="hasAnyRole('ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/almacenes}">Almacenes</a></li>
-                        
-                        <!-- Facturas: solo COMPRAS y ADMIN -->
-                        <li sec:authorize="hasAnyRole('COMPRAS', 'ADMIN')"><a class="dropdown-item" th:href="@{/facturas}">Facturas</a></li>
+                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/facturas}">Facturas</a></li>
                     </ul>
                 </li>
+
                 <li sec:authorize="hasRole('ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/admin/usuarios}">Gestión de Usuarios</a>
                 </li>
@@ -74,6 +61,7 @@
                     </a>
                 </li>
             </ul>
+
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <form th:action="@{/logout}" method="post">
@@ -83,19 +71,26 @@
             </ul>
         </div>
     </div>
+
+    <script>
+        // Popup reutilizable por acceso denegado (no navega)
+        document.addEventListener('DOMContentLoaded', function () {
+            // Forzar inicialización de dropdowns (por si algún template no cargó bien Bootstrap)
+            try {
+                if (window.bootstrap && window.bootstrap.Dropdown) {
+                    document.querySelectorAll('.dropdown-toggle').forEach(function (el) {
+                        new bootstrap.Dropdown(el);
+                    });
+                }
+            } catch (e) {
+                // noop
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('accessDenied')) {
+                alert('🔒 Acceso Denegado\n\nNo tienes permisos para acceder a esta sección.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
 </nav>
-
-<script>
-    // Mostrar popup de acceso denegado si el parámetro está en la URL
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('accessDenied')) {
-            alert('🔒 Acceso Denegado\n\nNo tienes permisos para acceder a esta sección.');
-            // Limpiar la URL sin recargar
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    });
-</script>
-
-</body>
-</html>

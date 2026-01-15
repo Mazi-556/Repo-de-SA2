@@ -52,8 +52,8 @@
                 <input type="text" id="numeroFactura" name="numeroFactura" class="form-control" placeholder="Ej: A-0001-00001234" required>
             </div>
             <div class="col-md-3">
-                <label for="inputIvaPorcentaje" class="form-label">Porcentaje IVA (%)</label>
-                <input type="number" step="0.01" id="inputIvaPorcentaje" name="ivaPorcentaje" class="form-control" value="21">
+                <label class="form-label">IVA por producto</label>
+                <div class="form-text">El IVA se define por cada producto en la tabla (default 21%).</div>
             </div>
         </div>
 
@@ -76,8 +76,10 @@
                     <th>Modelo</th>
                     <th>Descripción</th>
                     <th>Cantidad</th>
-                    <th>Precio Unit.</th>
-                    <th>IVA Unitario</th>
+                    <th>Precio Unit. (sin IVA)</th>
+                    <th>% IVA</th>
+                    <th>IVA (línea)</th>
+                    <th>Total (línea)</th>
                 </tr>
             </thead>
             <tbody>
@@ -90,7 +92,12 @@
                     <td th:text="${item.producto.descripcion}"></td>
                     <td th:text="${item.cantidad}"></td>
                     <td th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario, 0, 2)}"></td>
-                    <td class="item-iva-unitario"></td> <!-- JS will populate this -->
+                    <td>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-sm iva-pct-input"
+                               th:name="'ivaPorcentaje_item_' + ${item.id}" th:value="${defaultIvaPct}" />
+                    </td>
+                    <td class="item-iva-unitario"></td>
+                    <td class="item-total-linea"></td>
                 </tr>
             </tbody>
         </table>
@@ -98,15 +105,19 @@
         <!-- Display Totals Section (Subtotal and Total IVA Factura) -->
         <div class="row mb-3 justify-content-end total-iva-section">
             <div class="col-md-3 text-end">
-                <label class="form-label">Subtotal Factura:</label>
+                <label class="form-label">Subtotal (sin IVA):</label>
                 <p id="displaySubtotalFactura" class="form-control-plaintext fw-bold"></p>
-                <!-- Hidden input for Subtotal, required by JS for the Asiento setup -->
                 <input type="hidden" name="subtotalFactura" id="inputSubtotal">
             </div>
             <div class="col-md-3 text-end">
-                <label class="form-label">IVA Total Factura:</label>
+                <label class="form-label">IVA Total:</label>
                 <p id="displayTotalIvaFactura" class="form-control-plaintext fw-bold"></p>
                 <input type="hidden" name="totalIvaFactura" id="inputTotalIvaFactura">
+            </div>
+            <div class="col-md-3 text-end">
+                <label class="form-label">Total (con IVA):</label>
+                <p id="displayTotalFactura" class="form-control-plaintext fw-bold"></p>
+                <input type="hidden" name="totalFactura" id="inputTotalFactura">
             </div>
         </div>
 
@@ -126,7 +137,8 @@
         const displaySubtotalFactura = document.getElementById('displaySubtotalFactura');
         const displayTotalIvaFactura = document.getElementById('displayTotalIvaFactura');
         const inputTotalIvaFactura = document.getElementById('inputTotalIvaFactura');
-        const inputIvaPorcentaje = document.getElementById('inputIvaPorcentaje');
+        const displayTotalFactura = document.getElementById('displayTotalFactura');
+        const inputTotalFactura = document.getElementById('inputTotalFactura');
 
         // Data from Thymeleaf
         const ordenCompraItems = /*[[${itemsData}]]*/ []; 
@@ -141,58 +153,73 @@
 
         // Function to update item IVA, subtotal, and total IVA
         function updateItemIvaAndTotals() {
-            console.log("Updating IVA and totals...");
             let calculatedSubtotal = 0;
             let calculatedTotalIvaFactura = 0;
-            
-            const selectedIvaPercentage = parseFloat(inputIvaPorcentaje.value) || 21;
-            const ivaRate = selectedIvaPercentage / 100;
+
+            const rows = document.querySelectorAll('#ordenCompraItemsTable tbody tr');
 
             ordenCompraItems.forEach((item, index) => {
+                const row = rows[index];
+                if (!row) return;
+
+                const checkbox = row.querySelector('input[name="itemIds"]');
+                if (!checkbox || !checkbox.checked) {
+                    // si no está seleccionado, limpiar celdas calculadas
+                    const ivaCell = row.querySelector('.item-iva-unitario');
+                    const totalCell = row.querySelector('.item-total-linea');
+                    if (ivaCell) ivaCell.textContent = '';
+                    if (totalCell) totalCell.textContent = '';
+                    return;
+                }
+
                 const precioUnitario = parseFloat(item.precioUnitario);
                 const cantidad = parseInt(item.cantidad);
-                
-                if (isNaN(precioUnitario) || isNaN(cantidad)) {
-                    console.error(`Invalid data for item ${index}`);
-                    return; 
-                }
+                if (isNaN(precioUnitario) || isNaN(cantidad)) return;
 
                 const itemSubtotalAmount = precioUnitario * cantidad;
+
+                const ivaPctInput = row.querySelector('.iva-pct-input');
+                const ivaPct = ivaPctInput ? (parseFloat(ivaPctInput.value) || 21) : 21;
+                const ivaRate = ivaPct / 100;
+
+                const ivaLinea = itemSubtotalAmount * ivaRate;
+                const totalLinea = itemSubtotalAmount + ivaLinea;
+
+                const ivaCell = row.querySelector('.item-iva-unitario');
+                const totalCell = row.querySelector('.item-total-linea');
+                if (ivaCell) ivaCell.textContent = '$ ' + ivaLinea.toFixed(2);
+                if (totalCell) totalCell.textContent = '$ ' + totalLinea.toFixed(2);
+
                 calculatedSubtotal += itemSubtotalAmount;
-
-                const itemIvaUnitarioAmount = precioUnitario * ivaRate;
-                
-                const currentRowIVA_TD = document.querySelector(`#ordenCompraItemsTable tbody tr:nth-child(${index + 1}) .item-iva-unitario`);
-                if (currentRowIVA_TD) {
-                    currentRowIVA_TD.textContent = '$ ' + itemIvaUnitarioAmount.toFixed(2);
-                }
-
-                const itemTotalIvaAmount = itemSubtotalAmount * ivaRate;
-                calculatedTotalIvaFactura += itemTotalIvaAmount;
+                calculatedTotalIvaFactura += ivaLinea;
             });
 
+            const totalFinal = calculatedSubtotal + calculatedTotalIvaFactura;
+
             inputSubtotal.value = calculatedSubtotal.toFixed(2);
-            displaySubtotalFactura.textContent = '$ ' + calculatedSubtotal.toFixed(2); 
-            displayTotalIvaFactura.textContent = '$ ' + calculatedTotalIvaFactura.toFixed(2);
             inputTotalIvaFactura.value = calculatedTotalIvaFactura.toFixed(2);
-            
-            console.log("Calculated Subtotal:", calculatedSubtotal.toFixed(2));
-            console.log("Calculated Total IVA:", calculatedTotalIvaFactura.toFixed(2));
+            inputTotalFactura.value = totalFinal.toFixed(2);
+
+            displaySubtotalFactura.textContent = '$ ' + calculatedSubtotal.toFixed(2);
+            displayTotalIvaFactura.textContent = '$ ' + calculatedTotalIvaFactura.toFixed(2);
+            displayTotalFactura.textContent = '$ ' + totalFinal.toFixed(2);
         }
 
         // Initial setup
-        if (inputSubtotal && displaySubtotalFactura && displayTotalIvaFactura && inputTotalIvaFactura) {
-            inputSubtotal.value = initialSubtotal;
-            displaySubtotalFactura.textContent = '$ ' + initialSubtotal;
-            inputTotalIvaFactura.value = initialIvaTotal;
-            displayTotalIvaFactura.textContent = '$ ' + initialIvaTotal;
-            updateItemIvaAndTotals(); 
-        } else {
-            console.error("Error: Required total elements missing in the DOM.");
-        }
+        inputSubtotal.value = initialSubtotal;
+        displaySubtotalFactura.textContent = '$ ' + initialSubtotal;
+        inputTotalIvaFactura.value = initialIvaTotal;
+        displayTotalIvaFactura.textContent = '$ ' + initialIvaTotal;
+        // total final inicial
+        const initialTotalFinal = (parseFloat(initialSubtotal) || 0) + (parseFloat(initialIvaTotal) || 0);
+        inputTotalFactura.value = initialTotalFinal.toFixed(2);
+        displayTotalFactura.textContent = '$ ' + initialTotalFinal.toFixed(2);
+
+        updateItemIvaAndTotals();
 
         // Event listener for IVA percentage change
-        inputIvaPorcentaje.addEventListener('input', updateItemIvaAndTotals);
+        // Recalcular cuando cambian los IVA% por línea
+        document.querySelectorAll('.iva-pct-input').forEach(inp => inp.addEventListener('input', updateItemIvaAndTotals));
         
         // Event listener for "Select All" checkbox
         document.getElementById('selectAllItems').addEventListener('change', function(e) {
@@ -200,7 +227,11 @@
             checkboxes.forEach(checkbox => {
                 checkbox.checked = e.target.checked;
             });
+            updateItemIvaAndTotals();
         });
+
+        // Recalcular cuando cambia cualquier checkbox individual
+        document.querySelectorAll('input[name="itemIds"]').forEach(cb => cb.addEventListener('change', updateItemIvaAndTotals));
     });
 </script>
 </body>

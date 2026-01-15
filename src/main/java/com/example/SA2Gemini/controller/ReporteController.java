@@ -46,6 +46,9 @@ public class ReporteController {
     @Autowired
     private ExcelGeneratorService excelGeneratorService;
 
+    @Autowired
+    private com.example.SA2Gemini.repository.FacturaRepository facturaRepository;
+
    @GetMapping("/reportes/libro-diario")
     public String showLibroDiarioForm(Model model) {
         model.addAttribute("startDate", java.time.LocalDate.now());
@@ -271,6 +274,86 @@ public class ReporteController {
                 .header("Content-Disposition", "attachment; filename=\"libro_diario_" + startDate + "_to_" + endDate + ".xlsx\"")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(excelBytes);
+    }
+
+    @GetMapping("/reportes/iva")
+    public String showIvaReport(Model model) {
+        model.addAttribute("fechaInicio", LocalDate.now().minusMonths(1));
+        model.addAttribute("fechaFin", LocalDate.now());
+        return "iva-report";
+    }
+
+    @PostMapping("/reportes/iva")
+    public String generateIvaReport(@RequestParam(value = "fechaInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+                                    @RequestParam(value = "fechaFin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+                                    Model model) {
+        // Obtener todas las facturas en el período
+        List<com.example.SA2Gemini.entity.Factura> facturas = facturaRepository.findByFechaBetween(fechaInicio, fechaFin);
+        
+        BigDecimal ivaTotal = BigDecimal.ZERO;
+        BigDecimal subtotalTotal = BigDecimal.ZERO;
+        BigDecimal totalTotal = BigDecimal.ZERO;
+
+        for (com.example.SA2Gemini.entity.Factura factura : facturas) {
+            if (factura.getIvaTotal() != null) {
+                ivaTotal = ivaTotal.add(factura.getIvaTotal());
+            }
+            if (factura.getSubtotal() != null) {
+                subtotalTotal = subtotalTotal.add(factura.getSubtotal());
+            }
+            if (factura.getTotal() != null) {
+                totalTotal = totalTotal.add(factura.getTotal());
+            }
+        }
+
+        model.addAttribute("fechaInicio", fechaInicio);
+        model.addAttribute("fechaFin", fechaFin);
+        model.addAttribute("facturas", facturas);
+        model.addAttribute("ivaTotal", ivaTotal);
+        model.addAttribute("subtotalTotal", subtotalTotal);
+        model.addAttribute("totalTotal", totalTotal);
+        
+        return "iva-report";
+    }
+
+    @GetMapping("/reportes/iva/pdf")
+    public ResponseEntity<byte[]> generateIvaPdf(@RequestParam(value = "fechaInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+                                                 @RequestParam(value = "fechaFin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+                                                 HttpServletRequest request, HttpServletResponse response) throws DocumentException {
+        // Obtener facturas
+        List<com.example.SA2Gemini.entity.Factura> facturas = facturaRepository.findByFechaBetween(fechaInicio, fechaFin);
+
+        BigDecimal ivaTotal = BigDecimal.ZERO;
+        BigDecimal subtotalTotal = BigDecimal.ZERO;
+        BigDecimal totalTotal = BigDecimal.ZERO;
+
+        for (com.example.SA2Gemini.entity.Factura factura : facturas) {
+            if (factura.getIvaTotal() != null) {
+                ivaTotal = ivaTotal.add(factura.getIvaTotal());
+            }
+            if (factura.getSubtotal() != null) {
+                subtotalTotal = subtotalTotal.add(factura.getSubtotal());
+            }
+            if (factura.getTotal() != null) {
+                totalTotal = totalTotal.add(factura.getTotal());
+            }
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("fechaInicio", fechaInicio);
+        data.put("fechaFin", fechaFin);
+        data.put("facturas", facturas);
+        data.put("ivaTotal", ivaTotal);
+        data.put("subtotalTotal", subtotalTotal);
+        data.put("totalTotal", totalTotal);
+
+        String htmlContent = pdfGeneratorService.generateHtml("iva-pdf", data, request, response);
+        byte[] pdfBytes = pdfGeneratorService.generatePdfFromHtml(htmlContent);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"reporte_iva_" + fechaInicio + "_to_" + fechaFin + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 
     @GetMapping("/reportes/libro-mayor/excel")

@@ -10,7 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ADMIN')")
 @Controller
 @RequestMapping("/ventas")
 public class VentaController {

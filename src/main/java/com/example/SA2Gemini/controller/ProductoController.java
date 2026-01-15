@@ -36,14 +36,14 @@ public class ProductoController {
     @Autowired
     private ProductoProveedorRepository productoProveedorRepository;
 
-    @PreAuthorize("hasAnyRole('COMPRAS', 'ALMACEN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')")
     @GetMapping
     public String listarProductos(Model model) {
         model.addAttribute("productos", productoService.findAll());
         return "productos";
     }
 
-    @PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ADMIN')")
     @GetMapping("/nuevo")
     public String mostrarFormularioDeAlta(Model model) {
         model.addAttribute("producto", new Producto());
@@ -62,7 +62,7 @@ public class ProductoController {
         return "producto-form";
     }
 
-    @PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ADMIN')")
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute Producto producto, Model model) {
         try {
