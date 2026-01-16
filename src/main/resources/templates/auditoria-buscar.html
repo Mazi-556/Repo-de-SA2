@@ -26,60 +26,63 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h5><i class="bi bi-funnel"></i> Filtros de Búsqueda</h5>
+                <div class="card-header d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#filtrosBusqueda" aria-expanded="false" aria-controls="filtrosBusqueda">
+                    <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Búsqueda</h5>
+                    <i class="bi bi-chevron-down" id="collapseIcon"></i>
                 </div>
-                <div class="card-body">
-                    <form th:action="@{/auditoria/buscar}" method="get">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <label for="usuario" class="form-label">Usuario</label>
-                                <input type="text" class="form-control" id="usuario" name="usuario" 
-                                       th:value="${usuario}" placeholder="Nombre de usuario">
+                <div class="collapse" id="filtrosBusqueda">
+                    <div class="card-body">
+                        <form th:action="@{/auditoria/buscar}" method="get">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label for="usuario" class="form-label">Usuario</label>
+                                    <input type="text" class="form-control" id="usuario" name="usuario" 
+                                           th:value="${usuario}" placeholder="Nombre de usuario">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="entidad" class="form-label">Entidad</label>
+                                    <input type="text" class="form-control" id="entidad" name="entidad" 
+                                           th:value="${entidad}" placeholder="ej: Producto, OrdenCompra">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="entidadId" class="form-label">ID Entidad</label>
+                                    <input type="text" class="form-control" id="entidadId" name="entidadId" 
+                                           th:value="${entidadId}" placeholder="ID específico">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="operacion" class="form-label">Operación</label>
+                                    <select class="form-select" id="operacion" name="operacion">
+                                        <option value="">Todas las operaciones</option>
+                                        <option th:each="op : ${operaciones}" 
+                                                th:value="${op}" 
+                                                th:text="${op.displayName}"
+                                                th:selected="${op == operacion}">
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label for="entidad" class="form-label">Entidad</label>
-                                <input type="text" class="form-control" id="entidad" name="entidad" 
-                                       th:value="${entidad}" placeholder="ej: Producto, OrdenCompra">
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <label for="fechaInicio" class="form-label">Fecha Inicio</label>
+                                    <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" 
+                                           th:value="${fechaInicio}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="fechaFin" class="form-label">Fecha Fin</label>
+                                    <input type="date" class="form-control" id="fechaFin" name="fechaFin" 
+                                           th:value="${fechaFin}">
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end justify-content-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="bi bi-search"></i> Buscar
+                                    </button>
+                                    <a href="/auditoria/buscar" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-clockwise"></i> Limpiar
+                                    </a>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label for="entidadId" class="form-label">ID Entidad</label>
-                                <input type="text" class="form-control" id="entidadId" name="entidadId" 
-                                       th:value="${entidadId}" placeholder="ID específico">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="operacion" class="form-label">Operación</label>
-                                <select class="form-select" id="operacion" name="operacion">
-                                    <option value="">Todas las operaciones</option>
-                                    <option th:each="op : ${operaciones}" 
-                                            th:value="${op}" 
-                                            th:text="${op.displayName}"
-                                            th:selected="${op == operacion}">
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-4">
-                                <label for="fechaInicio" class="form-label">Fecha Inicio</label>
-                                <input type="date" class="form-control" id="fechaInicio" name="fechaInicio" 
-                                       th:value="${fechaInicio}">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="fechaFin" class="form-label">Fecha Fin</label>
-                                <input type="date" class="form-control" id="fechaFin" name="fechaFin" 
-                                       th:value="${fechaFin}">
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="bi bi-search"></i> Buscar
-                                </button>
-                                <a href="/auditoria/buscar" class="btn btn-outline-secondary">
-                                    <i class="bi bi-arrow-clockwise"></i> Limpiar
-                                </a>
-                            </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -162,5 +165,22 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const collapseEl = document.getElementById('filtrosBusqueda');
+        const collapseIcon = document.getElementById('collapseIcon');
+        
+        // Cambiar icono al expandir/colapsar
+        collapseEl.addEventListener('show.bs.collapse', function () {
+            collapseIcon.classList.remove('bi-chevron-down');
+            collapseIcon.classList.add('bi-chevron-up');
+        });
+        
+        collapseEl.addEventListener('hide.bs.collapse', function () {
+            collapseIcon.classList.remove('bi-chevron-up');
+            collapseIcon.classList.add('bi-chevron-down');
+        });
+    });
+</script>
 </body>
 </html>
