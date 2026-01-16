@@ -211,9 +211,9 @@
 
 <div class="container">
     <!-- Sección Contable -->
-    <div class="section-title">📈 Módulo Contable</div>
-    <div class="modules-grid">
-        <div class="card-module-wrapper">
+    <div class="section-title" sec:authorize="hasAnyAuthority('PERM_CUENTAS', 'PERM_ASIENTOS', 'PERM_LIBRO_DIARIO', 'PERM_LIBRO_MAYOR', 'PERM_REPORTE_IVA', 'ROLE_ADMIN')">📈 Módulo Contable</div>
+    <div class="modules-grid" sec:authorize="hasAnyAuthority('PERM_CUENTAS', 'PERM_ASIENTOS', 'PERM_LIBRO_DIARIO', 'PERM_LIBRO_MAYOR', 'PERM_REPORTE_IVA', 'ROLE_ADMIN')">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_CUENTAS', 'ROLE_ADMIN')">
             <a href="/cuentas" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona la estructura jerárquica del plan de cuentas contables.')">ⓘ</button>
                 <i class="bi bi-journal-text"></i>
@@ -221,7 +221,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_ASIENTOS', 'ROLE_ADMIN')">
             <a href="/asientos/nuevo" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Crea y gestiona asientos contables para registrar operaciones.')">ⓘ</button>
                 <i class="bi bi-pencil-square"></i>
@@ -229,7 +229,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_LIBRO_DIARIO', 'ROLE_ADMIN')">
             <a href="/reportes/libro-diario" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Visualiza el libro diario con todas las operaciones registradas.')">ⓘ</button>
                 <i class="bi bi-journal"></i>
@@ -237,19 +237,27 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_LIBRO_MAYOR', 'ROLE_ADMIN')">
             <a href="/reportes/libro-mayor" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Visualiza el libro mayor con el detalle por cuenta.')">ⓘ</button>
                 <i class="bi bi-graph-up"></i>
                 <h3>Libro Mayor</h3>
             </a>
         </div>
+        
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_REPORTE_IVA', 'ROLE_ADMIN')">
+            <a href="/reportes/iva" class="card-module">
+                <button class="card-module-info-btn" onclick="showInfo(event, 'Genera reportes de IVA débito y crédito fiscal.')">ⓘ</button>
+                <i class="bi bi-percent"></i>
+                <h3>Reporte IVA</h3>
+            </a>
+        </div>
     </div>
 
     <!-- Sección Abastecimiento -->
-    <div class="section-title">📦 Módulo Abastecimiento</div>
-    <div class="modules-grid">
-        <div class="card-module-wrapper">
+    <div class="section-title" sec:authorize="hasAnyAuthority('PERM_PROVEEDORES', 'PERM_PRODUCTOS', 'PERM_VENTAS', 'PERM_SOLICITUDES_COMPRA', 'PERM_PRESUPUESTOS', 'PERM_ORDENES_COMPRA', 'PERM_REMITOS', 'PERM_FACTURAS', 'PERM_PEDIDOS_COTIZACION', 'ROLE_ADMIN')">📦 Módulo Abastecimiento</div>
+    <div class="modules-grid" sec:authorize="hasAnyAuthority('PERM_PROVEEDORES', 'PERM_PRODUCTOS', 'PERM_VENTAS', 'PERM_SOLICITUDES_COMPRA', 'PERM_PRESUPUESTOS', 'PERM_ORDENES_COMPRA', 'PERM_REMITOS', 'PERM_FACTURAS', 'PERM_PEDIDOS_COTIZACION', 'ROLE_ADMIN')">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_SOLICITUDES_COMPRA', 'ROLE_ADMIN')">
             <a href="/solicitudes-compra" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Crea y gestiona solicitudes de compra de productos.')">ⓘ</button>
                 <i class="bi bi-file-earmark-text"></i>
@@ -257,7 +265,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_ORDENES_COMPRA', 'ROLE_ADMIN')">
             <a href="/ordenes-compra" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona órdenes de compra confirmadas con proveedores.')">ⓘ</button>
                 <i class="bi bi-bag-check"></i>
@@ -265,7 +273,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_PEDIDOS_COTIZACION', 'ROLE_ADMIN')">
             <a href="/pedidos-cotizacion" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Solicita cotizaciones a proveedores y gestiona ofertas.')">ⓘ</button>
                 <i class="bi bi-chat-dots"></i>
@@ -273,7 +281,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_REMITOS', 'ROLE_ADMIN')">
             <a href="/remitos" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Registra entregas y recepción de mercadería.')">ⓘ</button>
                 <i class="bi bi-truck"></i>
@@ -281,7 +289,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_PRODUCTOS', 'ROLE_ADMIN')">
             <a href="/productos" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Administra el catálogo de productos disponibles.')">ⓘ</button>
                 <i class="bi bi-box"></i>
@@ -289,7 +297,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_PROVEEDORES', 'ROLE_ADMIN')">
             <a href="/proveedores" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona la información de proveedores registrados.')">ⓘ</button>
                 <i class="bi bi-shop"></i>
@@ -299,9 +307,9 @@
     </div>
 
     <!-- Sección Admin -->
-    <div class="section-title" sec:authorize="hasRole('ADMIN')">⚙️ Administración</div>
-    <div class="modules-grid" sec:authorize="hasRole('ADMIN')">
-        <div class="card-module-wrapper">
+    <div class="section-title" sec:authorize="hasAnyAuthority('PERM_USUARIOS', 'PERM_ALMACENES', 'ROLE_ADMIN')">⚙️ Administración</div>
+    <div class="modules-grid" sec:authorize="hasAnyAuthority('PERM_USUARIOS', 'PERM_ALMACENES', 'ROLE_ADMIN')">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_USUARIOS', 'ROLE_ADMIN')">
             <a href="/admin/usuarios" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Gestiona usuarios del sistema y sus permisos.')">ⓘ</button>
                 <i class="bi bi-people"></i>
@@ -309,7 +317,7 @@
             </a>
         </div>
         
-        <div class="card-module-wrapper">
+        <div class="card-module-wrapper" sec:authorize="hasAnyAuthority('PERM_ALMACENES', 'ROLE_ADMIN')">
             <a href="/almacenes" class="card-module">
                 <button class="card-module-info-btn" onclick="showInfo(event, 'Administra almacenes y ubicaciones de stock.')">ⓘ</button>
                 <i class="bi bi-building"></i>
