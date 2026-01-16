@@ -11,11 +11,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // Add this import
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Enable method-level security
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -41,21 +41,41 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AccessDeniedHandler accessDeniedHandler) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                // CONTADOR: Todo lo contable (plan de cuentas, asientos, libro diario y mayor)
-                .requestMatchers("/cuentas/**", "/asientos/**", "/libro-diario/**", "/libro-mayor/**", "/auditoria/**").hasAnyRole("CONTADOR", "ADMIN")
-                
-                // COMERCIAL: Ventas, pedidos, presupuestos, órdenes de compra, facturas, productos y precios
-                .requestMatchers("/ventas/**", "/pedidos-cotizacion/**", "/presupuestos/**", "/ordenes-compra/**", "/facturas/**", "/productos/**", "/proveedores/**").hasAnyRole("COMERCIAL", "ADMIN")
-                
-                // DEPOSITO: Remitos y solicitudes de compra
-                .requestMatchers("/remitos/**", "/solicitudes-compra/**", "/almacenes/**").hasAnyRole("DEPOSITO", "ADMIN")
-                
-                // ADMIN: Acceso a todo
-                .requestMatchers("/usuarios/**").hasRole("ADMIN")
-                
+                // Recursos estáticos y login - acceso público
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/login", "/favicon.ico").permitAll()
+                
+                // Administración - solo ADMIN
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                
+                // Para el resto de las URLs, verificamos permisos dinámicamente
+                // Los permisos se verifican por código de permiso (authority)
+                
+                // Contabilidad
+                .requestMatchers("/cuentas/**").hasAnyAuthority("PERM_CUENTAS", "ROLE_ADMIN")
+                .requestMatchers("/asientos/**").hasAnyAuthority("PERM_ASIENTOS", "ROLE_ADMIN")
+                .requestMatchers("/reportes/libro-diario/**").hasAnyAuthority("PERM_LIBRO_DIARIO", "ROLE_ADMIN")
+                .requestMatchers("/reportes/libro-mayor/**").hasAnyAuthority("PERM_LIBRO_MAYOR", "ROLE_ADMIN")
+                .requestMatchers("/reportes/iva/**").hasAnyAuthority("PERM_REPORTE_IVA", "ROLE_ADMIN")
+                .requestMatchers("/auditoria/**").hasAnyAuthority("PERM_AUDITORIA", "ROLE_ADMIN")
+                
+                // Comercial
+                .requestMatchers("/proveedores/**").hasAnyAuthority("PERM_PROVEEDORES", "ROLE_ADMIN")
+                .requestMatchers("/productos/**").hasAnyAuthority("PERM_PRODUCTOS", "ROLE_ADMIN")
+                .requestMatchers("/ventas/**").hasAnyAuthority("PERM_VENTAS", "ROLE_ADMIN")
+                .requestMatchers("/solicitudes-compra/**").hasAnyAuthority("PERM_SOLICITUDES_COMPRA", "ROLE_ADMIN")
+                .requestMatchers("/presupuestos/**").hasAnyAuthority("PERM_PRESUPUESTOS", "ROLE_ADMIN")
+                .requestMatchers("/ordenes-compra/**").hasAnyAuthority("PERM_ORDENES_COMPRA", "ROLE_ADMIN")
+                .requestMatchers("/facturas/**").hasAnyAuthority("PERM_FACTURAS", "ROLE_ADMIN")
+                .requestMatchers("/pedidos-cotizacion/**").hasAnyAuthority("PERM_PEDIDOS_COTIZACION", "ROLE_ADMIN")
+                
+                // Depósito
+                .requestMatchers("/remitos/**").hasAnyAuthority("PERM_REMITOS", "ROLE_ADMIN")
+                .requestMatchers("/almacenes/**").hasAnyAuthority("PERM_ALMACENES", "ROLE_ADMIN")
+                .requestMatchers("/categorias/**").hasAnyAuthority("PERM_CATEGORIAS", "ROLE_ADMIN")
+                
+                // Cualquier otra petición requiere autenticación
                 .anyRequest().authenticated()
-)
+                )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .permitAll()

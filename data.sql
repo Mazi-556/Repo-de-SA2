@@ -24,12 +24,76 @@ DELETE FROM rol;
 DELETE FROM cuenta;
 
 
--- 1. rol
-INSERT INTO rol (id, name) VALUES
-(1, 'ADMIN'),
-(2, 'CONTADOR'),
-(3, 'DEPOSITO'),
-(4, 'COMERCIAL');
+-- 1. permiso (Permisos del sistema)
+DELETE FROM rol_permiso;
+DELETE FROM permiso;
+
+INSERT INTO permiso (id, codigo, nombre, url_pattern, descripcion, categoria) VALUES
+-- Contabilidad
+(1, 'CUENTAS_VER', 'Ver Plan de Cuentas', '/cuentas/**', 'Permite ver el plan de cuentas', 'Contabilidad'),
+(2, 'CUENTAS_CREAR', 'Crear Cuentas', '/cuentas/nueva', 'Permite crear nuevas cuentas contables', 'Contabilidad'),
+(3, 'CUENTAS_EDITAR', 'Editar Cuentas', '/cuentas/editar/**', 'Permite editar cuentas contables', 'Contabilidad'),
+(4, 'ASIENTOS_VER', 'Ver Asientos', '/asientos/**', 'Permite ver asientos contables', 'Contabilidad'),
+(5, 'ASIENTOS_CREAR', 'Crear Asientos', '/asientos/nuevo', 'Permite crear asientos contables', 'Contabilidad'),
+(6, 'REPORTES_CONTABLES', 'Reportes Contables', '/reportes/**', 'Permite ver reportes contables (Libro Diario, Mayor, IVA)', 'Contabilidad'),
+-- Abastecimiento
+(7, 'SOLICITUDES_VER', 'Ver Solicitudes de Compra', '/solicitudes-compra/**', 'Permite ver solicitudes de compra', 'Abastecimiento'),
+(8, 'SOLICITUDES_CREAR', 'Crear Solicitudes de Compra', '/solicitudes-compra/nueva', 'Permite crear solicitudes de compra', 'Abastecimiento'),
+(9, 'PEDIDOS_COT_VER', 'Ver Pedidos de Cotización', '/pedidos-cotizacion/**', 'Permite ver pedidos de cotización', 'Abastecimiento'),
+(10, 'PEDIDOS_COT_GESTIONAR', 'Gestionar Pedidos de Cotización', '/pedidos-cotizacion/crear/**', 'Permite crear y gestionar pedidos de cotización', 'Abastecimiento'),
+(11, 'ORDENES_VER', 'Ver Órdenes de Compra', '/ordenes-compra/**', 'Permite ver órdenes de compra', 'Abastecimiento'),
+(12, 'ORDENES_CREAR', 'Crear Órdenes de Compra', '/ordenes-compra/nueva/**', 'Permite crear órdenes de compra', 'Abastecimiento'),
+(13, 'REMITOS_VER', 'Ver Remitos', '/remitos/**', 'Permite ver remitos de recepción', 'Abastecimiento'),
+(14, 'REMITOS_CREAR', 'Crear Remitos', '/remitos/nuevo/**', 'Permite registrar remitos de recepción', 'Abastecimiento'),
+(15, 'FACTURAS_VER', 'Ver Facturas', '/facturas/**', 'Permite ver facturas de compra', 'Abastecimiento'),
+(16, 'FACTURAS_CREAR', 'Crear Facturas', '/facturas/nueva/**', 'Permite registrar facturas de compra', 'Abastecimiento'),
+-- Inventario
+(17, 'PRODUCTOS_VER', 'Ver Productos', '/productos/**', 'Permite ver productos', 'Inventario'),
+(18, 'PRODUCTOS_GESTIONAR', 'Gestionar Productos', '/productos/nuevo', 'Permite crear y editar productos', 'Inventario'),
+(19, 'CATEGORIAS_VER', 'Ver Categorías', '/categorias/**', 'Permite ver categorías de productos', 'Inventario'),
+(20, 'CATEGORIAS_GESTIONAR', 'Gestionar Categorías', '/categorias/nueva', 'Permite crear y editar categorías', 'Inventario'),
+(21, 'ALMACENES_VER', 'Ver Almacenes', '/almacenes/**', 'Permite ver almacenes', 'Inventario'),
+(22, 'ALMACENES_GESTIONAR', 'Gestionar Almacenes', '/almacenes/nuevo', 'Permite crear y editar almacenes', 'Inventario'),
+-- Proveedores
+(23, 'PROVEEDORES_VER', 'Ver Proveedores', '/proveedores/**', 'Permite ver proveedores', 'Proveedores'),
+(24, 'PROVEEDORES_GESTIONAR', 'Gestionar Proveedores', '/proveedores/nuevo', 'Permite crear y editar proveedores', 'Proveedores'),
+-- Ventas
+(25, 'VENTAS_VER', 'Ver Ventas', '/ventas/**', 'Permite ver el historial de ventas', 'Ventas'),
+(26, 'VENTAS_CREAR', 'Registrar Ventas', '/ventas/nueva', 'Permite registrar ventas', 'Ventas'),
+-- Auditoría
+(27, 'AUDITORIA_VER', 'Ver Auditoría', '/auditoria/**', 'Permite ver los registros de auditoría', 'Auditoría'),
+-- Presupuestos
+(28, 'PRESUPUESTOS_VER', 'Ver Presupuestos', '/presupuestos/**', 'Permite ver presupuestos', 'Abastecimiento'),
+(29, 'PRESUPUESTOS_GESTIONAR', 'Gestionar Presupuestos', '/presupuestos/confirmar/**', 'Permite gestionar presupuestos', 'Abastecimiento');
+
+-- 2. rol
+INSERT INTO rol (id, name, editable) VALUES
+(1, 'ADMIN', false),
+(2, 'CONTADOR', true),
+(3, 'DEPOSITO', true),
+(4, 'COMERCIAL', true);
+
+-- 2.1 rol_permiso (Asignar permisos a roles)
+-- CONTADOR: Acceso a contabilidad
+INSERT INTO rol_permiso (rol_id, permiso_id) VALUES
+(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), -- Contabilidad completa
+(2, 15), (2, 16); -- Facturas
+
+-- DEPOSITO: Acceso a inventario y recepción
+INSERT INTO rol_permiso (rol_id, permiso_id) VALUES
+(3, 13), (3, 14), -- Remitos
+(3, 17), (3, 18), -- Productos
+(3, 19), (3, 20), -- Categorías
+(3, 21), (3, 22); -- Almacenes
+
+-- COMERCIAL: Acceso a abastecimiento y ventas
+INSERT INTO rol_permiso (rol_id, permiso_id) VALUES
+(4, 7), (4, 8), -- Solicitudes
+(4, 9), (4, 10), -- Pedidos cotización
+(4, 11), (4, 12), -- Órdenes compra
+(4, 23), (4, 24), -- Proveedores
+(4, 25), (4, 26), -- Ventas
+(4, 28), (4, 29); -- Presupuestos
 
 -- 2. usuario
 -- Contraseñas: admin=admin, contador1=contador1, deposito1=deposito1, comercial1=comercial1
@@ -159,6 +223,7 @@ INSERT INTO movimiento (id, asiento_id, cuenta_id, debe, haber) VALUES
 
 -- Note: Sequence updates are needed after manual ID insertion.
 -- This ensures that the next auto-generated ID is correct.
+SELECT setval('permiso_id_seq', (SELECT MAX(id) FROM permiso));
 SELECT setval('rol_id_seq', (SELECT MAX(id) FROM rol));
 SELECT setval('usuario_id_seq', (SELECT MAX(id) FROM usuario));
 SELECT setval('cuenta_id_seq', (SELECT MAX(id) FROM cuenta));

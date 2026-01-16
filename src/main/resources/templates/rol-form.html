@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${esNuevo} ? 'Crear Rol' : 'Editar Rol'">Formulario de Rol</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/navbar-style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbarFragment}"></div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-shield-plus" th:if="${esNuevo}"></i>
+                        <i class="bi bi-shield-check" th:unless="${esNuevo}"></i>
+                        <span th:text="${esNuevo} ? 'Crear Nuevo Rol' : 'Editar Rol'"></span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Mensajes de error -->
+                    <div th:if="${error}" class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
+                    </div>
+
+                    <form th:action="${esNuevo} ? @{/admin/roles} : @{/admin/roles/editar/{id}(id=${rol.id})}" 
+                          th:object="${rol}" method="post">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-tag"></i> Nombre del Rol <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}" 
+                                   required placeholder="Ej: VENTAS, COMPRAS, GERENTE"
+                                   pattern="[A-Za-z0-9_\s]+"
+                                   title="Solo letras, números y guiones bajos">
+                            <div class="form-text">
+                                El nombre se convertirá automáticamente a mayúsculas. 
+                                Los espacios se reemplazarán por guiones bajos.
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-lightbulb"></i> 
+                            <strong>Tip:</strong> Después de crear el rol, podrás asignarle permisos específicos 
+                            desde la lista de roles usando el botón "Permisos".
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a th:href="@{/admin/roles}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> 
+                                <span th:text="${esNuevo} ? 'Crear Rol' : 'Guardar Cambios'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

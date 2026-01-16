@@ -15,47 +15,47 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item">
+                <li sec:authorize="hasAnyAuthority('PERM_CUENTAS', 'ROLE_ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/cuentas}">Plan de Cuentas</a>
                 </li>
-                <li class="nav-item">
+                <li sec:authorize="hasAnyAuthority('PERM_ASIENTOS', 'ROLE_ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/asientos/nuevo}">Registrar Asiento</a>
                 </li>
 
-                <li class="nav-item dropdown">
+                <li sec:authorize="hasAnyAuthority('PERM_LIBRO_DIARIO', 'PERM_LIBRO_MAYOR', 'PERM_REPORTE_IVA', 'ROLE_ADMIN')" class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdownReportes" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Reportes
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownReportes">
-                        <li><a class="dropdown-item" th:href="@{/reportes/libro-diario}">Libro Diario</a></li>
-                        <li><a class="dropdown-item" th:href="@{/reportes/libro-mayor}">Libro Mayor</a></li>
-                        <li><a class="dropdown-item" th:href="@{/reportes/iva}">IVA</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_LIBRO_DIARIO', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/reportes/libro-diario}">Libro Diario</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_LIBRO_MAYOR', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/reportes/libro-mayor}">Libro Mayor</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_REPORTE_IVA', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/reportes/iva}">IVA</a></li>
                     </ul>
                 </li>
 
                 <!-- Abastecimiento: solo si tiene al menos UN item permitido -->
-                <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')" class="nav-item dropdown">
+                <li sec:authorize="hasAnyAuthority('PERM_PROVEEDORES', 'PERM_PRODUCTOS', 'PERM_VENTAS', 'PERM_SOLICITUDES_COMPRA', 'PERM_PRESUPUESTOS', 'PERM_ORDENES_COMPRA', 'PERM_REMITOS', 'PERM_ALMACENES', 'PERM_FACTURAS', 'ROLE_ADMIN')" class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="javascript:void(0)" id="navbarDropdownAbastecimiento" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Abastecimiento
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownAbastecimiento">
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/proveedores}">Proveedores</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN', 'ALMACEN')"><a class="dropdown-item" th:href="@{/productos}">Productos</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/ventas}">🛒 Ventas</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><hr class="dropdown-divider"></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/solicitudes-compra}">Solicitud De Compra</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/presupuestos/pedidos}">Presupuesto</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/ordenes-compra}">Orden de Compra</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/remitos}">Remitos</a></li>
-                        <li sec:authorize="hasAnyRole('ALMACEN', 'ADMIN')"><a class="dropdown-item" th:href="@{/almacenes}">Almacenes</a></li>
-                        <li sec:authorize="hasAnyRole('COMPRA_VENTA', 'ADMIN')"><a class="dropdown-item" th:href="@{/facturas}">Facturas</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_PROVEEDORES', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/proveedores}">Proveedores</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_PRODUCTOS', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/productos}">Productos</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_VENTAS', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/ventas}">🛒 Ventas</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_SOLICITUDES_COMPRA', 'ROLE_ADMIN')"><hr class="dropdown-divider"></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_SOLICITUDES_COMPRA', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/solicitudes-compra}">Solicitud De Compra</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_PRESUPUESTOS', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/presupuestos/pedidos}">Presupuesto</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_ORDENES_COMPRA', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/ordenes-compra}">Orden de Compra</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_REMITOS', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/remitos}">Remitos</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_ALMACENES', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/almacenes}">Almacenes</a></li>
+                        <li sec:authorize="hasAnyAuthority('PERM_FACTURAS', 'ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/facturas}">Facturas</a></li>
                     </ul>
                 </li>
 
                 <li sec:authorize="hasRole('ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/admin/usuarios}">Gestión de Usuarios</a>
                 </li>
-                <li sec:authorize="hasRole('ADMIN')" class="nav-item">
+                <li sec:authorize="hasAnyAuthority('PERM_AUDITORIA', 'ROLE_ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/auditoria}">
                         <i class="bi bi-shield-check"></i> Auditoría
                     </a>

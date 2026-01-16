@@ -5,11 +5,13 @@ import com.example.SA2Gemini.entity.Rubro;
 import com.example.SA2Gemini.entity.TipoProveedor;
 import com.example.SA2Gemini.entity.Usuario;
 import com.example.SA2Gemini.entity.Cuenta;
+import com.example.SA2Gemini.entity.Permiso;
 import com.example.SA2Gemini.repository.CuentaRepository;
 import com.example.SA2Gemini.repository.RolRepository;
 import com.example.SA2Gemini.repository.RubroRepository;
 import com.example.SA2Gemini.repository.TipoProveedorRepository;
 import com.example.SA2Gemini.repository.UsuarioRepository;
+import com.example.SA2Gemini.repository.PermisoRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -31,9 +35,12 @@ public class DataInitializer implements CommandLineRunner {
     private final RubroRepository rubroRepository;
     private final CuentaRepository cuentaRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final PermisoRepository permisoRepository;
 
     public DataInitializer(RolRepository rolRepository, UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
-                           TipoProveedorRepository tipoProveedorRepository, RubroRepository rubroRepository, CuentaRepository cuentaRepository, JdbcTemplate jdbcTemplate) {
+                           TipoProveedorRepository tipoProveedorRepository, RubroRepository rubroRepository, 
+                           CuentaRepository cuentaRepository, JdbcTemplate jdbcTemplate,
+                           PermisoRepository permisoRepository) {
         this.rolRepository = rolRepository;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -41,6 +48,7 @@ public class DataInitializer implements CommandLineRunner {
         this.rubroRepository = rubroRepository;
         this.cuentaRepository = cuentaRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.permisoRepository = permisoRepository;
     }
 
     @Override
@@ -120,6 +128,12 @@ public class DataInitializer implements CommandLineRunner {
         
         // Migrar estados antiguos de SolicitudCompra
         migrarEstadosSolicitudCompra();
+        
+        // Inicializar permisos del sistema
+        inicializarPermisos();
+        
+        // Asignar permisos por defecto a roles
+        asignarPermisosARoles(contadorRol, depositoRol, comercialRol);
         
     }
     
@@ -249,6 +263,122 @@ public class DataInitializer implements CommandLineRunner {
         }
         
         logger.info("Migración de roles completada.");
+    }
+
+    private void inicializarPermisos() {
+        logger.info("Inicializando permisos del sistema...");
+        
+        // Categoría: Contabilidad
+        crearPermisoSiNoExiste("CUENTAS", "Plan de Cuentas", "/cuentas/**", 
+                "Gestión del plan de cuentas contable", "Contabilidad");
+        crearPermisoSiNoExiste("ASIENTOS", "Registrar Asientos", "/asientos/**", 
+                "Registro de asientos contables", "Contabilidad");
+        crearPermisoSiNoExiste("LIBRO_DIARIO", "Libro Diario", "/reportes/libro-diario/**", 
+                "Consulta del libro diario", "Contabilidad");
+        crearPermisoSiNoExiste("LIBRO_MAYOR", "Libro Mayor", "/reportes/libro-mayor/**", 
+                "Consulta del libro mayor", "Contabilidad");
+        crearPermisoSiNoExiste("REPORTE_IVA", "Reporte IVA", "/reportes/iva/**", 
+                "Consulta del reporte de IVA", "Contabilidad");
+        crearPermisoSiNoExiste("AUDITORIA", "Auditoría", "/auditoria/**", 
+                "Acceso a los registros de auditoría", "Contabilidad");
+
+        // Categoría: Comercial
+        crearPermisoSiNoExiste("PROVEEDORES", "Proveedores", "/proveedores/**", 
+                "Gestión de proveedores", "Comercial");
+        crearPermisoSiNoExiste("PRODUCTOS", "Productos", "/productos/**", 
+                "Gestión de productos y catálogo", "Comercial");
+        crearPermisoSiNoExiste("VENTAS", "Ventas", "/ventas/**", 
+                "Registro y gestión de ventas", "Comercial");
+        crearPermisoSiNoExiste("SOLICITUDES_COMPRA", "Solicitudes de Compra", "/solicitudes-compra/**", 
+                "Gestión de solicitudes de compra", "Comercial");
+        crearPermisoSiNoExiste("PRESUPUESTOS", "Presupuestos", "/presupuestos/**", 
+                "Gestión de presupuestos y cotizaciones", "Comercial");
+        crearPermisoSiNoExiste("ORDENES_COMPRA", "Órdenes de Compra", "/ordenes-compra/**", 
+                "Gestión de órdenes de compra", "Comercial");
+        crearPermisoSiNoExiste("FACTURAS", "Facturas", "/facturas/**", 
+                "Gestión de facturas", "Comercial");
+        crearPermisoSiNoExiste("PEDIDOS_COTIZACION", "Pedidos de Cotización", "/pedidos-cotizacion/**", 
+                "Gestión de pedidos de cotización", "Comercial");
+
+        // Categoría: Depósito
+        crearPermisoSiNoExiste("REMITOS", "Remitos", "/remitos/**", 
+                "Gestión de remitos de mercadería", "Depósito");
+        crearPermisoSiNoExiste("ALMACENES", "Almacenes", "/almacenes/**", 
+                "Gestión de almacenes y stock", "Depósito");
+        crearPermisoSiNoExiste("CATEGORIAS", "Categorías de Producto", "/categorias/**", 
+                "Gestión de categorías de productos", "Depósito");
+
+        // Categoría: Administración
+        crearPermisoSiNoExiste("USUARIOS", "Gestión de Usuarios", "/admin/usuarios/**", 
+                "Administración de usuarios del sistema", "Administración");
+        crearPermisoSiNoExiste("ROLES", "Gestión de Roles", "/admin/roles/**", 
+                "Administración de roles y permisos", "Administración");
+
+        logger.info("Permisos del sistema inicializados.");
+    }
+
+    private Permiso crearPermisoSiNoExiste(String codigo, String nombre, String urlPattern, 
+                                           String descripcion, String categoria) {
+        Optional<Permiso> permisoOpt = permisoRepository.findByCodigo(codigo);
+        if (permisoOpt.isEmpty()) {
+            Permiso permiso = new Permiso(codigo, nombre, urlPattern, descripcion, categoria);
+            logger.info("Creando permiso: " + codigo);
+            return permisoRepository.save(permiso);
+        }
+        return permisoOpt.get();
+    }
+
+    private void asignarPermisosARoles(Rol contadorRol, Rol depositoRol, Rol comercialRol) {
+        logger.info("Asignando permisos por defecto a roles...");
+
+        // Solo asignar si el rol no tiene permisos aún
+        if (contadorRol.getPermisos().isEmpty()) {
+            asignarPermisosAContador(contadorRol);
+        }
+        
+        if (depositoRol.getPermisos().isEmpty()) {
+            asignarPermisosADeposito(depositoRol);
+        }
+        
+        if (comercialRol.getPermisos().isEmpty()) {
+            asignarPermisosAComercial(comercialRol);
+        }
+
+        logger.info("Permisos por defecto asignados.");
+    }
+
+    private void asignarPermisosAContador(Rol rol) {
+        List<String> codigosPermisos = Arrays.asList(
+            "CUENTAS", "ASIENTOS", "LIBRO_DIARIO", "LIBRO_MAYOR", "REPORTE_IVA", "AUDITORIA"
+        );
+        asignarPermisosPorCodigo(rol, codigosPermisos);
+        logger.info("Permisos de CONTADOR asignados: " + codigosPermisos);
+    }
+
+    private void asignarPermisosADeposito(Rol rol) {
+        List<String> codigosPermisos = Arrays.asList(
+            "REMITOS", "ALMACENES", "PRODUCTOS", "CATEGORIAS", "SOLICITUDES_COMPRA", "ORDENES_COMPRA"
+        );
+        asignarPermisosPorCodigo(rol, codigosPermisos);
+        logger.info("Permisos de DEPOSITO asignados: " + codigosPermisos);
+    }
+
+    private void asignarPermisosAComercial(Rol rol) {
+        List<String> codigosPermisos = Arrays.asList(
+            "PROVEEDORES", "PRODUCTOS", "VENTAS", "SOLICITUDES_COMPRA", 
+            "PRESUPUESTOS", "ORDENES_COMPRA", "FACTURAS", "PEDIDOS_COTIZACION", "REMITOS"
+        );
+        asignarPermisosPorCodigo(rol, codigosPermisos);
+        logger.info("Permisos de COMERCIAL asignados: " + codigosPermisos);
+    }
+
+    private void asignarPermisosPorCodigo(Rol rol, List<String> codigosPermisos) {
+        for (String codigo : codigosPermisos) {
+            permisoRepository.findByCodigo(codigo).ifPresent(permiso -> {
+                rol.addPermiso(permiso);
+            });
+        }
+        rolRepository.save(rol);
     }
 }
 
