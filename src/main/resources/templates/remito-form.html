@@ -42,7 +42,7 @@
                     <td th:text="${item.producto.nombre}">Tornillo Phillips</td>
                     <td th:text="${item.producto.marca}">Marca A</td>
                     <td th:text="${item.cantidadPendiente}">100</td>
-                    <td><input type="number" class="form-control" th:name="'cantidades[' + ${item.id} + ']'" value="0" min="0" th:max="${item.cantidadPendiente}"></td>
+                    <td><input type="number" class="form-control cantidad-input" th:name="'cantidades[' + ${item.id} + ']'" value="1" min="1" th:max="${item.cantidadPendiente}"></td>
                 </tr>
             </tbody>
         </table>
@@ -65,17 +65,30 @@
         function validateForm() {
             const isDateSelected = fechaRemitoInput.value !== '';
             let isAnyCheckboxChecked = false;
+            let allQuantitiesValid = true;
+            
             itemCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
                     isAnyCheckboxChecked = true;
+                    // Verificar que la cantidad del item seleccionado sea mayor a 0
+                    const row = checkbox.closest('tr');
+                    const cantidadInput = row.querySelector('.cantidad-input');
+                    if (cantidadInput && parseInt(cantidadInput.value) < 1) {
+                        allQuantitiesValid = false;
+                    }
                 }
             });
-            confirmButton.disabled = !(isDateSelected && isAnyCheckboxChecked);
+            confirmButton.disabled = !(isDateSelected && isAnyCheckboxChecked && allQuantitiesValid);
         }
 
         fechaRemitoInput.addEventListener('input', validateForm);
         itemCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', validateForm);
+        });
+        
+        // Agregar validación cuando cambian las cantidades
+        document.querySelectorAll('.cantidad-input').forEach(input => {
+            input.addEventListener('input', validateForm);
         });
 
         // Initial validation check
