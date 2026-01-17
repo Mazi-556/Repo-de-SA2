@@ -16,7 +16,7 @@ import com.example.SA2Gemini.entity.Proveedor;
 import java.util.Optional; 
 
 
-@PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMERCIAL', 'DEPOSITO', 'ADMIN')")
 @Controller
 @RequestMapping("/productos")
 public class ProductoController {
@@ -36,14 +36,14 @@ public class ProductoController {
     @Autowired
     private ProductoProveedorRepository productoProveedorRepository;
 
-    @PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMERCIAL', 'DEPOSITO', 'ADMIN')")
     @GetMapping
     public String listarProductos(Model model) {
         model.addAttribute("productos", productoService.findAll());
         return "productos";
     }
 
-    @PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
     @GetMapping("/nuevo")
     public String mostrarFormularioDeAlta(Model model) {
         model.addAttribute("producto", new Producto());
@@ -53,7 +53,7 @@ public class ProductoController {
         return "producto-form";
     }
 
-    @PreAuthorize("hasAnyRole('COMPRAS', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
     @GetMapping("/editar/{id}")
     public String mostrarFormularioDeEdicion(@PathVariable Long id, Model model) {
         model.addAttribute("producto", productoService.findById(id));
@@ -62,7 +62,7 @@ public class ProductoController {
         return "producto-form";
     }
 
-    @PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMERCIAL', 'ADMIN')")
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute Producto producto, Model model) {
         try {

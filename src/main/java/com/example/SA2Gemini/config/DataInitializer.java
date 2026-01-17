@@ -129,6 +129,9 @@ public class DataInitializer implements CommandLineRunner {
         // Migrar estados antiguos de SolicitudCompra
         migrarEstadosSolicitudCompra();
         
+        // Agregar columna orden_compra_generada si no existe
+        agregarColumnaOrdenCompraGenerada();
+        
         // Inicializar permisos del sistema
         inicializarPermisos();
         
@@ -137,6 +140,18 @@ public class DataInitializer implements CommandLineRunner {
         
     }
     
+    private void agregarColumnaOrdenCompraGenerada() {
+        logger.info("Verificando columna orden_compra_generada en pedido_cotizacion...");
+        try {
+            jdbcTemplate.execute(
+                "ALTER TABLE pedido_cotizacion ADD COLUMN IF NOT EXISTS orden_compra_generada BOOLEAN DEFAULT false"
+            );
+            logger.info("Columna orden_compra_generada verificada/creada exitosamente");
+        } catch (Exception e) {
+            logger.info("Columna orden_compra_generada ya existe o error: " + e.getMessage());
+        }
+    }
+
     private void migrarEstadosSolicitudCompra() {
         logger.info("Migrando estados antiguos de SolicitudCompra...");
         try {

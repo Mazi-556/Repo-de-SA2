@@ -24,6 +24,8 @@ public class PedidoCotizacion {
     @Enumerated(EnumType.STRING)
     private EstadoPedidoCotizacion estado; // ENVIADO, COTIZADO, RECHAZADO, FINALIZADO
 
+    private boolean ordenCompraGenerada = false; // Indica si ya se generó una OC a partir de este pedido
+
     @OneToMany(mappedBy = "pedidoCotizacion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PedidoCotizacionItem> items = new ArrayList<>();
 
@@ -85,5 +87,13 @@ public class PedidoCotizacion {
                 item.setPedidoCotizacion(this);
             }
         }
+    }
+
+    public boolean isOrdenCompraGenerada() {
+        return ordenCompraGenerada;
+    }
+
+    public void setOrdenCompraGenerada(boolean ordenCompraGenerada) {
+        this.ordenCompraGenerada = ordenCompraGenerada;
     }
 }

@@ -19,7 +19,7 @@ import java.util.Map; // Para recibir itemCantidades
 import java.util.HashMap; // Importar HashMap
 import java.math.BigDecimal; // Importar BigDecimal
 
-@PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMERCIAL', 'DEPOSITO', 'ADMIN')")
 @Controller
 @RequestMapping("/ordenes-compra")
 public class OrdenCompraController {
@@ -36,7 +36,9 @@ public class OrdenCompraController {
         List<PedidoCotizacion> pedidosCotizacion = pedidoCotizacionService.getAllPedidosCotizacion();
         
         // Filtrar solo pedidos que tengan cotización cargada (al menos un ítem con precio)
+        // y que NO tengan ya una orden de compra generada
         List<PedidoCotizacion> pedidosConCotizacion = pedidosCotizacion.stream()
+            .filter(pedido -> !pedido.isOrdenCompraGenerada()) // Excluir pedidos con OC ya generada
             .filter(pedido -> pedido.getItems().stream()
                 .anyMatch(item -> item.getPrecioUnitarioCotizado() != null && 
                                   item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0))
@@ -56,8 +58,9 @@ public class OrdenCompraController {
     public String seleccionarPedidoCotizacion(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         List<PedidoCotizacion> pedidosCotizacion = pedidoCotizacionService.getAllPedidosCotizacion();
         
-        // Filtrar solo pedidos que tengan cotización cargada
+        // Filtrar solo pedidos que tengan cotización cargada y que NO tengan OC generada
         List<PedidoCotizacion> pedidosConCotizacion = pedidosCotizacion.stream()
+            .filter(pedido -> !pedido.isOrdenCompraGenerada()) // Excluir pedidos con OC ya generada
             .filter(pedido -> pedido.getItems().stream()
                 .anyMatch(item -> item.getPrecioUnitarioCotizado() != null && 
                                   item.getPrecioUnitarioCotizado().compareTo(java.math.BigDecimal.ZERO) > 0))
@@ -67,6 +70,13 @@ public class OrdenCompraController {
 
         return pedidoCotizacionService.getPedidoCotizacionById(id)
                 .map(pedido -> {
+                    // Validar que el pedido NO tenga ya una orden de compra generada
+                    if (pedido.isOrdenCompraGenerada()) {
+                        redirectAttributes.addFlashAttribute("errorMessage", 
+                            "Este pedido de cotización ya tiene una Orden de Compra generada.");
+                        return "redirect:/ordenes-compra";
+                    }
+                    
                     // Validar que el pedido tenga cotización cargada
                     boolean tieneCotizacion = pedido.getItems().stream()
                         .anyMatch(item -> item.getPrecioUnitarioCotizado() != null && 

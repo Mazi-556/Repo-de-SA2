@@ -9,6 +9,7 @@ import com.example.SA2Gemini.entity.SolicitudCompra;
 import com.example.SA2Gemini.entity.SolicitudCompraItem;
 import com.example.SA2Gemini.repository.OrdenCompraRepository;
 import com.example.SA2Gemini.repository.PedidoCotizacionItemRepository;
+import com.example.SA2Gemini.repository.PedidoCotizacionRepository;
 import com.example.SA2Gemini.repository.ProveedorRepository;
 import com.example.SA2Gemini.repository.SolicitudCompraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,8 @@ public class OrdenCompraService {
     private SolicitudCompraService solicitudCompraService;
     @Autowired
     private PedidoCotizacionItemRepository pedidoCotizacionItemRepository;
+    @Autowired
+    private PedidoCotizacionRepository pedidoCotizacionRepository;
 
     @Transactional
     public OrdenCompra generarOrdenCompra(
@@ -136,6 +139,15 @@ public class OrdenCompraService {
         if (solicitudCompra != null) {
             solicitudCompra.setEstado(EstadoSolicitud.COMPROMETIDA); 
             solicitudCompraRepository.save(solicitudCompra);
+        }
+
+        // Marcar el PedidoCotizacion como "orden compra generada" para evitar duplicados
+        if (!pcItems.isEmpty()) {
+            com.example.SA2Gemini.entity.PedidoCotizacion pedidoCotizacion = pcItems.get(0).getPedidoCotizacion();
+            if (pedidoCotizacion != null) {
+                pedidoCotizacion.setOrdenCompraGenerada(true);
+                pedidoCotizacionRepository.save(pedidoCotizacion);
+            }
         }
 
         return ordenCompra;

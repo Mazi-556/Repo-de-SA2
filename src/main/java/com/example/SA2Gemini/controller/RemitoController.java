@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@PreAuthorize("hasAnyRole('COMPRA_VENTA', 'ALMACEN', 'ADMIN')")
+@PreAuthorize("hasAnyRole('COMERCIAL', 'DEPOSITO', 'ADMIN')")
 @Controller
 @RequestMapping("/remitos")
 public class RemitoController {
