@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.SA2Gemini.repository.SolicitudCompraItemRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,6 +35,8 @@ public class PedidoCotizacionService {
     private SolicitudCompraService solicitudCompraService; // Para obtener los SolicitudCompraItem
     @Autowired
     private SolicitudCompraRepository solicitudCompraRepository;
+    @Autowired
+    private SolicitudCompraItemRepository solicitudCompraItemRepository;
 
     @Transactional
     public PedidoCotizacion guardarPedidoCotizacion(
@@ -68,10 +71,29 @@ public class PedidoCotizacionService {
                 pcItem.setCantidad(itemCantidades.getOrDefault(scItem.getId(), scItem.getCantidad()));
                 pcItem.setPedidoCotizacion(pedidoCotizacion); // Establecer la relación bidireccional
                 pedidoCotizacion.getItems().add(pcItem);
+                
+                // Marcar el item de solicitud como procesado
+                scItem.setProcesadoEnCotizacion(true);
+                solicitudCompraItemRepository.save(scItem);
             }
         }
         
-        return pedidoCotizacionRepository.save(pedidoCotizacion);
+        PedidoCotizacion savedPedido = pedidoCotizacionRepository.save(pedidoCotizacion);
+        
+        // Verificar si todos los items de la solicitud han sido procesados
+        // Si es así, cambiar el estado de la solicitud a COTIZANDO
+        if (savedPedido.getSolicitudCompra() != null) {
+            SolicitudCompra solicitud = savedPedido.getSolicitudCompra();
+            boolean todosItemsProcesados = solicitud.getItems().stream()
+                    .allMatch(SolicitudCompraItem::isProcesadoEnCotizacion);
+            
+            if (todosItemsProcesados && solicitud.getEstado() == EstadoSolicitud.PENDIENTE) {
+                solicitud.setEstado(EstadoSolicitud.COTIZANDO);
+                solicitudCompraRepository.save(solicitud);
+            }
+        }
+        
+        return savedPedido;
     }
 
     @Transactional

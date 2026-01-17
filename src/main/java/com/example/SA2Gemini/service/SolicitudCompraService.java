@@ -104,11 +104,13 @@ public class SolicitudCompraService {
         saveSolicitudCompra(solicitudCompra);
     }
 
-    // Nuevo método para obtener todos los SolicitudCompraItem de solicitudes en estado INICIO
+    // Nuevo método para obtener todos los SolicitudCompraItem de solicitudes en estado PENDIENTE
+    // que NO hayan sido procesados en una cotización
     public List<SolicitudCompraItem> getSolicitudCompraItemsByEstadoInicio() {
         List<SolicitudCompra> solicitudesEnInicio = solicitudCompraRepository.findByEstado(EstadoSolicitud.PENDIENTE);
         return solicitudesEnInicio.stream()
                 .flatMap(solicitud -> solicitud.getItems().stream())
+                .filter(item -> !item.isProcesadoEnCotizacion()) // Filtrar items no procesados
                 .collect(java.util.stream.Collectors.toList());
     }
 

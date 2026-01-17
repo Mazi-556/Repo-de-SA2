@@ -21,6 +21,8 @@ public class SolicitudCompraItem {
     private int cantidad;
     private BigDecimal precioUnitario; // Nuevo campo
     private String descripcion; // Autocompletado desde producto
+    
+    private boolean procesadoEnCotizacion = false; // Indica si ya fue incluido en un pedido de cotización
 
     // Default constructor
     public SolicitudCompraItem() {
@@ -73,5 +75,13 @@ public class SolicitudCompraItem {
 
     public void setPrecioUnitario(BigDecimal precioUnitario) {
         this.precioUnitario = precioUnitario;
+    }
+
+    public boolean isProcesadoEnCotizacion() {
+        return procesadoEnCotizacion;
+    }
+
+    public void setProcesadoEnCotizacion(boolean procesadoEnCotizacion) {
+        this.procesadoEnCotizacion = procesadoEnCotizacion;
     }
 }

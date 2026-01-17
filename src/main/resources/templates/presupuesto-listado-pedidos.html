@@ -16,38 +16,74 @@
     </div>
 
     <form th:action="@{/presupuestos/generar}" method="post">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="selectAll"/></th>
-                    <th>Código</th>
-                    <th>Nombre</th>
-                    <th>Marca</th>
-                    <th>Modelo</th>
-                    <th>Descripción</th>
-                    <th>Cantidad</th>
-                </tr>
-            </thead>
-            <tbody>
-                <th:block th:each="item : ${solicitudItems}">
-                    <tr th:if="${item.producto != null}">
-                        <td><input type="checkbox" name="itemIds" th:value="${item.id}"></td>
-                        <td th:text="${item.producto.codigo}"></td>
-                        <td th:text="${item.producto.nombre}"></td>
-                        <td th:text="${item.producto.marca}"></td>
-                        <td th:text="${item.producto.modelo}"></td>
-                        <td th:text="${item.descripcion}"></td>
-                        <td th:text="${item.cantidad}"></td>
-                    </tr>
-                </th:block>
-                <tr th:if="${#lists.isEmpty(solicitudItems)}">
-                    <td colspan="7" class="text-center text-muted">No hay ítems disponibles para generar presupuestos</td>
-                </tr>
-            </tbody>
-        </table>
-        <button type="submit" class="btn btn-primary">GENERAR PRESUPUESTOS</button>
+        <!-- Mostrar items agrupados por Solicitud de Compra -->
+        <th:block th:each="entry : ${itemsPorSolicitud}">
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <strong>Solicitud de Compra #<span th:text="${entry.key.id}"></span></strong>
+                    <span class="text-muted ms-2" th:text="'Fecha: ' + ${#temporals.format(entry.key.fecha, 'dd/MM/yyyy')}"></span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" class="selectAllSolicitud" th:data-solicitud="${entry.key.id}"/></th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${entry.value}" th:if="${item.producto != null}">
+                                <td><input type="checkbox" name="itemIds" th:value="${item.id}" class="itemCheckbox" th:data-solicitud="${entry.key.id}"></td>
+                                <td th:text="${item.producto.codigo}"></td>
+                                <td th:text="${item.producto.nombre}"></td>
+                                <td th:text="${item.producto.marca}"></td>
+                                <td th:text="${item.producto.modelo}"></td>
+                                <td th:text="${item.descripcion}"></td>
+                                <td th:text="${item.cantidad}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </th:block>
+        
+        <div th:if="${#maps.isEmpty(itemsPorSolicitud)}" class="alert alert-info">
+            No hay ítems disponibles para generar presupuestos
+        </div>
+        
+        <button type="submit" class="btn btn-primary" th:disabled="${#maps.isEmpty(itemsPorSolicitud)}">GENERAR PRESUPUESTOS</button>
     </form>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Manejar checkbox "seleccionar todos" por cada solicitud
+        document.querySelectorAll('.selectAllSolicitud').forEach(function(selectAll) {
+            selectAll.addEventListener('change', function() {
+                const solicitudId = this.dataset.solicitud;
+                const checkboxes = document.querySelectorAll('.itemCheckbox[data-solicitud="' + solicitudId + '"]');
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = selectAll.checked;
+                });
+            });
+        });
+        
+        // Actualizar el estado del "seleccionar todos" cuando se cambian los checkboxes individuales
+        document.querySelectorAll('.itemCheckbox').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const solicitudId = this.dataset.solicitud;
+                const selectAll = document.querySelector('.selectAllSolicitud[data-solicitud="' + solicitudId + '"]');
+                const checkboxes = document.querySelectorAll('.itemCheckbox[data-solicitud="' + solicitudId + '"]');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                selectAll.checked = allChecked;
+            });
+        });
+    });
+</script>
 </body>
 </html>

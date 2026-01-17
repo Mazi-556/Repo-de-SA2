@@ -61,7 +61,16 @@ public class PresupuestoController {
     @GetMapping("/pedidos")
     public String listarPedidosParaPresupuesto(Model model) {
         List<SolicitudCompraItem> solicitudItems = solicitudCompraService.getSolicitudCompraItemsByEstadoInicio();
-        model.addAttribute("solicitudItems", solicitudItems);
+        
+        // Agrupar items por solicitud de compra para mostrarlos organizados
+        Map<SolicitudCompra, List<SolicitudCompraItem>> itemsPorSolicitud = new java.util.LinkedHashMap<>();
+        for (SolicitudCompraItem item : solicitudItems) {
+            SolicitudCompra solicitud = item.getSolicitudCompra();
+            itemsPorSolicitud.computeIfAbsent(solicitud, k -> new ArrayList<>()).add(item);
+        }
+        
+        model.addAttribute("itemsPorSolicitud", itemsPorSolicitud);
+        model.addAttribute("solicitudItems", solicitudItems); // Mantener para compatibilidad
         return "presupuesto-listado-pedidos";
     }
 
@@ -215,16 +224,10 @@ public class PresupuestoController {
         // Llamar al servicio para generar el PDF del pedido de cotización
         try {
 
-            if (selectedItemIds != null) {
-                List<SolicitudCompraItem> itemsAProcesar = solicitudCompraService.getSolicitudCompraItemsByIds(selectedItemIds);
-                for (SolicitudCompraItem item : itemsAProcesar) {
-                    SolicitudCompra sc = item.getSolicitudCompra();
-                    if (sc != null && sc.getEstado() == EstadoSolicitud.PENDIENTE) {
-                        sc.setEstado(EstadoSolicitud.COTIZANDO);
-                        solicitudCompraRepository.save(sc);
-                    }
-                }
-            }
+            // NOTA: Ya no cambiamos el estado de la solicitud aquí.
+            // El estado se mantiene en PENDIENTE para que los items no seleccionados
+            // sigan apareciendo disponibles para generar otros pedidos de cotización.
+            // El estado cambiará a COTIZANDO cuando se procesen todos los items.
             
             // Guardar el PedidoCotizacion en la base de datos antes de generar el PDF
             pedidoCotizacionService.guardarPedidoCotizacion(proveedorId, itemCantidades);

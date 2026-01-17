@@ -39,6 +39,13 @@
                 <option th:each="cuenta : ${cuentas}" th:value="${cuenta.id}" th:text="${cuenta.codigo} + ' - ' + ${cuenta.nombre}"></option>
             </select>
         </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="permiteSaldoNegativo" th:field="*{permiteSaldoNegativo}">
+            <label class="form-check-label" for="permiteSaldoNegativo">Permite saldo negativo</label>
+            <small class="form-text text-muted d-block">
+                Marcar si la cuenta puede tener saldo negativo (ej: Banco c/c con descubierto, cuentas de pasivo, etc.)
+            </small>
+        </div>
         <button type="submit" class="btn btn-primary">Guardar</button>
         <button type="button" class="btn btn-secondary" onclick="history.back()">Volver</button>
     </form>

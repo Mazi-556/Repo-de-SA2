@@ -132,6 +132,12 @@ public class DataInitializer implements CommandLineRunner {
         // Agregar columna orden_compra_generada si no existe
         agregarColumnaOrdenCompraGenerada();
         
+        // Agregar columna procesado_en_cotizacion si no existe
+        agregarColumnaProcesadoEnCotizacion();
+        
+        // Agregar columna permite_saldo_negativo si no existe y configurar cuentas
+        agregarColumnaPermiteSaldoNegativo();
+        
         // Inicializar permisos del sistema
         inicializarPermisos();
         
@@ -149,6 +155,49 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("Columna orden_compra_generada verificada/creada exitosamente");
         } catch (Exception e) {
             logger.info("Columna orden_compra_generada ya existe o error: " + e.getMessage());
+        }
+    }
+
+    private void agregarColumnaProcesadoEnCotizacion() {
+        logger.info("Verificando columna procesado_en_cotizacion en solicitud_compra_item...");
+        try {
+            jdbcTemplate.execute(
+                "ALTER TABLE solicitud_compra_item ADD COLUMN IF NOT EXISTS procesado_en_cotizacion BOOLEAN DEFAULT false"
+            );
+            logger.info("Columna procesado_en_cotizacion verificada/creada exitosamente");
+        } catch (Exception e) {
+            logger.info("Columna procesado_en_cotizacion ya existe o error: " + e.getMessage());
+        }
+    }
+
+    private void agregarColumnaPermiteSaldoNegativo() {
+        logger.info("Verificando columna permite_saldo_negativo en cuenta...");
+        try {
+            // Agregar la columna si no existe
+            jdbcTemplate.execute(
+                "ALTER TABLE cuenta ADD COLUMN IF NOT EXISTS permite_saldo_negativo BOOLEAN DEFAULT false"
+            );
+            logger.info("Columna permite_saldo_negativo verificada/creada exitosamente");
+            
+            // Configurar cuentas que típicamente permiten saldo negativo:
+            // - Banco c/c (cuenta corriente bancaria puede tener descubierto/sobregiro)
+            // - Cuentas de tipo PASIVO (representan deudas)
+            // - Cuentas de tipo PATRIMONIO (puede tener pérdidas acumuladas)
+            // - Cuentas de RESULTADO (pueden mostrar pérdidas)
+            
+            // Habilitar saldo negativo para cuentas bancarias (que contengan "banco" en el nombre)
+            jdbcTemplate.execute(
+                "UPDATE cuenta SET permite_saldo_negativo = true WHERE LOWER(nombre) LIKE '%banco%'"
+            );
+            
+            // Habilitar saldo negativo para cuentas de tipo PASIVO, PATRIMONIO y RESULTADO
+            jdbcTemplate.execute(
+                "UPDATE cuenta SET permite_saldo_negativo = true WHERE tipo_cuenta IN ('PASIVO', 'PATRIMONIO', 'RESULTADO_POSITIVO', 'RESULTADO_NEGATIVO')"
+            );
+            
+            logger.info("Cuentas con saldo negativo permitido configuradas exitosamente");
+        } catch (Exception e) {
+            logger.info("Error al configurar permite_saldo_negativo: " + e.getMessage());
         }
     }
 

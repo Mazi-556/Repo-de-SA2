@@ -26,6 +26,9 @@ public class Cuenta {
     private TipoCuenta tipoCuenta;
 
     private boolean activo = true;
+    
+    // Indica si la cuenta puede tener saldo negativo (ej: Banco c/c puede tener descubierto)
+    private boolean permiteSaldoNegativo = false;
 
     @Column
     private Long cuentaPadreId;
@@ -76,5 +79,13 @@ public class Cuenta {
 
     public void setCuentaPadreId(Long cuentaPadreId) {
         this.cuentaPadreId = cuentaPadreId;
+    }
+
+    public boolean isPermiteSaldoNegativo() {
+        return permiteSaldoNegativo;
+    }
+
+    public void setPermiteSaldoNegativo(boolean permiteSaldoNegativo) {
+        this.permiteSaldoNegativo = permiteSaldoNegativo;
     }
 }
