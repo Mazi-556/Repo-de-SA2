@@ -60,6 +60,7 @@
         const fechaRemitoInput = document.getElementById('fechaRemito');
         const hoy = new Date().toISOString().split('T')[0];
         fechaRemitoInput.setAttribute('max', hoy);
+        fechaRemitoInput.value = hoy; // Establecer fecha de hoy por defecto
         const itemCheckboxes = document.querySelectorAll('input[name="itemIds"]');
 
         function validateForm() {
