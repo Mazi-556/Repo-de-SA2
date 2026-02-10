@@ -110,8 +110,7 @@ public class AsientoService {
             throw new Exception("El asiento no puede tener montos totales en cero.");
         }
 
-        // Validar que las cuentas que no permiten saldo negativo no queden en negativo
-        validarSaldosNegativos(asiento);
+        // Todas las cuentas pueden tener saldo negativo - validación removida
 
         // Set the back-reference from Movimiento to Asiento
         for (Movimiento movimiento : asiento.getMovimientos()) {
@@ -125,57 +124,6 @@ public class AsientoService {
         return asientoRepository.findByFechaBetween(startDate, endDate);
     }
 
-    /**
-     * Valida que las cuentas que no permiten saldo negativo no queden en negativo
-     * después de aplicar los movimientos del asiento.
-     */
-    private void validarSaldosNegativos(Asiento asiento) throws Exception {
-        for (Movimiento movimiento : asiento.getMovimientos()) {
-            Cuenta cuenta = cuentaRepository.findById(movimiento.getCuenta().getId())
-                    .orElseThrow(() -> new Exception("Cuenta no encontrada: " + movimiento.getCuenta().getId()));
-            
-            // Si la cuenta permite saldo negativo, no validamos
-            if (cuenta.isPermiteSaldoNegativo()) {
-                continue;
-            }
-            
-            // Calcular el saldo actual de la cuenta (hasta hoy)
-            BigDecimal saldoActual = getAccountBalanceUpToDate(cuenta, LocalDate.now().plusDays(1));
-            
-            // Calcular el impacto del movimiento en el saldo
-            BigDecimal debe = movimiento.getDebe() != null ? movimiento.getDebe() : BigDecimal.ZERO;
-            BigDecimal haber = movimiento.getHaber() != null ? movimiento.getHaber() : BigDecimal.ZERO;
-            
-            BigDecimal nuevoSaldo;
-            TipoCuenta tipoCuenta = cuenta.getTipoCuenta();
-            
-            if (tipoCuenta == null) {
-                nuevoSaldo = saldoActual.add(debe).subtract(haber);
-            } else {
-                switch (tipoCuenta) {
-                    case ACTIVO:
-                    case RESULTADO_NEGATIVO:
-                        // Para activos: Debe aumenta, Haber disminuye
-                        nuevoSaldo = saldoActual.add(debe).subtract(haber);
-                        break;
-                    case PASIVO:
-                    case PATRIMONIO:
-                    case RESULTADO_POSITIVO:
-                        // Para pasivos: Haber aumenta, Debe disminuye
-                        nuevoSaldo = saldoActual.subtract(debe).add(haber);
-                        break;
-                    default:
-                        nuevoSaldo = saldoActual.add(debe).subtract(haber);
-                }
-            }
-            
-            // Verificar si el nuevo saldo sería negativo
-            if (nuevoSaldo.compareTo(BigDecimal.ZERO) < 0) {
-                throw new Exception("La cuenta '" + cuenta.getNombre() + "' no permite saldo negativo. " +
-                        "Saldo actual: " + saldoActual + ", saldo resultante: " + nuevoSaldo);
-            }
-        }
-    }
 
     public BigDecimal calculateTotalBalanceUpTo(LocalDate date) {
         BigDecimal totalDebe = movimientoRepository.sumDebeUpToDate(date);

@@ -173,31 +173,18 @@ public class DataInitializer implements CommandLineRunner {
     private void agregarColumnaPermiteSaldoNegativo() {
         logger.info("Verificando columna permite_saldo_negativo en cuenta...");
         try {
-            // Agregar la columna si no existe
+            // Agregar la columna si no existe (para compatibilidad con BD existente)
             jdbcTemplate.execute(
                 "ALTER TABLE cuenta ADD COLUMN IF NOT EXISTS permite_saldo_negativo BOOLEAN DEFAULT false"
             );
             logger.info("Columna permite_saldo_negativo verificada/creada exitosamente");
             
-            // Configurar cuentas que típicamente permiten saldo negativo:
-            // - Banco c/c (cuenta corriente bancaria puede tener descubierto/sobregiro)
-            // - Cuentas de tipo PASIVO (representan deudas)
-            // - Cuentas de tipo PATRIMONIO (puede tener pérdidas acumuladas)
-            // - Cuentas de RESULTADO (pueden mostrar pérdidas)
-            
-            // Habilitar saldo negativo para cuentas bancarias (que contengan "banco" en el nombre)
-            jdbcTemplate.execute(
-                "UPDATE cuenta SET permite_saldo_negativo = true WHERE LOWER(nombre) LIKE '%banco%'"
-            );
-            
-            // Habilitar saldo negativo para cuentas de tipo PASIVO, PATRIMONIO y RESULTADO
-            jdbcTemplate.execute(
-                "UPDATE cuenta SET permite_saldo_negativo = true WHERE tipo_cuenta IN ('PASIVO', 'PATRIMONIO', 'RESULTADO_POSITIVO', 'RESULTADO_NEGATIVO')"
-            );
-            
-            logger.info("Cuentas con saldo negativo permitido configuradas exitosamente");
+            // NOTA: Todas las cuentas ahora pueden tener saldo negativo.
+            // La validación ha sido removida del sistema (AsientoService.validarSaldosNegativos)
+            // El campo permite_saldo_negativo se mantiene en BD por compatibilidad pero no se utiliza.
+            logger.info("Sistema configurado: Todas las cuentas pueden tener saldo negativo");
         } catch (Exception e) {
-            logger.info("Error al configurar permite_saldo_negativo: " + e.getMessage());
+            logger.info("Error al verificar permite_saldo_negativo: " + e.getMessage());
         }
     }
 
